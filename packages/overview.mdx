@@ -1,0 +1,151 @@
+---
+title: Package Overview
+description: Overview of core packages in Proton WebClients monorepo
+---
+
+The Proton WebClients monorepo contains a collection of packages that power all Proton web applications. This document provides an overview of the core packages and their relationships.
+
+## Core Packages
+
+The monorepo is organized into several categories of packages:
+
+<CardGroup cols={2}>
+  <Card title="@proton/shared" icon="box" href="/packages/shared">
+    Core utilities, constants, API clients, and business logic shared across all Proton applications.
+  </Card>
+  
+  <Card title="@proton/components" icon="layer-group" href="/packages/components">
+    React component library with UI components and containers for building Proton applications.
+  </Card>
+  
+  <Card title="@proton/hooks" icon="link" href="/packages/hooks">
+    Generic, business-agnostic React hooks for common use cases.
+  </Card>
+  
+  <Card title="@proton/atoms" icon="atom" href="/packages/atoms">
+    Atomic design system components - the foundational building blocks.
+  </Card>
+</CardGroup>
+
+## Package Dependencies
+
+<Note>
+The packages follow a layered architecture where lower-level packages are dependencies of higher-level ones.
+</Note>
+
+```mermaid
+graph TD
+    A[@proton/atoms] --> B[@proton/hooks]
+    B --> C[@proton/shared]
+    C --> D[@proton/components]
+    E[@proton/styles] --> A
+    E --> C
+    E --> D
+    F[@proton/icons] --> A
+    F --> D
+```
+
+### Dependency Flow
+
+1. **@proton/hooks** - Pure React hooks with no business logic dependencies
+2. **@proton/atoms** - Basic UI components using hooks
+3. **@proton/shared** - Business logic, API clients, utilities (peer dependency on hooks)
+4. **@proton/components** - Complex components and containers combining atoms, shared, and hooks
+
+## Additional Packages
+
+The monorepo includes many other specialized packages:
+
+### Infrastructure & Tooling
+- `@proton/eslint-config-proton` - Shared ESLint configuration
+- `@proton/prettier-config` - Shared Prettier configuration
+- `@proton/testing` - Testing utilities and helpers
+- `@proton/pack` - Build tooling and webpack configurations
+
+### Design System
+- `@proton/styles` - SCSS styles and design tokens
+- `@proton/colors` - Color palette and theming
+- `@proton/icons` - SVG icon library
+
+### Application-Specific
+- `@proton/account` - Account management functionality
+- `@proton/calendar` - Calendar-specific logic
+- `@proton/mail` - Mail-specific logic
+- `@proton/drive` - Drive-specific logic
+- `@proton/pass` - Pass password manager logic
+- `@proton/wallet` - Wallet cryptocurrency functionality
+
+### Specialized Libraries
+- `@proton/crypto` - Cryptographic operations wrapper
+- `@proton/srp` - Secure Remote Password protocol implementation
+- `@proton/metrics` - Analytics and metrics collection
+- `@proton/payments` - Payment processing and subscriptions
+
+## Technology Stack
+
+<AccordionGroup>
+  <Accordion title="Languages & Frameworks">
+    - **TypeScript** - All packages are written in TypeScript
+    - **React 18** - UI framework
+    - **SCSS** - Styling
+  </Accordion>
+  
+  <Accordion title="Build Tools">
+    - **Webpack 5** - Module bundler
+    - **Babel** - JavaScript compiler
+    - **ts-loader** - TypeScript loader for Webpack
+  </Accordion>
+  
+  <Accordion title="Testing">
+    - **Jest** - Test runner
+    - **Testing Library** - React component testing
+    - **Karma** - Test runner for some packages
+  </Accordion>
+  
+  <Accordion title="Package Management">
+    - **Yarn Workspaces** - Monorepo management
+    - Package references use `workspace:^` protocol
+  </Accordion>
+</AccordionGroup>
+
+## Getting Started
+
+To use these packages in a Proton application:
+
+```bash
+# Install dependencies
+yarn install
+
+# Build all packages
+yarn workspace @proton/shared build
+yarn workspace @proton/components build
+
+# Run tests
+yarn workspace @proton/hooks test
+```
+
+## Package Guidelines
+
+<Warning>
+**Side Effects**: All core packages set `"sideEffects": false` in package.json to enable optimal tree-shaking.
+</Warning>
+
+<Tip>
+**Imports**: Use specific imports from packages rather than barrel imports for better tree-shaking:
+```typescript
+// Good
+import { useLoading } from '@proton/hooks';
+
+// Also good for atoms (uses package.json exports)
+import { Button } from '@proton/atoms/Button/Button';
+```
+</Tip>
+
+## Next Steps
+
+Explore the individual package documentation:
+
+- [**@proton/shared**](/packages/shared) - Learn about utilities and API clients
+- [**@proton/components**](/packages/components) - Browse the component library
+- [**@proton/hooks**](/packages/hooks) - Discover available hooks
+- [**@proton/atoms**](/packages/atoms) - Explore atomic components

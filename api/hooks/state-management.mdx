@@ -1,0 +1,422 @@
+---
+title: State Management Hooks
+description: React hooks for managing component state with advanced patterns
+---
+
+## useLoading
+
+Track loading state for async operations with automatic cleanup.
+
+### Signature
+
+```typescript
+function useLoading(
+  initialState?: boolean
+): [boolean, WithLoading, (loading: boolean) => void]
+
+type WithLoading = <T>(
+  promise: undefined | Promise<T | void> | (() => Promise<T | void>)
+) => Promise<T | void>
+```
+
+<ParamField path="initialState" type="boolean" default="false">
+  Initial loading state
+</ParamField>
+
+<ResponseField name="[0]" type="boolean">
+  Current loading state
+</ResponseField>
+
+<ResponseField name="[1]" type="WithLoading">
+  Function to wrap promises with loading state tracking
+</ResponseField>
+
+<ResponseField name="[2]" type="(loading: boolean) => void">
+  Manual loading state setter
+</ResponseField>
+
+### Usage
+
+<CodeGroup>
+```tsx Basic Usage
+import { useLoading } from '@proton/hooks';
+
+function MyComponent() {
+  const [loading, withLoading] = useLoading();
+
+  const handleSubmit = async () => {
+    await withLoading(async () => {
+      await api.post('/endpoint', data);
+    });
+  };
+
+  return <button disabled={loading}>Submit</button>;
+}
+```
+
+```tsx With Return Value
+const [loading, withLoading] = useLoading();
+
+const fetchUser = async () => {
+  const user = await withLoading<User>(async () => {
+    const response = await api.get('/user');
+    return response.User;
+  });
+  return user; // Type: User | void
+};
+```
+
+```tsx Function Form
+const [loading, withLoading] = useLoading();
+
+// Pass function instead of promise for lazy evaluation
+await withLoading(() => fetchData());
+```
+</CodeGroup>
+
+### Features
+
+- Automatic cleanup on unmount
+- Race condition protection (latest call wins)
+- Supports both promises and promise factories
+- Type-safe return values
+
+---
+
+## useLoadingByKey
+
+Track loading states for multiple concurrent operations using keys.
+
+### Signature
+
+```typescript
+function useLoadingByKey(
+  initialState?: LoadingByKey
+): [LoadingByKey, WithLoadingByKey, (key: string, loading: boolean) => void]
+
+type LoadingByKey = { [key: string]: boolean }
+type WithLoadingByKey = <T>(
+  key: string,
+  promise: undefined | Promise<T | void> | (() => Promise<T | void>)
+) => Promise<T | void>
+```
+
+<ParamField path="initialState" type="LoadingByKey" default="{}">
+  Initial loading states by key
+</ParamField>
+
+### Usage
+
+```tsx
+import { useLoadingByKey } from '@proton/hooks';
+
+function MultiActionComponent() {
+  const [loadingMap, withLoadingByKey] = useLoadingByKey();
+
+  const handleSave = () => withLoadingByKey('save', saveData());
+  const handleDelete = () => withLoadingByKey('delete', deleteData());
+
+  return (
+    <>
+      <button disabled={loadingMap.save}>Save</button>
+      <button disabled={loadingMap.delete}>Delete</button>
+    </>
+  );
+}
+```
+
+---
+
+## useControlled
+
+Handle controlled/uncontrolled component patterns.
+
+### Signature
+
+```typescript
+function useControlled<V>(
+  controlled: V,
+  defaultValue?: V
+): readonly [V, (v: V) => void]
+```
+
+<ParamField path="controlled" type="V">
+  Controlled value (if undefined, component is uncontrolled)
+</ParamField>
+
+<ParamField path="defaultValue" type="V">
+  Default value for uncontrolled mode
+</ParamField>
+
+### Usage
+
+<CodeGroup>
+```tsx Component Implementation
+import useControlled from '@proton/hooks/useControlled';
+
+interface InputProps {
+  value?: string;
+  defaultValue?: string;
+  onChange?: (value: string) => void;
+}
+
+function Input({ value, defaultValue, onChange }: InputProps) {
+  const [internalValue, setInternalValue] = useControlled(
+    value,
+    defaultValue
+  );
+
+  const handleChange = (newValue: string) => {
+    setInternalValue(newValue);
+    onChange?.(newValue);
+  };
+
+  return <input value={internalValue} onChange={handleChange} />;
+}
+```
+
+```tsx Controlled Usage
+// Parent controls the value
+const [value, setValue] = useState('');
+<Input value={value} onChange={setValue} />
+```
+
+```tsx Uncontrolled Usage
+// Component manages its own state
+<Input defaultValue="initial" />
+```
+</CodeGroup>
+
+---
+
+## useCombinedRefs
+
+Combine multiple React refs into a single ref callback.
+
+### Signature
+
+```typescript
+function useCombinedRefs<T>(
+  ...refs: (Ref<T> | undefined)[]
+): Ref<T>
+```
+
+### Usage
+
+```tsx
+import useCombinedRefs from '@proton/hooks/useCombinedRefs';
+import { forwardRef, useRef } from 'react';
+
+const MyComponent = forwardRef<HTMLDivElement>((props, ref) => {
+  const internalRef = useRef<HTMLDivElement>(null);
+  const combinedRef = useCombinedRefs(ref, internalRef);
+
+  return <div ref={combinedRef}>Content</div>;
+});
+```
+
+---
+
+## useInstance
+
+Create a stable instance value that persists across renders.
+
+### Signature
+
+```typescript
+function useInstance<T>(fn: () => T): T
+```
+
+<ParamField path="fn" type="() => T">
+  Factory function to create the instance (called only once)
+</ParamField>
+
+### Usage
+
+```tsx
+import useInstance from '@proton/hooks/useInstance';
+
+function MyComponent() {
+  // EventManager is created once and reused
+  const eventManager = useInstance(() => new EventManager());
+  
+  useEffect(() => {
+    eventManager.subscribe('event', handler);
+  }, [eventManager]);
+
+  return <div>...</div>;
+}
+```
+
+---
+
+## useIsMounted
+
+Check if a component is currently mounted.
+
+### Signature
+
+```typescript
+function useIsMounted(): () => boolean
+```
+
+### Usage
+
+```tsx
+import useIsMounted from '@proton/hooks/useIsMounted';
+
+function MyComponent() {
+  const isMounted = useIsMounted();
+
+  const fetchData = async () => {
+    const data = await api.fetch();
+    
+    // Only update state if component is still mounted
+    if (isMounted()) {
+      setState(data);
+    }
+  };
+
+  return <div>...</div>;
+}
+```
+
+---
+
+## useInterval
+
+Declarative interval with automatic cleanup.
+
+### Signature
+
+```typescript
+function useInterval(
+  callback: () => void,
+  delay: number | null
+): void
+```
+
+<ParamField path="callback" type="() => void">
+  Function to call on each interval
+</ParamField>
+
+<ParamField path="delay" type="number | null">
+  Interval delay in milliseconds (null to pause)
+</ParamField>
+
+### Usage
+
+<CodeGroup>
+```tsx Basic Usage
+import useInterval from '@proton/hooks/useInterval';
+
+function Timer() {
+  const [count, setCount] = useState(0);
+
+  useInterval(() => {
+    setCount(c => c + 1);
+  }, 1000);
+
+  return <div>Count: {count}</div>;
+}
+```
+
+```tsx Pausable Interval
+const [isRunning, setIsRunning] = useState(true);
+
+useInterval(
+  () => console.log('tick'),
+  isRunning ? 1000 : null // null pauses the interval
+);
+```
+</CodeGroup>
+
+---
+
+## useStateRef
+
+Combine useState with useRef for synchronous access to state.
+
+### Signature
+
+```typescript
+function useStateRef<S>(
+  initialState: S | (() => S)
+): [S, (value: S) => void, { current: S }]
+```
+
+### Usage
+
+```tsx
+import useStateRef from '@proton/hooks/useStateRef';
+
+function MyComponent() {
+  const [value, setValue, valueRef] = useStateRef(0);
+
+  const handleAsync = async () => {
+    await someAsyncOperation();
+    // Access latest value synchronously
+    console.log(valueRef.current);
+  };
+
+  return <button onClick={() => setValue(v => v + 1)}>{value}</button>;
+}
+```
+
+---
+
+## usePrevious
+
+Access the previous value of a variable.
+
+### Signature
+
+```typescript
+function usePrevious<T>(value: T): T | undefined
+```
+
+### Usage
+
+```tsx
+import usePrevious from '@proton/hooks/usePrevious';
+
+function MyComponent({ count }: { count: number }) {
+  const prevCount = usePrevious(count);
+
+  return (
+    <div>
+      Current: {count}, Previous: {prevCount}
+    </div>
+  );
+}
+```
+
+---
+
+## useEffectOnce
+
+Run an effect only once on component mount.
+
+### Signature
+
+```typescript
+function useEffectOnce(effect: () => void | (() => void)): void
+```
+
+### Usage
+
+```tsx
+import useEffectOnce from '@proton/hooks/useEffectOnce';
+
+function MyComponent() {
+  useEffectOnce(() => {
+    console.log('Mounted');
+    
+    return () => {
+      console.log('Unmounted');
+    };
+  });
+
+  return <div>...</div>;
+}
+```

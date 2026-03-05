@@ -1,0 +1,385 @@
+---
+title: '@proton/calendar'
+description: 'Calendar package providing Redux stores, hooks, and components for Proton Calendar functionality'
+---
+
+## Overview
+
+The `@proton/calendar` package provides Redux state management, React hooks, and components for implementing Proton Calendar features in web applications. It handles calendar management, events, user settings, and video conferencing integrations.
+
+## Installation
+
+<CodeGroup>
+```bash npm
+npm install @proton/calendar
+```
+
+```bash yarn
+yarn add @proton/calendar
+```
+
+```bash pnpm
+pnpm add @proton/calendar
+```
+</CodeGroup>
+
+## Key Features
+
+- Calendar management with Redux
+- Event loop for real-time calendar updates
+- Calendar user settings management
+- Holidays directory integration
+- Timezone support
+- Video conferencing integration (Zoom, Proton Meet)
+- Calendar bootstrap utilities
+
+## Package Structure
+
+<CardGroup cols={2}>
+  <Card title="Calendars" icon="calendar">
+    Calendar management, actions, and hooks
+  </Card>
+  <Card title="Event Loop" icon="rotate">
+    Real-time calendar event synchronization
+  </Card>
+  <Card title="Video Conferencing" icon="video">
+    Zoom and Proton Meet integration
+  </Card>
+  <Card title="Utilities" icon="wrench">
+    Timezone handling and helper functions
+  </Card>
+</CardGroup>
+
+## Calendar Management
+
+### Using Calendar Hooks
+
+```typescript
+import { useCalendars } from '@proton/calendar/calendars/hooks';
+
+function CalendarList() {
+  const calendars = useCalendars();
+  
+  return (
+    <div>
+      {calendars.map(calendar => (
+        <div key={calendar.ID}>
+          <h3>{calendar.Name}</h3>
+          <p>Color: {calendar.Color}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+### Calendar Actions
+
+```typescript
+import { calendarActions } from '@proton/calendar/calendars/actions';
+import { useDispatch } from 'react-redux';
+
+function CreateCalendar() {
+  const dispatch = useDispatch();
+  
+  const handleCreate = async () => {
+    await dispatch(calendarActions.createCalendar({
+      Name: 'My Calendar',
+      Color: '#FF6900',
+      Description: 'Personal calendar',
+    }));
+  };
+  
+  return <button onClick={handleCreate}>Create Calendar</button>;
+}
+```
+
+## Calendar Bootstrap
+
+Initialize calendar data and keys on application startup.
+
+```typescript
+import { useCalendarBootstrap } from '@proton/calendar/calendarBootstrap/hooks';
+import { getCalendarKeys } from '@proton/calendar/calendarBootstrap/keys';
+
+function CalendarApp() {
+  const { loading, error } = useCalendarBootstrap();
+  
+  if (loading) return <div>Loading calendars...</div>;
+  if (error) return <div>Error loading calendars</div>;
+  
+  return <div>Calendar loaded</div>;
+}
+```
+
+## Event Loop Integration
+
+Subscribe to real-time calendar events.
+
+```typescript
+import { calendarEventLoop } from '@proton/calendar/calendarEventLoop';
+import type { CalendarEventLoopInterface } from '@proton/calendar/calendarEventLoop/interface';
+import { calendarEventLoopListeners } from '@proton/calendar/calendarEventLoop/listeners';
+
+function setupCalendarEventLoop() {
+  const eventLoop = calendarEventLoop.start({
+    onCalendarUpdate: (calendar) => {
+      console.log('Calendar updated:', calendar);
+    },
+    onEventUpdate: (event) => {
+      console.log('Event updated:', event);
+    },
+  });
+  
+  return () => {
+    eventLoop.stop();
+  };
+}
+```
+
+## Calendar User Settings
+
+Manage user-specific calendar settings.
+
+```typescript
+import { useCalendarUserSettings } from '@proton/calendar/calendarUserSettings/hooks';
+
+function CalendarSettings() {
+  const settings = useCalendarUserSettings();
+  
+  return (
+    <div>
+      <p>Default calendar: {settings.DefaultCalendarID}</p>
+      <p>Week start: {settings.WeekStart}</p>
+      <p>Default view: {settings.ViewPreference}</p>
+    </div>
+  );
+}
+```
+
+## Holidays Directory
+
+Access and display holiday calendars.
+
+```typescript
+import { useHolidaysDirectory } from '@proton/calendar/holidaysDirectory/hooks';
+
+function HolidayCalendars() {
+  const holidays = useHolidaysDirectory();
+  
+  return (
+    <div>
+      <h3>Available Holiday Calendars</h3>
+      {holidays.map(holiday => (
+        <div key={holiday.CountryCode}>
+          <p>{holiday.Country}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+## Timezone Support
+
+Handle timezone conversions and display.
+
+```typescript
+import { timezones } from '@proton/calendar/timezones';
+import { getTimezoneOffset, formatTimezone } from '@proton/calendar/utils';
+
+function TimezoneSelector() {
+  const [selectedTimezone, setSelectedTimezone] = useState('UTC');
+  
+  return (
+    <select
+      value={selectedTimezone}
+      onChange={(e) => setSelectedTimezone(e.target.value)}
+    >
+      {timezones.map(tz => (
+        <option key={tz.value} value={tz.value}>
+          {tz.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+```
+
+## Video Conferencing
+
+### Proton Meet Integration
+
+```typescript
+import { ProtonMeetRow } from '@proton/calendar/protonMeetIntegration/ProtonMeetRow';
+import { useProtonMeetIntegration } from '@proton/calendar/protonMeetIntegration/hooks';
+
+function EventForm() {
+  const { createMeetLink, removeMeetLink } = useProtonMeetIntegration();
+  
+  return (
+    <div>
+      <ProtonMeetRow
+        onCreateLink={createMeetLink}
+        onRemoveLink={removeMeetLink}
+      />
+    </div>
+  );
+}
+```
+
+### Zoom Integration
+
+```typescript
+import { ZoomRow } from '@proton/calendar/zoomIntegration/ZoomRow';
+import { VideoConferenceToggle } from '@proton/calendar/zoomIntegration/VideoConferenceToggle';
+import { useZoomIntegration } from '@proton/calendar/zoomIntegration/hooks';
+import { useZoomOAuth } from '@proton/calendar/zoomIntegration/useZoomOAuth';
+
+function ZoomIntegration() {
+  const { isConnected, connect, disconnect } = useZoomIntegration();
+  const { authorize } = useZoomOAuth();
+  
+  return (
+    <div>
+      <VideoConferenceToggle
+        enabled={isConnected}
+        onToggle={isConnected ? disconnect : authorize}
+      />
+      {isConnected && <ZoomRow />}
+    </div>
+  );
+}
+```
+
+### Video Conferencing Helpers
+
+```typescript
+import { videoConfHelpers } from '@proton/calendar/videoConferencing/videoConfHelpers';
+import { protonMeetHelpers } from '@proton/calendar/videoConferencing/protonMeetHelpers';
+import { VIDEO_CONF_CONSTANTS } from '@proton/calendar/videoConferencing/constants';
+
+// Check if event has video conference
+const hasVideoConf = videoConfHelpers.hasVideoConference(event);
+
+// Extract meeting link
+const meetingLink = videoConfHelpers.getMeetingLink(event);
+
+// Create Proton Meet link
+const protonMeetLink = protonMeetHelpers.createMeetLink();
+```
+
+### Video Conference Widget
+
+```typescript
+import { useVideoConferencingWidget } from '@proton/calendar/videoConferencing/widget';
+
+function CalendarEvent() {
+  const { widget, show, hide } = useVideoConferencingWidget({
+    eventID: 'event-123',
+  });
+  
+  return (
+    <div>
+      <button onClick={show}>Join Meeting</button>
+      {widget}
+    </div>
+  );
+}
+```
+
+## Calendar Model Event Manager
+
+Manage calendar event models efficiently.
+
+```typescript
+import { calendarModelEventManager } from '@proton/calendar/calendarModelEventManager';
+
+// Initialize event manager for caching and managing calendar events
+const eventManager = calendarModelEventManager.create();
+```
+
+## Constants
+
+```typescript
+import { CALENDAR_CONSTANTS } from '@proton/calendar/constants';
+
+// Access calendar-related constants
+const MAX_CALENDARS = CALENDAR_CONSTANTS.MAX_CALENDARS_PER_USER;
+const DEFAULT_CALENDAR_COLOR = CALENDAR_CONSTANTS.DEFAULT_COLOR;
+```
+
+## Utility Functions
+
+```typescript
+import {
+  getTimezoneOffset,
+  convertUTCDateTimeToZone,
+  convertZonedDateTimeToUTC,
+  getIsEventInPast,
+  getIsEventNow,
+} from '@proton/calendar/utils';
+
+// Convert between timezones
+const zonedTime = convertUTCDateTimeToZone(utcDateTime, 'America/New_York');
+
+// Check event timing
+if (getIsEventNow(event)) {
+  console.log('Event is happening now!');
+}
+```
+
+## Calendar Server Events
+
+```typescript
+import { CalendarServerEvent } from '@proton/calendar/calendarServerEvent';
+
+// Handle server-side calendar events
+```
+
+## Dependencies
+
+<AccordionGroup>
+  <Accordion title="Core Dependencies">
+    - `@proton/account` - Account management
+    - `@proton/meet` - Proton Meet integration
+    - `@proton/redux-shared-store-types` - Shared Redux types
+    - `@reduxjs/toolkit` - Redux toolkit
+    - `react` and `react-redux` - React integration
+  </Accordion>
+</AccordionGroup>
+
+## TypeScript Support
+
+The package is fully typed with TypeScript. All exports include comprehensive type definitions.
+
+```typescript
+import type { Calendar, CalendarEvent, CalendarSettings } from '@proton/calendar';
+```
+
+## Testing
+
+```bash
+# Run tests
+yarn test
+
+# Run tests in watch mode
+yarn test:watch
+
+# Run tests with coverage
+yarn test:ci
+```
+
+## Related Packages
+
+<CardGroup cols={3}>
+  <Card title="@proton/meet" icon="video" href="/packages/meet">
+    Proton Meet integration
+  </Card>
+  <Card title="@proton/shared" icon="share-nodes" href="/packages/shared">
+    Shared utilities
+  </Card>
+  <Card title="@proton/components" icon="box" href="/packages/components">
+    React components
+  </Card>
+</CardGroup>

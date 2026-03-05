@@ -1,0 +1,345 @@
+---
+title: Button Components
+description: Button components for actions and navigation
+---
+
+# Button Components
+
+Proton provides a variety of button components for different use cases, from basic buttons to specialized button groups and floating action buttons.
+
+## Button (from @proton/atoms)
+
+The primary button component from the atoms package.
+
+### Basic Usage
+
+```tsx
+import { Button } from '@proton/atoms/Button/Button';
+
+const MyComponent = () => {
+  return (
+    <Button color="norm" onClick={() => console.log('Clicked')}>
+      Click Me
+    </Button>
+  );
+};
+```
+
+### Props
+
+<ParamField path="color" type="string">
+  Button color variant. Options: `norm`, `weak`, `danger`, `warning`, `success`, `info`
+</ParamField>
+
+<ParamField path="shape" type="string">
+  Button shape variant. Options: `solid`, `outline`, `ghost`
+</ParamField>
+
+<ParamField path="size" type="string">
+  Button size. Options: `small`, `medium`, `large`
+</ParamField>
+
+<ParamField path="fullWidth" type="boolean">
+  Whether the button should take full width of its container
+</ParamField>
+
+<ParamField path="loading" type="boolean">
+  Shows loading spinner and disables the button
+</ParamField>
+
+<ParamField path="disabled" type="boolean">
+  Disables the button
+</ParamField>
+
+<ParamField path="icon" type="boolean">
+  Renders as an icon button (square shape)
+</ParamField>
+
+### Examples
+
+<Tabs>
+  <Tab title="Colors">
+    ```tsx
+    <Button color="norm">Normal</Button>
+    <Button color="weak">Weak</Button>
+    <Button color="danger">Danger</Button>
+    <Button color="warning">Warning</Button>
+    <Button color="success">Success</Button>
+    ```
+  </Tab>
+  
+  <Tab title="Shapes">
+    ```tsx
+    <Button shape="solid" color="norm">Solid</Button>
+    <Button shape="outline" color="norm">Outline</Button>
+    <Button shape="ghost" color="norm">Ghost</Button>
+    ```
+  </Tab>
+  
+  <Tab title="Sizes">
+    ```tsx
+    <Button size="small">Small</Button>
+    <Button size="medium">Medium</Button>
+    <Button size="large">Large</Button>
+    ```
+  </Tab>
+  
+  <Tab title="States">
+    ```tsx
+    <Button loading>Loading</Button>
+    <Button disabled>Disabled</Button>
+    <Button icon><Icon name="plus" /></Button>
+    ```
+  </Tab>
+</Tabs>
+
+## ButtonGroup
+
+Groups multiple buttons together with consistent styling.
+
+**Location**: `components/button/ButtonGroup.tsx`
+
+### Usage
+
+```tsx
+import { ButtonGroup } from '@proton/components/components/button/ButtonGroup';
+import { Button } from '@proton/atoms/Button/Button';
+
+const MyButtonGroup = () => {
+  return (
+    <ButtonGroup>
+      <Button>First</Button>
+      <Button>Second</Button>
+      <Button>Third</Button>
+    </ButtonGroup>
+  );
+};
+```
+
+### Props
+
+<ParamField path="color" type="'norm' | 'weak'">
+  Color scheme for all buttons in the group. Default: `weak`
+</ParamField>
+
+<ParamField path="shape" type="ButtonLikeShape">
+  Shape for all buttons in the group. Default: `outline`
+</ParamField>
+
+<ParamField path="size" type="ButtonLikeSize">
+  Size for all buttons in the group. Default: `medium`
+</ParamField>
+
+<ParamField path="separators" type="boolean">
+  Show separators between buttons. Default: `true`
+</ParamField>
+
+<ParamField path="pill" type="boolean">
+  Apply pill shape to the button group. Default: `false`
+</ParamField>
+
+<ParamField path="individualButtonColor" type="boolean">
+  Allow individual buttons to override the group color. Default: `false`
+</ParamField>
+
+### Examples
+
+<Tabs>
+  <Tab title="Basic Group">
+    ```tsx
+    <ButtonGroup>
+      <Button>One</Button>
+      <Button>Two</Button>
+      <Button>Three</Button>
+    </ButtonGroup>
+    ```
+  </Tab>
+  
+  <Tab title="Pill Style">
+    ```tsx
+    <ButtonGroup pill>
+      <Button>One</Button>
+      <Button>Two</Button>
+      <Button>Three</Button>
+    </ButtonGroup>
+    ```
+  </Tab>
+  
+  <Tab title="No Separators">
+    ```tsx
+    <ButtonGroup separators={false}>
+      <Button>One</Button>
+      <Button>Two</Button>
+      <Button>Three</Button>
+    </ButtonGroup>
+    ```
+  </Tab>
+  
+  <Tab title="Different Colors">
+    ```tsx
+    <ButtonGroup individualButtonColor>
+      <Button color="norm">Primary</Button>
+      <Button color="weak">Secondary</Button>
+      <Button color="danger">Delete</Button>
+    </ButtonGroup>
+    ```
+  </Tab>
+</Tabs>
+
+## FloatingButton
+
+A floating action button (FAB) for primary actions.
+
+**Location**: `components/button/FloatingButton.tsx`
+
+### Usage
+
+```tsx
+import FloatingButton from '@proton/components/components/button/FloatingButton';
+import { Icon } from '@proton/components';
+
+const MyFAB = () => {
+  return (
+    <FloatingButton onClick={() => console.log('FAB clicked')}>
+      <Icon name="plus" />
+    </FloatingButton>
+  );
+};
+```
+
+### Props
+
+Extends `ButtonProps` from `@proton/atoms/Button/Button`.
+
+<ParamField path="title" type="string">
+  Tooltip text for the button
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes
+</ParamField>
+
+### Example
+
+```tsx
+<FloatingButton 
+  title="Create new item"
+  className="fixed bottom-4 right-4"
+>
+  <Icon name="plus" size={5} />
+</FloatingButton>
+```
+
+## FileButton
+
+A button that triggers file input for file uploads.
+
+**Location**: `components/button/FileButton.tsx`
+
+### Usage
+
+```tsx
+import FileButton from '@proton/components/components/button/FileButton';
+
+const MyFileUpload = () => {
+  const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    console.log('Selected files:', files);
+  };
+
+  return (
+    <FileButton 
+      onSelect={handleFileSelect}
+      accept="image/*"
+    >
+      Upload Image
+    </FileButton>
+  );
+};
+```
+
+## SidebarExpandButton
+
+Button for expanding/collapsing sidebar.
+
+**Location**: `components/button/SidebarExpandButton.tsx`
+
+### Usage
+
+```tsx
+import SidebarExpandButton from '@proton/components/components/button/SidebarExpandButton';
+
+const MySidebar = () => {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <SidebarExpandButton 
+      expanded={expanded}
+      onClick={() => setExpanded(!expanded)}
+    />
+  );
+};
+```
+
+## Best Practices
+
+### Button Hierarchy
+
+1. **Primary Action**: Use `color="norm"` with `shape="solid"`
+2. **Secondary Action**: Use `color="weak"` or `shape="outline"`
+3. **Destructive Action**: Use `color="danger"`
+
+```tsx
+<div className="flex gap-2">
+  <Button color="norm" shape="solid">Save</Button>
+  <Button color="weak" shape="outline">Cancel</Button>
+</div>
+```
+
+### Loading States
+
+Show loading state during async operations:
+
+```tsx
+const [loading, setLoading] = useState(false);
+
+const handleSubmit = async () => {
+  setLoading(true);
+  try {
+    await saveData();
+  } finally {
+    setLoading(false);
+  }
+};
+
+return (
+  <Button loading={loading} onClick={handleSubmit}>
+    Save Changes
+  </Button>
+);
+```
+
+### Accessibility
+
+```tsx
+// Provide aria-label for icon-only buttons
+<Button icon aria-label="Close dialog">
+  <Icon name="cross" />
+</Button>
+
+// Use disabled state appropriately
+<Button disabled={!isValid}>Submit</Button>
+```
+
+## Related Components
+
+- [ButtonWithTextAndIcon](/components/buttons#buttonwithtextandicon) - Button with icon and text
+- [Copy](/components/buttons#copy) - Copy to clipboard button
+- [TwitterButton](/components/buttons#twitterbutton) - Twitter share button
+
+## Source Code
+
+View source:
+- Button: `packages/components/components/button/`
+- ButtonGroup: `packages/components/components/button/ButtonGroup.tsx:1`
+- FloatingButton: `packages/components/components/button/FloatingButton.tsx:1`

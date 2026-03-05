@@ -1,0 +1,267 @@
+---
+title: "Installation & Setup"
+description: "Get started with the Proton WebClients monorepo - installation, prerequisites, and first steps"
+---
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed on your system:
+
+<CardGroup cols={3}>
+  <Card title="Node.js" icon="node">
+    Version 22.14.0 or higher (< 23.6.0)
+  </Card>
+  <Card title="Yarn 4" icon="yarn">
+    Package manager (v4.12.0)
+  </Card>
+  <Card title="Git" icon="git">
+    Version control system
+  </Card>
+</CardGroup>
+
+<Note>
+  Check the `package.json` file for the exact version requirements:
+  - **Node.js**: `>= 22.14.0 <23.6.0`
+  - **Package Manager**: `yarn@4.12.0`
+</Note>
+
+## Installation
+
+<Steps>
+  <Step title="Clone the Repository">
+    Clone the Proton WebClients monorepo from GitHub:
+
+    <CodeGroup>
+      ```bash HTTPS
+      git clone https://github.com/ProtonMail/WebClients.git
+      cd WebClients
+      ```
+
+      ```bash SSH
+      git clone git@github.com:ProtonMail/WebClients.git
+      cd WebClients
+      ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Install Dependencies">
+    Install all dependencies for the entire monorepo. This command will:
+    - Install all npm packages
+    - Symlink local dependencies to one another
+    - Run postinstall scripts (including Husky hooks)
+
+    ```bash
+    yarn install
+    ```
+
+    <Warning>
+      The initial installation may take several minutes as it needs to install dependencies for all applications and packages in the monorepo.
+    </Warning>
+  </Step>
+
+  <Step title="Verify Installation">
+    Check that the installation was successful by running:
+
+    ```bash
+    yarn --version
+    ```
+
+    You should see `4.12.0` or the version specified in `package.json`.
+  </Step>
+</Steps>
+
+## Running Applications
+
+The monorepo hosts multiple Proton web applications. You can run any application using the `yarn workspace` command.
+
+### Available Applications
+
+<CardGroup cols={2}>
+  <Card title="Proton Mail" icon="envelope">
+    ```bash
+    yarn workspace proton-mail start
+    ```
+  </Card>
+  <Card title="Proton Calendar" icon="calendar">
+    ```bash
+    yarn workspace proton-calendar start
+    ```
+  </Card>
+  <Card title="Proton Drive" icon="folder">
+    ```bash
+    yarn workspace proton-drive start
+    ```
+  </Card>
+  <Card title="Proton Account" icon="user">
+    ```bash
+    yarn workspace proton-account start
+    ```
+  </Card>
+  <Card title="Proton VPN" icon="shield">
+    ```bash
+    yarn workspace proton-vpn-settings start
+    ```
+  </Card>
+  <Card title="Proton Pass" icon="key">
+    ```bash
+    yarn workspace proton-pass start
+    ```
+  </Card>
+  <Card title="Proton Wallet" icon="wallet">
+    ```bash
+    yarn workspace proton-wallet start
+    ```
+  </Card>
+  <Card title="Proton Lumo" icon="lightbulb">
+    ```bash
+    yarn workspace proton-lumo start
+    ```
+  </Card>
+</CardGroup>
+
+<Tip>
+  The development server will typically run on `http://localhost:8080` or the port specified in the application's configuration.
+</Tip>
+
+### Start All Applications
+
+To run all applications simultaneously with local SSO support:
+
+```bash
+yarn start-all
+```
+
+This script runs the local SSO utility located in `utilities/local-sso`.
+
+## Building for Production
+
+Build any application for production deployment:
+
+```bash
+# Build a specific application
+yarn workspace proton-mail build:web
+
+# Analyze the bundle size
+yarn workspace proton-mail analyze
+```
+
+<Note>
+  Production builds use Turbo for caching and are configured in `turbo.json`. Output files are generated in the `dist/` directory.
+</Note>
+
+## Common Tasks
+
+### Type Checking
+
+Run TypeScript type checking across the workspace:
+
+```bash
+# Check types for a specific application
+yarn workspace proton-mail check-types
+
+# Check types across all workspaces
+yarn turbo run check-types
+```
+
+### Linting
+
+Lint code using ESLint:
+
+```bash
+# Lint a specific application
+yarn workspace proton-mail lint
+
+# Lint all workspaces
+yarn turbo run lint
+```
+
+### Running Tests
+
+<CodeGroup>
+  ```bash Single Run
+  yarn workspace proton-mail test
+  ```
+
+  ```bash Watch Mode
+  yarn workspace proton-mail test:watch
+  ```
+
+  ```bash Coverage
+  yarn workspace proton-mail test:coverage
+  ```
+
+  ```bash CI Mode
+  yarn workspace proton-mail test:ci
+  ```
+</CodeGroup>
+
+## Troubleshooting
+
+### Installation Issues
+
+<AccordionGroup>
+  <Accordion title="Node version mismatch">
+    Ensure you're using the correct Node.js version:
+
+    ```bash
+    node --version
+    ```
+
+    If you're using `nvm`, switch to the required version:
+
+    ```bash
+    nvm install 22.14.0
+    nvm use 22.14.0
+    ```
+  </Accordion>
+
+  <Accordion title="Yarn not found">
+    The project uses Yarn 4 with Corepack. Enable Corepack:
+
+    ```bash
+    corepack enable
+    corepack prepare yarn@4.12.0 --activate
+    ```
+  </Accordion>
+
+  <Accordion title="Postinstall script fails">
+    If the postinstall script fails, you can run it manually:
+
+    ```bash
+    yarn run config-app
+    ```
+  </Accordion>
+
+  <Accordion title="Workspace dependencies not resolving">
+    Clear the Yarn cache and reinstall:
+
+    ```bash
+    yarn cache clean
+    rm -rf node_modules
+    yarn install
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Project Structure" icon="folder-tree" href="/project-structure">
+    Learn about the monorepo organization and architecture
+  </Card>
+  <Card title="Development Workflow" icon="code" href="/development-workflow">
+    Understand the development process and best practices
+  </Card>
+  <Card title="Contributing" icon="git-alt" href="/contributing">
+    Learn how to contribute to the project
+  </Card>
+  <Card title="Architecture" icon="diagram-project" href="/architecture">
+    Deep dive into the technical architecture
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+- [Yarn Documentation](https://yarnpkg.com/) - Official Yarn package manager docs
+- [Turbo Documentation](https://turbo.build/) - Learn about the build system
+- [GitHub Repository](https://github.com/ProtonMail/WebClients) - Source code and issues

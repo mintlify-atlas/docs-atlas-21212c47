@@ -1,0 +1,149 @@
+---
+title: Introduction
+description: Welcome to the Proton WebClients documentation - a comprehensive guide to building privacy-focused web applications with the Proton ecosystem.
+---
+
+<div style={{
+  background: 'linear-gradient(135deg, #554d85 0%, #aca4c4 100%)',
+  padding: '4rem 2rem',
+  borderRadius: '12px',
+  marginBottom: '2rem',
+  color: 'white'
+}}>
+  <h1 style={{ fontSize: '3rem', fontWeight: '700', marginBottom: '1rem', color: 'white' }}>
+    Proton WebClients
+  </h1>
+  <p style={{ fontSize: '1.25rem', opacity: '0.95', maxWidth: '800px' }}>
+    Monorepo hosting the Proton web clients including Mail, Calendar, Drive, Pass, VPN, and Wallet applications with shared component libraries and utilities.
+  </p>
+</div>
+
+## What is Proton WebClients?
+
+Proton WebClients is a comprehensive monorepo that powers Proton's suite of privacy-focused web applications. Built with React 18 and TypeScript, it provides a unified development environment for all Proton web products, including:
+
+- **Proton Mail** - End-to-end encrypted email service
+- **Proton Calendar** - Private calendar and scheduling
+- **Proton Drive** - Secure cloud storage
+- **Proton Pass** - Password manager
+- **Proton VPN** - Virtual private network settings
+- **Proton Wallet** - Cryptocurrency wallet
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Multiple Applications" icon="grid" href="/applications/overview">
+    Seven production web applications sharing a common architecture
+  </Card>
+  <Card title="Component Library" icon="puzzle-piece" href="/components/introduction">
+    Over 100 reusable React components with comprehensive documentation
+  </Card>
+  <Card title="Shared Packages" icon="box" href="/packages/overview">
+    Modular packages for utilities, hooks, state management, and more
+  </Card>
+  <Card title="End-to-End Encryption" icon="lock" href="/packages/crypto">
+    PGP/OpenPGP integration for secure communication
+  </Card>
+</CardGroup>
+
+## Architecture Highlights
+
+### Monorepo Structure
+
+The repository is organized using **Yarn Workspaces** with unified versioning:
+
+```
+WebClients/
+├── applications/     # Web applications (mail, calendar, drive, etc.)
+├── packages/         # Shared packages and libraries
+│   ├── components/   # UI component library
+│   ├── shared/       # Common utilities
+│   ├── hooks/        # React hooks
+│   ├── atoms/        # Design system atoms
+│   └── ...
+└── utilities/        # Build tools and scripts
+```
+
+### Technology Stack
+
+- **React 18** - Modern React with concurrent features
+- **TypeScript 5.9** - Type-safe development
+- **Redux Toolkit** - State management
+- **Yarn 4** - Package management and workspaces
+- **Webpack 5** - Module bundling
+- **Jest** - Testing framework
+
+### Privacy & Security
+
+All Proton applications are built with privacy as the foundation:
+
+<Note>
+  Proton WebClients implements end-to-end encryption using OpenPGP, ensuring that user data is encrypted on the client side before transmission.
+</Note>
+
+- **Zero-access encryption** - Proton cannot read user data
+- **Open source** - Licensed under GPL-3.0
+- **PGP integration** - Industry-standard encryption
+- **Client-side encryption** - Data encrypted before leaving the device
+
+## Quick Links
+
+<CardGroup cols={3}>
+  <Card title="Installation" icon="download" href="/installation">
+    Set up your development environment
+  </Card>
+  <Card title="Project Structure" icon="folder-tree" href="/project-structure">
+    Understand the monorepo layout
+  </Card>
+  <Card title="Building Apps" icon="hammer" href="/development/building-apps">
+    Learn how to build applications
+  </Card>
+  <Card title="Components" icon="palette" href="/components/getting-started">
+    Explore the component library
+  </Card>
+  <Card title="Contributing" icon="code-pull-request" href="/contributing/guidelines">
+    Contribute to Proton WebClients
+  </Card>
+  <Card title="API Reference" icon="book-open" href="/api/hooks/overview">
+    Browse the API documentation
+  </Card>
+</CardGroup>
+
+## Who is this for?
+
+This documentation is designed for:
+
+- **Contributors** - Developers contributing to Proton's open-source projects
+- **Internal developers** - Proton team members building new features
+- **Library consumers** - Teams using Proton's shared packages
+- **Researchers** - Security researchers auditing the codebase
+
+## Community
+
+Proton WebClients is an open-source project licensed under GPL-3.0. We welcome contributions from the community.
+
+<CardGroup cols={2}>
+  <Card title="GitHub Repository" icon="github" href="https://github.com/ProtonMail/WebClients">
+    View the source code and contribute
+  </Card>
+  <Card title="Translation Community" icon="language" href="https://proton.me/blog/translation-community">
+    Help translate Proton products
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<Steps>
+  <Step title="Install Dependencies">
+    Follow the [installation guide](/installation) to set up your development environment.
+  </Step>
+  <Step title="Explore the Structure">
+    Learn about the [project structure](/project-structure) and how packages are organized.
+  </Step>
+  <Step title="Run an Application">
+    Start developing by [building and running](/development/building-apps) one of the applications.
+  </Step>
+  <Step title="Browse Components">
+    Explore the [component library](/components/introduction) to see available UI components.
+  </Step>
+</Steps>

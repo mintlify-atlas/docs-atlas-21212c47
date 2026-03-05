@@ -1,0 +1,462 @@
+---
+title: Proton Wallet
+description: Bitcoin wallet with privacy features and end-to-end encryption
+icon: wallet
+---
+
+## Overview
+
+Proton Wallet is a Bitcoin wallet application providing privacy-focused cryptocurrency management. Built with Rust WASM for cryptographic operations and React for the UI.
+
+<Note>
+  Package name: `proton-wallet` | License: GPL-3.0
+</Note>
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Bitcoin Support" icon="bitcoin">
+    Full Bitcoin wallet functionality
+  </Card>
+  <Card title="Privacy First" icon="user-secret">
+    Privacy-preserving transactions and balance management
+  </Card>
+  <Card title="WASM Crypto" icon="microchip">
+    Rust-based cryptography via WebAssembly
+  </Card>
+  <Card title="QR Codes" icon="qrcode">
+    Scan and generate QR codes for addresses
+  </Card>
+  <Card title="Charts" icon="chart-line">
+    Transaction history and balance charts
+  </Card>
+  <Card title="Fiat On-Ramp" icon="money-bill">
+    Buy Bitcoin via Ramp Network integration
+  </Card>
+  <Card title="Transaction History" icon="clock-rotate-left">
+    Complete transaction history with details
+  </Card>
+  <Card title="Multi-Account" icon="users">
+    Support for multiple wallet accounts
+  </Card>
+</CardGroup>
+
+## Architecture
+
+### Directory Structure
+
+```
+wallet/src/app/
+├── components/          # React components (45 components)
+├── atoms/               # Atomic design components (18 atoms)
+├── containers/          # Container components
+├── contexts/            # React contexts (6 contexts)
+├── hooks/               # Custom hooks (3 modules)
+├── constants/           # Application constants
+├── utils/               # Utility functions (3 modules)
+└── types/               # TypeScript type definitions
+```
+
+### State Management
+
+Uses **React Context** and **Redux**:
+
+- React Context for component-level state
+- Redux for global wallet state
+- `react-redux` for React bindings
+
+## Key Dependencies
+
+```json
+{
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^5.3.4",
+    "@proton/andromeda": "workspace:packages/wasm/andromeda",
+    "@proton/components": "workspace:packages/components",
+    "@proton/wallet": "workspace:packages/wallet",
+    "@proton/crypto": "workspace:packages/crypto",
+    "chart.js": "^4.5.1",
+    "react-chartjs-2": "^5.3.1",
+    "jsqr": "^1.4.0",
+    "@ramp-network/ramp-instant-sdk": "^4.0.8",
+    "lodash": "^4.17.23",
+    "ttag": "^1.8.12"
+  }
+}
+```
+
+### Notable Libraries
+
+- **@proton/andromeda** - Rust WASM for Bitcoin operations
+- **chart.js** + **react-chartjs-2** - Balance and transaction charts
+- **jsqr** - QR code scanning
+- **@ramp-network/ramp-instant-sdk** - Fiat on-ramp integration
+
+## NPM Scripts
+
+### Development
+
+```bash
+# Start development server
+yarn start
+
+# Full command
+proton-pack dev-server --appMode=standalone --noLogicalScss
+```
+
+### Build
+
+```bash
+# Production build
+yarn build:web
+
+# Full command
+proton-pack build --appMode=sso --noLogicalScss
+```
+
+### Testing
+
+```bash
+# Run tests with Vitest
+yarn test
+
+# Run tests in CI mode with coverage
+yarn test:ci
+
+# Run tests with UI
+yarn test:ui
+
+# Watch mode
+yarn test:watch
+```
+
+<Note>
+  Wallet uses **Vitest** instead of Jest for faster test execution.
+</Note>
+
+### Code Quality
+
+```bash
+# Type checking
+yarn check-types
+
+# Linting
+yarn lint
+
+# Format code
+yarn pretty
+```
+
+### Internationalization
+
+```bash
+# Extract translation strings
+yarn i18n:extract:web
+
+# Get latest translations
+yarn i18n:getlatest
+
+# Upload to Crowdin
+yarn i18n:upgrade
+
+# Validate translations
+yarn i18n:validate
+```
+
+## WASM Integration
+
+### Andromeda WASM Module
+
+The `@proton/andromeda` package provides Rust-based Bitcoin operations:
+
+```typescript
+import { andromeda } from '@proton/andromeda';
+
+// High-performance Bitcoin cryptography
+// Compiled from Rust to WebAssembly
+```
+
+Features:
+- HD wallet key derivation
+- Transaction signing
+- Address generation
+- Balance calculation
+- UTXO management
+
+### WASM Configuration
+
+Special Vite configuration for WASM:
+
+```json
+{
+  "devDependencies": {
+    "vite-plugin-wasm": "^3.5.0"
+  }
+}
+```
+
+## Testing with Vitest
+
+Wallet uses **Vitest** instead of Jest:
+
+```json
+{
+  "devDependencies": {
+    "vitest": "^3.2.4",
+    "@vitejs/plugin-react-swc": "^3.11.0",
+    "happy-dom": "^20.6.1"
+  }
+}
+```
+
+### Test Commands
+
+```bash
+TZ=UTC vitest                    # Run tests
+yarn test --coverage --run       # CI mode
+yarn test --ui                   # Visual UI
+yarn test --watch                # Watch mode
+```
+
+<Note>
+  Tests run with `TZ=UTC` for consistent timezone behavior.
+</Note>
+
+## Components Architecture
+
+### Atomic Design
+
+45 components organized by atomic design principles:
+
+```
+components/
+├── atoms/              # Basic building blocks (18 atoms)
+├── molecules/          # Component combinations
+├── organisms/          # Complex components
+└── templates/          # Page templates
+```
+
+### Key Components
+
+- Transaction list
+- Balance display
+- QR code scanner/generator
+- Send form
+- Receive address
+- Transaction details
+- Chart visualizations
+
+## Contexts
+
+6 React contexts for state management:
+
+```
+contexts/
+├── WalletContext.tsx
+├── BitcoinContext.tsx
+├── TransactionContext.tsx
+├── SettingsContext.tsx
+├── NetworkContext.tsx
+└── RampContext.tsx
+```
+
+## Features
+
+### Bitcoin Wallet
+
+Core wallet functionality:
+
+- **HD Wallet** - Hierarchical Deterministic wallet
+- **Multiple Accounts** - Support for multiple Bitcoin accounts
+- **Address Generation** - Generate new receive addresses
+- **Transaction Signing** - Sign transactions securely
+- **UTXO Management** - Manage unspent transaction outputs
+
+### Privacy Features
+
+- **No KYC** - No identity verification required
+- **Tor Support** - Route through Tor network
+- **CoinJoin Ready** - Prepared for CoinJoin integration
+- **No Address Reuse** - Generate new addresses automatically
+
+### Charts & Visualization
+
+Using Chart.js:
+
+```typescript
+import { Chart } from 'chart.js';
+import { Line, Bar } from 'react-chartjs-2';
+
+// Balance over time charts
+// Transaction volume charts
+// Portfolio distribution
+```
+
+### QR Code Support
+
+Both scanning and generating:
+
+```typescript
+import jsQR from 'jsqr';
+
+// Scan Bitcoin addresses from QR codes
+// Generate QR codes for receive addresses
+// Support Bitcoin URI scheme (bitcoin:)
+```
+
+### Fiat On-Ramp
+
+Ramp Network integration:
+
+```typescript
+import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
+
+// Buy Bitcoin with credit/debit card
+// Support for multiple fiat currencies
+// KYC handled by Ramp Network
+```
+
+## Wallet Package
+
+Most wallet logic is in `@proton/wallet` workspace package:
+
+```
+packages/wallet/
+├── store/           # Redux store
+├── api/             # Bitcoin API clients
+├── crypto/          # Cryptographic operations
+├── utils/           # Wallet utilities
+└── hooks/           # Wallet hooks
+```
+
+## Build Configuration
+
+Special build flags:
+
+```bash
+--appMode=sso          # SSO integration for production
+--appMode=standalone   # Standalone for development
+--noLogicalScss        # Disable logical CSS
+```
+
+## Development Environment
+
+### Vite-based Build
+
+Wallet uses Vite for faster development:
+
+- Instant HMR (Hot Module Replacement)
+- Fast builds
+- Native ESM support
+- WASM plugin integration
+
+### SWC Compiler
+
+Uses **SWC** for faster TypeScript compilation:
+
+```json
+{
+  "devDependencies": {
+    "@vitejs/plugin-react-swc": "^3.11.0"
+  }
+}
+```
+
+## Performance Optimizations
+
+- **WASM** - Rust-based crypto for maximum performance
+- **SWC** - Fast TypeScript compilation
+- **Vite** - Lightning-fast HMR
+- **Lazy Loading** - Components loaded on demand
+- **Chart Optimization** - Efficient chart rendering
+
+## Security
+
+<Warning>
+  Wallet handles Bitcoin private keys. Security is paramount.
+</Warning>
+
+### Security Measures
+
+- **WASM Crypto** - Compiled Rust for secure operations
+- **No Key Export** - Keys encrypted and never exported
+- **Secure Storage** - Encrypted local storage
+- **Proton Encryption** - Wallet data encrypted with Proton key
+- **No Backend Decryption** - Zero-knowledge architecture
+
+### Private Key Management
+
+- Keys derived from master seed
+- BIP32/BIP44 standard compliance
+- Encrypted storage
+- Never sent to server
+
+## Bitcoin Standards
+
+Implements Bitcoin standards:
+
+- **BIP32** - Hierarchical Deterministic Wallets
+- **BIP39** - Mnemonic code for generating deterministic keys
+- **BIP44** - Multi-Account Hierarchy for Deterministic Wallets
+- **BIP84** - Derivation scheme for P2WPKH based accounts
+
+## Network Support
+
+- **Mainnet** - Bitcoin main network
+- **Testnet** - Bitcoin test network (for development)
+
+## Transaction Features
+
+- **Send Bitcoin** - Send to any Bitcoin address
+- **Receive Bitcoin** - Generate receive addresses
+- **Transaction History** - View all transactions
+- **Transaction Details** - View transaction details
+- **Fee Estimation** - Estimate optimal transaction fees
+- **Custom Fees** - Set custom fee rates
+
+## EXIF Configuration
+
+Interesting EXIF configuration (from package.json):
+
+```json
+{
+  "exifreader": {
+    "exclude": {
+      "xmp": true
+    }
+  }
+}
+```
+
+Possibly for QR code image metadata removal?
+
+## Development Notes
+
+<Tip>
+  When working with WASM, you need to ensure proper WASM loading. The `vite-plugin-wasm` handles this automatically.
+</Tip>
+
+### Local Development
+
+1. Start dev server: `yarn start`
+2. Access at `http://localhost:8080`
+3. WASM modules load automatically
+4. Testnet enabled by default
+
+### Testing
+
+1. Run with Vitest: `yarn test`
+2. View UI: `yarn test:ui`
+3. Coverage: `yarn test:ci`
+
+## Future Features
+
+<Note>
+  Wallet is in active development. Future features may include:
+  - Lightning Network support
+  - Multi-signature wallets
+  - Hardware wallet integration
+  - CoinJoin transactions
+</Note>

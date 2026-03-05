@@ -1,0 +1,204 @@
+---
+title: Contribution Guidelines
+description: Learn how to contribute to Proton WebClients monorepo
+---
+
+## Welcome
+
+Thank you for your interest in contributing to Proton WebClients! This monorepo hosts all Proton web applications including Mail, Calendar, Drive, VPN, Pass, Wallet, and more.
+
+<Note>
+  Proton WebClients is licensed under **GPL-3.0**. By contributing, you agree that your contributions will be licensed under the same license.
+</Note>
+
+## Getting Started
+
+### Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+<CardGroup cols={3}>
+  <Card title="Node.js" icon="node-js">
+    Version >= 22.14.0 and < 23.6.0
+  </Card>
+  <Card title="Yarn" icon="box">
+    Version 4.12.0 (Yarn 4)
+  </Card>
+  <Card title="Git" icon="git">
+    Latest stable version
+  </Card>
+</CardGroup>
+
+### Installation
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/ProtonMail/WebClients.git
+    cd WebClients
+    ```
+  </Step>
+  
+  <Step title="Install dependencies">
+    ```bash
+    yarn install
+    ```
+    This will install all dependencies for the entire monorepo and symlink local packages to one another.
+  </Step>
+  
+  <Step title="Start a development server">
+    ```bash
+    # Example: Start Proton Mail
+    yarn workspace proton-mail start
+    
+    # Example: Start Proton Drive
+    yarn workspace proton-drive start
+    ```
+  </Step>
+</Steps>
+
+## Monorepo Structure
+
+The project is organized as a Yarn 4 monorepo with workspaces:
+
+```
+WebClients/
+├── applications/     # Web applications (mail, calendar, drive, etc.)
+├── packages/         # Shared packages and libraries
+├── tests/           # Test suites
+├── utilities/       # Development utilities
+└── vendor/          # Vendored dependencies
+```
+
+### Applications
+
+Each application in the `applications/` directory is a standalone web app:
+
+- **proton-mail** - Proton Mail web client
+- **proton-calendar** - Proton Calendar
+- **proton-drive** - Proton Drive
+- **proton-account** - Account settings
+- **proton-vpn-settings** - VPN settings
+- **proton-pass** - Password manager
+- **proton-wallet** - Cryptocurrency wallet
+- **proton-lumo** - AI assistant
+
+### Packages
+
+Shared packages include:
+
+- `@proton/components` - Reusable React components
+- `@proton/shared` - Shared utilities and helpers
+- `@proton/crypto` - Cryptography utilities
+- `@proton/styles` - Design system and styles
+- And many more...
+
+## Making Changes
+
+### Finding Work
+
+<CardGroup cols={2}>
+  <Card title="Issues" icon="github" href="https://github.com/ProtonMail/WebClients/issues">
+    Browse open issues for bugs and feature requests
+  </Card>
+  <Card title="Questions" icon="question" href="https://github.com/ProtonMail/WebClients/issues/new/choose">
+    Ask questions about the codebase
+  </Card>
+</CardGroup>
+
+### Development Workflow
+
+<Steps>
+  <Step title="Create a feature branch">
+    ```bash
+    git checkout -b feature/your-feature-name
+    # Or for bug fixes:
+    git checkout -b fix/bug-description
+    ```
+  </Step>
+  
+  <Step title="Make your changes">
+    Follow the [code style guidelines](/contributing/code-style) and write tests for your changes.
+  </Step>
+  
+  <Step title="Test your changes">
+    ```bash
+    # Run tests for a specific package
+    yarn workspace @proton/components test
+    
+    # Run type checking
+    yarn workspace proton-mail check-types
+    ```
+  </Step>
+  
+  <Step title="Commit your changes">
+    Your commits will be automatically linted using Husky pre-commit hooks. See [Pull Request Guidelines](/contributing/pull-requests) for details.
+  </Step>
+</Steps>
+
+## Code of Conduct
+
+<Warning>
+  We expect all contributors to be respectful and professional. While this repository doesn't have a formal CODE_OF_CONDUCT.md, please follow these principles:
+  
+  - Be respectful and inclusive
+  - Focus on constructive feedback
+  - Help create a welcoming environment for everyone
+</Warning>
+
+## Building for Production
+
+To build an application for production:
+
+```bash
+yarn workspace proton-mail build:web
+```
+
+The build output will be in the application's `dist/` directory.
+
+## Versioning Applications
+
+To manually version an application:
+
+```bash
+yarn workspace @proton/version run version --applications proton-mail --version x.x.x.x
+```
+
+<Info>
+  This should be run from the `main` branch for a clean release.
+</Info>
+
+## Translation
+
+Proton WebClients is translated into multiple languages by our community.
+
+<Card title="Help Translate" icon="language" href="https://proton.me/blog/translation-community">
+  Learn more about contributing translations on the Proton blog
+</Card>
+
+## Getting Help
+
+<AccordionGroup>
+  <Accordion title="Where can I ask questions?">
+    Use the [Ask a Question](https://github.com/ProtonMail/WebClients/issues/new/choose) issue template to ask code-related questions and discuss technical ideas.
+  </Accordion>
+  
+  <Accordion title="How do I report a bug in my app?">
+    For bugs in the production applications (not related to development), please use the appropriate support channels on proton.me rather than GitHub issues.
+  </Accordion>
+  
+  <Accordion title="How does the monorepo work?">
+    Refer to the [Yarn Workspaces documentation](https://yarnpkg.com/) for details on how to work with monorepos.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Code Style" icon="code" href="/contributing/code-style">
+    Learn about linting, formatting, and code standards
+  </Card>
+  <Card title="Pull Requests" icon="git-pull-request" href="/contributing/pull-requests">
+    Understand the PR process and requirements
+  </Card>
+</CardGroup>

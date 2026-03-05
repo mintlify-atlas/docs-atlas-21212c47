@@ -1,0 +1,139 @@
+---
+title: Hooks Overview
+description: React hooks provided by Proton WebClients for state management, lifecycle control, and common patterns
+---
+
+## Introduction
+
+Proton WebClients provides a comprehensive collection of React hooks that handle common patterns across the application suite. These hooks are designed to be composable, type-safe, and efficient.
+
+## Hook Categories
+
+### State Management Hooks
+
+Hooks for managing component state with advanced patterns:
+
+- [useLoading](/api/hooks/state-management#useloading) - Track async operation loading states
+- [useControlled](/api/hooks/state-management#usecontrolled) - Handle controlled/uncontrolled component patterns
+- [useStateRef](/api/hooks/state-management#usestateref) - Combine state with ref for sync access
+- [usePrevious](/api/hooks/state-management#useprevious) - Access previous value of state
+
+### Data Fetching Hooks
+
+Hooks for API interactions and data fetching:
+
+- [useApi](/api/hooks/data-fetching#useapi) - Access the API client
+- [useApiResult](/api/hooks/data-fetching#useapiresult) - Fetch data with loading and error states
+- [useCache](/api/hooks/data-fetching#usecache) - Access the application cache
+
+### Lifecycle Hooks
+
+Hooks for component lifecycle management:
+
+- [useIsMounted](/api/hooks/state-management#useismounted) - Check if component is mounted
+- [useEffectOnce](/api/hooks/state-management#useeffectonce) - Run effect only once on mount
+- [useInterval](/api/hooks/state-management#useinterval) - Declarative interval with cleanup
+
+### Utility Hooks
+
+Hooks for common React patterns:
+
+- [useCombinedRefs](/api/hooks/state-management#usecombinedrefs) - Combine multiple refs into one
+- [useInstance](/api/hooks/state-management#useinstance) - Create stable instance value
+- [useDateCountdown](/api/hooks/state-management#usedatecountdown) - Countdown timer to a date
+
+## Package Structure
+
+Hooks are organized into two main packages:
+
+```
+packages/hooks/          # Core React hooks
+packages/components/hooks/ # Application-specific hooks
+```
+
+## Usage Example
+
+```tsx
+import { useLoading } from '@proton/hooks';
+import { useApi } from '@proton/components';
+
+function MyComponent() {
+  const [loading, withLoading] = useLoading();
+  const api = useApi();
+
+  const handleAction = async () => {
+    await withLoading(async () => {
+      await api({ url: '/api/endpoint', method: 'post' });
+    });
+  };
+
+  return (
+    <button onClick={handleAction} disabled={loading}>
+      {loading ? 'Loading...' : 'Submit'}
+    </button>
+  );
+}
+```
+
+## TypeScript Support
+
+All hooks are fully typed with TypeScript and provide excellent type inference:
+
+```tsx
+import { useLoading } from '@proton/hooks';
+
+// Return type is automatically inferred
+const [loading, withLoading] = useLoading();
+
+// Generic types are supported
+interface User { id: string; name: string; }
+const result = await withLoading<User>(
+  () => fetchUser()
+);
+```
+
+## Best Practices
+
+### 1. Use the Right Hook for the Job
+
+Choose hooks that match your specific use case:
+
+- Use `useLoading` for single operations
+- Use `useLoadingByKey` when tracking multiple concurrent operations
+- Use `useApiResult` for data fetching with automatic loading states
+
+### 2. Handle Cleanup Properly
+
+Many hooks handle cleanup automatically, but be aware of unmount scenarios:
+
+```tsx
+const [loading, withLoading] = useLoading();
+
+useEffect(() => {
+  // withLoading handles cleanup if component unmounts
+  withLoading(fetchData());
+}, []);
+```
+
+### 3. Combine Hooks Effectively
+
+```tsx
+const isMounted = useIsMounted();
+const [loading, withLoading] = useLoading();
+
+const handleAction = async () => {
+  await withLoading(async () => {
+    const result = await fetchData();
+    if (isMounted()) {
+      // Only update state if still mounted
+      setState(result);
+    }
+  });
+};
+```
+
+## Next Steps
+
+- Learn about [State Management Hooks](/api/hooks/state-management)
+- Explore [Data Fetching Hooks](/api/hooks/data-fetching)
+- Check out [Common Types](/api/types/common)

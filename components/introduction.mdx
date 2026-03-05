@@ -1,0 +1,127 @@
+---
+title: Component Library Overview
+description: Introduction to Proton WebClients component library
+---
+
+# Component Library Overview
+
+The Proton WebClients component library provides a comprehensive set of reusable UI components for building consistent, accessible web applications across the Proton ecosystem.
+
+## Architecture
+
+The component library is located in `packages/components/` and includes:
+
+- **Components**: Core UI components in `components/`
+- **Containers**: Higher-level composed components in `containers/`
+- **Hooks**: Reusable React hooks in `hooks/`
+- **Helpers**: Utility functions in `helpers/`
+
+## Key Features
+
+### TypeScript Support
+
+All components are written in TypeScript with full type definitions, providing excellent developer experience with autocompletion and type safety.
+
+### Accessibility
+
+Components follow WAI-ARIA guidelines and include:
+- Proper ARIA attributes
+- Keyboard navigation support
+- Screen reader compatibility
+- Focus management
+
+### Theming
+
+Components use CSS custom properties and utility classes for consistent theming across the Proton design system.
+
+### Responsive Design
+
+Components are built with responsive design in mind, adapting to different screen sizes and devices.
+
+## Component Categories
+
+### Basic Components
+
+- [Buttons](/components/buttons) - Various button types and button groups
+- [Inputs](/components/inputs) - Form inputs, checkboxes, radio buttons
+- [Forms](/components/forms) - Form components and validation
+
+### Complex Components
+
+- [Modals](/components/modals) - Dialog and modal windows
+- [Dropdowns](/components/dropdowns) - Dropdown menus and selects
+- [Tables](/components/tables) - Data tables with sorting
+
+### Layout Components
+
+- [Header](/components/layout/header) - Application header
+- [Sidebar](/components/layout/sidebar) - Navigation sidebar
+- [Container](/components/layout/container) - Content containers
+
+### Specialized Components
+
+- [Calendar](/components/specialized/calendar) - Calendar-specific components
+- [Mail](/components/specialized/mail) - Mail-specific components
+- [Editor](/components/specialized/editor) - Rich text editor
+
+## Installation
+
+The component library is installed as part of the Proton WebClients monorepo:
+
+```bash
+npm install
+```
+
+## Usage
+
+Import components from the components package:
+
+```tsx
+import { Button } from '@proton/components';
+import Input from '@proton/components/components/input/Input';
+import Modal from '@proton/components/components/modalTwo/Modal';
+```
+
+## Best Practices
+
+### Component Selection
+
+- Use newer "Two" variants when available (e.g., `ModalTwo`, `SelectTwo`)
+- Check deprecation notices in component files
+- Prefer components from `@proton/atoms` for basic elements
+
+### Styling
+
+- Use utility classes for spacing and layout
+- Use `clsx` for conditional class names
+- Avoid inline styles when possible
+
+### Performance
+
+- Use `React.memo()` for expensive components
+- Implement proper key props for lists
+- Avoid unnecessary re-renders
+
+## Development
+
+### Testing
+
+Components include Jest tests:
+
+```bash
+npm test
+```
+
+### Linting
+
+Code is linted with ESLint:
+
+```bash
+npm run lint
+```
+
+## Next Steps
+
+- [Get Started](/components/getting-started) - Learn how to use components
+- [Buttons](/components/buttons) - Explore button components
+- [Inputs](/components/inputs) - Learn about form inputs

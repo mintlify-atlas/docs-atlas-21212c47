@@ -1,0 +1,562 @@
+---
+title: '@proton/atoms'
+description: Atomic design system components - foundational building blocks
+---
+
+The `@proton/atoms` package contains the foundational UI components built on atomic design principles. These are the lowest-level building blocks used throughout Proton applications.
+
+## Installation
+
+```bash
+yarn add @proton/atoms
+```
+
+## Package Information
+
+<CodeGroup>
+```json package.json
+{
+  "name": "@proton/atoms",
+  "license": "GPL-3.0",
+  "sideEffects": false,
+  "type": "module",
+  "main": "./src/index.ts"
+}
+```
+</CodeGroup>
+
+<Info>
+**Module Type**: This package uses ES modules with explicit export paths defined in package.json.
+</Info>
+
+## Design Philosophy
+
+<Tabs>
+  <Tab title="Atomic Design">
+    Components are minimal, focused, and composable
+    - Single responsibility
+    - Minimal dependencies
+    - Highly reusable
+    - Type-safe APIs
+  </Tab>
+  
+  <Tab title="Accessibility First">
+    Built with accessibility as a priority
+    - ARIA labels and roles
+    - Keyboard navigation
+    - Screen reader support
+    - Focus management
+  </Tab>
+  
+  <Tab title="Polymorphic">
+    Components can render as different HTML elements
+    - Type-safe polymorphism
+    - Flexible composition
+    - Semantic HTML support
+  </Tab>
+</Tabs>
+
+## Component Catalog
+
+### Button Components
+
+<CardGroup cols={2}>
+  <Card title="Button" icon="rectangle-wide">
+    Primary button component with polymorphic rendering
+  </Card>
+  
+  <Card title="ButtonLike" icon="link">
+    Make any element look and behave like a button
+  </Card>
+  
+  <Card title="InlineLinkButton" icon="text-slash">
+    Inline button styled as a link
+  </Card>
+</CardGroup>
+
+#### Button Examples
+
+```tsx
+import { Button } from '@proton/atoms/Button/Button';
+import { ButtonLike } from '@proton/atoms/Button/ButtonLike';
+
+// Standard button
+<Button color="norm" shape="solid" size="medium">
+  Click me
+</Button>
+
+// Button with different shapes
+<Button shape="outline">Outline</Button>
+<Button shape="ghost">Ghost</Button>
+<Button shape="solid">Solid</Button>
+
+// Button sizes
+<Button size="small">Small</Button>
+<Button size="medium">Medium</Button>
+<Button size="large">Large</Button>
+
+// Polymorphic - render as a link
+<ButtonLike as="a" href="/page" shape="solid">
+  Link Button
+</ButtonLike>
+```
+
+<Accordion title="Button API">
+  ```typescript
+  interface ButtonProps {
+    // Colors
+    color?: 'norm' | 'weak' | 'danger' | 'warning' | 'success' | 'info';
+    
+    // Shapes
+    shape?: 'solid' | 'outline' | 'ghost' | 'underline';
+    
+    // Sizes
+    size?: 'small' | 'medium' | 'large';
+    
+    // States
+    loading?: boolean;
+    disabled?: boolean;
+    fullWidth?: boolean;
+    
+    // Icon
+    icon?: ReactNode;
+  }
+  ```
+</Accordion>
+
+### Input Components
+
+```tsx
+import { Input } from '@proton/atoms/Input/Input';
+
+<Input
+  type="text"
+  placeholder="Enter text"
+  value={value}
+  onChange={(e) => setValue(e.target.value)}
+  error={error}
+  disabled={disabled}
+/>
+
+// With icon
+<Input
+  prefix={<Icon name="magnifier" />}
+  placeholder="Search..."
+/>
+```
+
+### Layout Components
+
+<Tabs>
+  <Tab title="Card">
+    ```tsx
+    import { Card } from '@proton/atoms/Card/Card';
+
+    <Card rounded bordered background="weak">
+      <h3>Card Title</h3>
+      <p>Card content goes here</p>
+    </Card>
+    ```
+  </Tab>
+  
+  <Tab title="Panel">
+    ```tsx
+    import { Panel } from '@proton/atoms/Panel/Panel';
+    import { PanelHeader } from '@proton/atoms/Panel/PanelHeader';
+
+    <Panel>
+      <PanelHeader>Panel Title</PanelHeader>
+      <div className="p-4">
+        Panel content
+      </div>
+    </Panel>
+    ```
+  </Tab>
+  
+  <Tab title="DualPane">
+    ```tsx
+    import { DualPaneSidebar } from '@proton/atoms/DualPane/DualPaneSidebar';
+    import { DualPaneContent } from '@proton/atoms/DualPane/DualPaneContent';
+
+    <div className="flex">
+      <DualPaneSidebar>
+        Sidebar navigation
+      </DualPaneSidebar>
+      <DualPaneContent>
+        Main content
+      </DualPaneContent>
+    </div>
+    ```
+  </Tab>
+</Tabs>
+
+### Data Visualization
+
+<AccordionGroup>
+  <Accordion title="Donut Chart">
+    ```tsx
+    import { Donut } from '@proton/atoms/Donut/Donut';
+
+    <Donut
+      segments={[
+        { value: 30, color: 'var(--primary)' },
+        { value: 50, color: 'var(--signal-success)' },
+        { value: 20, color: 'var(--signal-warning)' },
+      ]}
+    />
+    ```
+  </Accordion>
+  
+  <Accordion title="Progress Components">
+    ```tsx
+    import { CircleLoader } from '@proton/atoms/CircleLoader/CircleLoader';
+    import { ProtonLoader } from '@proton/atoms/ProtonLoader/ProtonLoader';
+
+    // Circle loader for progress
+    <CircleLoader size="large" />
+
+    // Branded Proton loader
+    <ProtonLoader />
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Navigation & Steps
+
+```tsx
+import { Stepper } from '@proton/atoms/Stepper/Stepper';
+import { Step } from '@proton/atoms/Stepper/Step';
+import { StepIndicator } from '@proton/atoms/Stepper/StepIndicator';
+
+<Stepper activeStep={1}>
+  <Step>
+    <StepIndicator>1</StepIndicator>
+    Account setup
+  </Step>
+  <Step>
+    <StepIndicator>2</StepIndicator>
+    Verification
+  </Step>
+  <Step>
+    <StepIndicator>3</StepIndicator>
+    Complete
+  </Step>
+</Stepper>
+```
+
+#### Vertical Steps
+
+```tsx
+import { VerticalSteps } from '@proton/atoms/VerticalSteps/VerticalSteps';
+import { VerticalStep } from '@proton/atoms/VerticalSteps/VerticalStep';
+
+<VerticalSteps>
+  <VerticalStep status="complete">Step 1 complete</VerticalStep>
+  <VerticalStep status="current">Step 2 in progress</VerticalStep>
+  <VerticalStep status="upcoming">Step 3 upcoming</VerticalStep>
+</VerticalSteps>
+```
+
+### Badges & Indicators
+
+<CardGroup cols={2}>
+  <Card title="Pill" icon="capsules">
+    Small status indicators
+  </Card>
+  
+  <Card title="NotificationDot" icon="circle">
+    Notification indicator dot
+  </Card>
+  
+  <Card title="NotificationCounter" icon="circle-info">
+    Numeric notification badge
+  </Card>
+  
+  <Card title="CircledNumber" icon="circle-1">
+    Number in a circle
+  </Card>
+</CardGroup>
+
+```tsx
+import { Pill } from '@proton/atoms/Pill/Pill';
+import { NotificationDot } from '@proton/atoms/NotificationDot/NotificationDot';
+import { NotificationCounter } from '@proton/atoms/NotificationCounter/NotificationCounter';
+
+<Pill color="success">Active</Pill>
+<Pill color="danger">Error</Pill>
+<Pill color="warning">Warning</Pill>
+
+<NotificationDot color="danger" />
+<NotificationCounter count={5} />
+```
+
+### Feedback Components
+
+```tsx
+import { Banner } from '@proton/atoms/Banner/Banner';
+import { Tooltip } from '@proton/atoms/Tooltip/Tooltip';
+
+// Banners for important messages
+<Banner color="danger" icon="triangle-exclamation">
+  Important warning message
+</Banner>
+
+<Banner color="info" icon="info-circle">
+  Helpful information
+</Banner>
+
+// Tooltips
+<Tooltip title="Helpful explanation">
+  <button>Hover me</button>
+</Tooltip>
+```
+
+### Interactive Controls
+
+<Tabs>
+  <Tab title="Slider">
+    ```tsx
+    import { Slider } from '@proton/atoms/Slider/Slider';
+    import { SliderMark } from '@proton/atoms/Slider/SliderMark';
+
+    <Slider
+      min={0}
+      max={100}
+      value={value}
+      onChange={setValue}
+      marks={
+        <>
+          <SliderMark value={0}>0</SliderMark>
+          <SliderMark value={50}>50</SliderMark>
+          <SliderMark value={100}>100</SliderMark>
+        </>
+      }
+    />
+    ```
+  </Tab>
+  
+  <Tab title="Scroll">
+    ```tsx
+    import { Scroll } from '@proton/atoms/Scroll/Scroll';
+    import { ScrollShadows } from '@proton/atoms/Scroll/ScrollShadows';
+
+    // Custom scrollable area
+    <Scroll>
+      <div>Long content...</div>
+    </Scroll>
+
+    // With shadows indicating scroll
+    <ScrollShadows>
+      <div>Scrollable content</div>
+    </ScrollShadows>
+    ```
+  </Tab>
+</Tabs>
+
+### User Interface
+
+```tsx
+import { Avatar } from '@proton/atoms/Avatar/Avatar';
+import { UserAvatar } from '@proton/atoms/UserAvatar/UserAvatar';
+import { getAccentColorForUsername } from '@proton/atoms/UserAvatar/getAccentColorForUsername';
+import { Kbd } from '@proton/atoms/Kbd/Kbd';
+import { Vr } from '@proton/atoms/Vr/Vr';
+
+// Avatars
+<Avatar>JD</Avatar>
+<UserAvatar name="John Doe" email="john@example.com" />
+
+// Keyboard shortcuts
+<span>Press <Kbd>Ctrl</Kbd> + <Kbd>S</Kbd> to save</span>
+
+// Vertical divider
+<Vr />
+```
+
+### Dashboard Components
+
+```tsx
+import { DashboardGrid } from '@proton/atoms/DashboardGrid/DashboardGrid';
+import { DashboardCard } from '@proton/atoms/DashboardCard/DashboardCard';
+
+<DashboardGrid>
+  <DashboardCard>
+    <h3>Storage</h3>
+    <p>50 GB used</p>
+  </DashboardCard>
+  
+  <DashboardCard>
+    <h3>Messages</h3>
+    <p>1,234 emails</p>
+  </DashboardCard>
+</DashboardGrid>
+```
+
+## Links & Navigation
+
+```tsx
+import { Href } from '@proton/atoms/Href/Href';
+
+// Type-safe external links
+<Href href="https://proton.me">Visit Proton</Href>
+
+// Opens in new tab with security
+<Href href="https://example.com" target="_blank">
+  External link
+</Href>
+```
+
+## Import Pattern
+
+<Note>
+**Explicit Imports**: Use the full import path for optimal tree-shaking:
+```typescript
+import { Button } from '@proton/atoms/Button/Button';
+import { Tooltip } from '@proton/atoms/Tooltip/Tooltip';
+```
+</Note>
+
+Package.json exports define exact paths:
+
+```json
+{
+  "exports": {
+    "./Button/Button": "./src/Button/Button.tsx",
+    "./Tooltip/Tooltip": "./src/Tooltip/Tooltip.tsx"
+  }
+}
+```
+
+## Styling
+
+Components use CSS classes from `@proton/styles`:
+
+```tsx
+// Components have design tokens
+<Button color="norm">  // Uses --interaction-norm color
+<Button color="danger">  // Uses --signal-danger color
+
+// Custom styling via className
+<Button className="my-custom-class">
+  Custom styled button
+</Button>
+```
+
+## Creating Atoms
+
+The package includes a generator for new atoms:
+
+```bash
+yarn workspace @proton/atoms create-atom
+```
+
+This creates the component structure:
+```
+MyAtom/
+  ├── MyAtom.tsx
+  ├── MyAtom.scss
+  └── MyAtom.test.tsx
+```
+
+## Testing
+
+```bash
+# Run tests
+yarn workspace @proton/atoms test
+
+# Watch mode
+yarn workspace @proton/atoms test:watch
+
+# Coverage
+yarn workspace @proton/atoms test:ci
+```
+
+### Testing Example
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { Button } from '@proton/atoms/Button/Button';
+
+test('renders button', () => {
+  render(<Button>Click me</Button>);
+  expect(screen.getByRole('button')).toHaveTextContent('Click me');
+});
+```
+
+## Dependencies
+
+<CodeGroup>
+```json Proton Packages
+{
+  "@proton/colors": "workspace:^",
+  "@proton/hooks": "workspace:^",
+  "@proton/icons": "workspace:^",
+  "@proton/styles": "workspace:^",
+  "@proton/utils": "workspace:^"
+}
+```
+
+```json External
+{
+  "react": "^18.3.1",
+  "react-dom": "^18.3.1",
+  "tinycolor2": "^1.6.0"
+}
+```
+</CodeGroup>
+
+## Best Practices
+
+<Warning>
+**Composition over Customization**: Compose atoms to build complex components rather than heavily customizing individual atoms.
+</Warning>
+
+<Tip>
+**Polymorphic Props**: Use the `as` prop to render components with different HTML elements:
+```tsx
+<ButtonLike as="a" href="/link">Link as button</ButtonLike>
+<ButtonLike as="div" onClick={handler}>Div as button</ButtonLike>
+```
+</Tip>
+
+<Note>
+**Accessibility**: All atoms include proper ARIA attributes. Ensure you maintain accessibility when composing them.
+</Note>
+
+## TypeScript Support
+
+Full TypeScript support with polymorphic types:
+
+```typescript
+import type { ButtonProps } from '@proton/atoms/Button/Button';
+import type { PolymorphicComponentProps } from '@proton/react-polymorphic-types';
+
+// Polymorphic button that can be rendered as any element
+type MyButtonProps<E extends React.ElementType> = 
+  PolymorphicComponentProps<E, ButtonProps>;
+```
+
+## Design Tokens
+
+Components use CSS custom properties from the design system:
+
+```scss
+// Color tokens
+--interaction-norm
+--interaction-norm-hover
+--interaction-norm-active
+--signal-danger
+--signal-warning
+--signal-success
+--signal-info
+
+// Spacing tokens
+--space-1
+--space-2
+--space-4
+
+// Border radius
+--border-radius-sm
+--border-radius-md
+--border-radius-lg
+```

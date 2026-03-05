@@ -1,0 +1,317 @@
+---
+title: Proton Calendar
+description: React web application to manage encrypted calendar events and scheduling
+icon: calendar
+---
+
+## Overview
+
+Proton Calendar is an encrypted calendar application that allows users to manage events, schedule meetings, and organize their time with end-to-end encryption.
+
+<Note>
+  Package name: `proton-calendar` | License: GPL-3.0
+</Note>
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Event Management" icon="calendar-days">
+    Create, edit, and manage encrypted calendar events
+  </Card>
+  <Card title="Multiple Calendars" icon="calendars">
+    Support for multiple calendars with color coding
+  </Card>
+  <Card title="Event Sharing" icon="share">
+    Share events and calendars with other users
+  </Card>
+  <Card title="Timezone Support" icon="globe">
+    Full timezone support for international scheduling
+  </Card>
+  <Card title="Recurring Events" icon="rotate">
+    Create repeating events with flexible patterns
+  </Card>
+  <Card title="Alarms & Notifications" icon="bell">
+    Set reminders and receive notifications
+  </Card>
+  <Card title="Bookings" icon="calendar-check">
+    Meeting scheduling and booking functionality
+  </Card>
+  <Card title="Mail Integration" icon="envelope">
+    Integration with Proton Mail for event invitations
+  </Card>
+</CardGroup>
+
+## Architecture
+
+### Directory Structure
+
+```
+calendar/src/app/
+├── components/        # UI components
+├── containers/        # Container components
+│   ├── calendar/      # Calendar views and logic
+│   ├── alarms/        # Alarm management
+│   ├── bookings/      # Meeting booking system
+│   ├── settings/      # Calendar settings
+│   └── setup/         # Initial setup flow
+├── helpers/           # Helper functions
+├── hooks/             # Custom React hooks
+├── interfaces/        # TypeScript interfaces
+├── store/             # State management
+└── styles/            # Component styles
+```
+
+### State Management
+
+Proton Calendar uses **Redux Toolkit** with **Zustand** for some local state:
+
+- Redux for global app state
+- Zustand for component-level state
+- Shared Redux store integration via `@proton/react-redux-store`
+
+## Key Dependencies
+
+```json
+{
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-router-dom": "^5.3.4",
+    "@reduxjs/toolkit": "^2.11.2",
+    "@proton/components": "workspace:^",
+    "@proton/calendar": "workspace:^",
+    "@proton/mail": "workspace:^",
+    "@proton/meet": "workspace:^",
+    "@protontech/interval-tree": "^1.0.0",
+    "date-fns": "^2.30.0",
+    "tinycolor2": "^1.6.0",
+    "zustand": "^5.0.11"
+  }
+}
+```
+
+### Notable Libraries
+
+- **date-fns** - Date manipulation and formatting
+- **@protontech/interval-tree** - Efficient event scheduling data structure
+- **tinycolor2** - Color manipulation for calendar theming
+- **zustand** - Lightweight state management
+
+## NPM Scripts
+
+### Development
+
+```bash
+# Start development server
+yarn start
+
+# Standalone mode with local auth
+proton-pack dev-server --appMode=standalone
+```
+
+### Testing
+
+```bash
+# Run tests (with UTC timezone)
+yarn test
+
+# Run tests in CI mode
+yarn test:ci
+
+# Watch mode
+yarn test:watch
+```
+
+<Note>
+  Tests run with `TZ=UTC` to ensure consistent timezone behavior across environments.
+</Note>
+
+### Build
+
+```bash
+# Production build with SSO mode
+yarn build:web
+```
+
+### Code Quality
+
+```bash
+# Type checking
+yarn check-types
+
+# Linting (quiet mode)
+yarn lint
+
+# Linting (with warnings)
+yarn lint:warning
+
+# Format code
+yarn pretty
+```
+
+### Internationalization
+
+```bash
+# Extract translation strings
+yarn i18n:extract:web
+
+# Upload translations to Crowdin
+yarn i18n:upgrade
+
+# Validate translations
+yarn i18n:validate
+yarn i18n:validate:context:web
+```
+
+## Key Features
+
+### Calendar Views
+
+Multiple view modes for displaying events:
+
+- **Day View** - Single day detailed view
+- **Week View** - Week overview
+- **Month View** - Monthly calendar grid
+- **Agenda View** - List of upcoming events
+
+### Event Encryption
+
+All calendar events are end-to-end encrypted:
+
+- Event titles and descriptions encrypted
+- Participants and locations encrypted
+- Only metadata visible to servers
+
+### Bookings System
+
+Meeting scheduling functionality located in `bookings/`:
+
+```
+bookings/
+├── BookingsContainer.tsx
+├── BookingsList.tsx
+├── BookingForm.tsx
+└── bookings.tsx
+```
+
+### Alarms & Notifications
+
+Robust alarm system:
+
+- Browser notifications
+- Email reminders
+- Multiple alarms per event
+- Snooze functionality
+
+### Integration with Proton Meet
+
+Calendar integrates with `@proton/meet` for:
+
+- Video meeting creation
+- Meeting links in events
+- One-click join functionality
+
+## Container Components
+
+Main container components:
+
+| Container | Purpose |
+|-----------|--------|
+| `calendar/` | Core calendar views and event management |
+| `alarms/` | Alarm and notification handling |
+| `bookings/` | Meeting scheduling system |
+| `settings/` | Calendar preferences and configuration |
+| `setup/` | Initial calendar setup wizard |
+| `GlobalModals/` | Application-wide modal dialogs |
+
+## Encrypted Search
+
+Calendar includes encrypted search via `@proton/encrypted-search`:
+
+```typescript
+import { EncryptedSearchLibraryProvider } from './containers/EncryptedSearchLibraryProvider';
+```
+
+- Search events without decrypting on server
+- Client-side search index
+- Privacy-preserving search
+
+## Color Management
+
+Calendars support custom colors:
+
+```typescript
+import tinycolor2 from 'tinycolor2';
+
+// Color manipulation for calendar theming
+// Accessible via @proton/colors workspace package
+```
+
+## Data Structures
+
+Uses interval tree for efficient event querying:
+
+```typescript
+import { IntervalTree } from '@protontech/interval-tree';
+
+// Efficient time-based event lookups
+// O(log n) query complexity
+```
+
+## Activation Integration
+
+Includes import functionality via `@proton/activation`:
+
+- Import from other calendar services
+- ICS file import
+- Calendar migration tools
+
+## Performance Considerations
+
+- **Lazy Loading** - Components loaded on demand
+- **Interval Tree** - Efficient event range queries
+- **Virtualized Lists** - Only render visible events
+- **Memoization** - React.memo and useMemo for expensive computations
+
+## Testing
+
+### Test Environment
+
+- **Jest** with custom environment (`@proton/jest-env`)
+- **React Testing Library** for component tests
+- **React Hooks Testing** for hook testing
+- **UTC timezone** enforcement for consistency
+
+### Test Structure
+
+```bash
+yarn test                    # Run all tests with UTC timezone
+yarn test:ci --coverage      # CI mode with coverage
+yarn test:watch              # Watch mode (no coverage)
+```
+
+## Build Configuration
+
+Build uses `proton-pack` with:
+
+- **SSO Mode** - `--appMode=sso` for production
+- **Standalone Mode** - `--appMode=standalone` for development
+- **TypeScript** - Custom tsconfig at `../../tsconfig.webpack.json`
+
+## Related Applications
+
+- **proton-mail** - Email integration for event invitations
+- **proton-meet** - Video meeting integration
+- **proton-account** - Account and subscription management
+
+## Development Tips
+
+<Tip>
+  Use `TZ=UTC` when running tests locally to match CI environment:
+  ```bash
+  TZ=UTC yarn test
+  ```
+</Tip>
+
+<Warning>
+  Calendar heavily relies on timezone calculations. Always test across multiple timezones.
+</Warning>

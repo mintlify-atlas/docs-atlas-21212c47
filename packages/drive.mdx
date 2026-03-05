@@ -1,0 +1,465 @@
+---
+title: '@proton/drive'
+description: 'Drive SDK integration package for Proton Drive functionality in web applications'
+---
+
+## Overview
+
+The `@proton/drive` package provides the Drive SDK functionality to all Proton applications. It wraps the `@protontech/drive-sdk` with integration layers for the Proton web monorepo, offering file storage, sharing, and management capabilities.
+
+## Installation
+
+<CodeGroup>
+```bash npm
+npm install @proton/drive
+```
+
+```bash yarn
+yarn add @proton/drive
+```
+
+```bash pnpm
+pnpm add @proton/drive
+```
+</CodeGroup>
+
+## Key Features
+
+- Complete Drive SDK integration
+- File and folder management
+- File upload and download
+- Sharing and permissions
+- Photos support (experimental)
+- Automatic error reporting and metrics
+- Thumbnail generation
+- Real-time event synchronization
+
+## Quick Start
+
+### Configuring the Drive SDK
+
+Initialize the Drive SDK in your application's entry point.
+
+```typescript
+import { useUser } from '@proton/account/user/hooks';
+import { useDrive } from '@proton/drive';
+import { isPaid } from '@proton/shared/lib/user/helpers';
+import { useEffect } from 'react';
+import * as config from './config';
+
+function App() {
+  const [user] = useUser();
+  const { init } = useDrive();
+
+  useEffect(() => {
+    const userPlan = isPaid(user) ? 'paid' : 'free';
+    init({
+      appName: config.APP_NAME,
+      appVersion: config.APP_VERSION,
+      userPlan,
+    });
+  }, [user]);
+
+  return <div>{/* Your app components */}</div>;
+}
+```
+
+<Note>
+  **Important:** The `init` function should be called only once at the start of your application. A second attempt will throw an error.
+</Note>
+
+### Using the Drive SDK
+
+After initialization, access the Drive SDK instance.
+
+```typescript
+import { useDrive } from '@proton/drive';
+
+function FileBrowser() {
+  const { drive } = useDrive();
+
+  const fetchRootFolder = async () => {
+    try {
+      const rootNode = await drive.getMyFilesRootFolder();
+      console.log('Root folder:', rootNode);
+    } catch (error) {
+      console.error('Error fetching root folder:', error);
+    }
+  };
+
+  return (
+    <button onClick={fetchRootFolder}>
+      Load Root Folder
+    </button>
+  );
+}
+```
+
+## Core API
+
+### useDrive Hook
+
+The main hook for accessing Drive functionality.
+
+```typescript
+const { init, drive, getLogs, internal } = useDrive();
+```
+
+#### Properties
+
+<ResponseField name="init" type="function">
+  Initialize the Drive SDK with app configuration
+  
+  <Expandable title="parameters">
+    <ResponseField name="appName" type="APP_NAMES" required>
+      Your application name (e.g., "proton-drive")
+    </ResponseField>
+    <ResponseField name="appVersion" type="string" required>
+      Your application version (e.g., "5.0.0")
+    </ResponseField>
+    <ResponseField name="userPlan" type="'free' | 'paid' | 'anonymous' | 'unknown'">
+      User's subscription plan (default: "unknown")
+    </ResponseField>
+    <ResponseField name="logging" type="LogHandler">
+      Custom logging handler
+    </ResponseField>
+    <ResponseField name="metricHandler" type="MetricHandler">
+      Custom metrics handler
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="drive" type="ProtonDriveClient">
+  The initialized Drive SDK client instance
+</ResponseField>
+
+<ResponseField name="getLogs" type="() => string[]">
+  Returns SDK logs for debugging or bug reports
+</ResponseField>
+
+<ResponseField name="internal" type="object">
+  Internal APIs (use with permission only)
+  - `photos`: Experimental Photos SDK instance
+  - `createSearchDriveInstance`: Create dedicated search instance
+  - `unsafeRemoveNodeFromCache`: Cache management
+  - `clearCache`: Clear entity cache
+</ResponseField>
+
+## File and Folder Operations
+
+### Getting Root Folder
+
+```typescript
+const rootNode = await drive.getMyFilesRootFolder();
+console.log('Root folder ID:', rootNode.nodeId);
+```
+
+### Listing Folder Contents
+
+```typescript
+const { nodes } = await drive.listFolderContents({
+  folderId: 'folder-uid',
+});
+
+nodes.forEach(node => {
+  console.log(`${node.name} - ${node.type}`);
+});
+```
+
+### Creating Folders
+
+```typescript
+const newFolder = await drive.createFolder({
+  parentFolderId: 'parent-uid',
+  name: 'My New Folder',
+});
+
+console.log('Created folder:', newFolder.nodeId);
+```
+
+### Uploading Files
+
+```typescript
+import type { UploadController } from '@proton/drive';
+
+const uploadController: UploadController = await drive.uploadFile({
+  parentFolderId: 'folder-uid',
+  file: fileObject, // File or Blob
+  name: 'document.pdf',
+});
+
+// Monitor upload progress
+uploadController.on('progress', (progress) => {
+  console.log(`Upload progress: ${progress.percent}%`);
+});
+
+// Wait for completion
+await uploadController.result;
+console.log('Upload complete!');
+```
+
+### Downloading Files
+
+```typescript
+import type { DownloadController } from '@proton/drive';
+
+const downloadController: DownloadController = await drive.downloadFile({
+  nodeId: 'file-uid',
+});
+
+// Monitor download progress
+downloadController.on('progress', (progress) => {
+  console.log(`Download progress: ${progress.percent}%`);
+});
+
+// Get the file data
+const fileData = await downloadController.result;
+```
+
+### Deleting Files/Folders
+
+```typescript
+await drive.deleteNode({
+  nodeId: 'node-uid',
+});
+
+console.log('Node deleted');
+```
+
+### Renaming Files/Folders
+
+```typescript
+await drive.renameNode({
+  nodeId: 'node-uid',
+  newName: 'New Name.txt',
+});
+```
+
+### Moving Files/Folders
+
+```typescript
+await drive.moveNode({
+  nodeId: 'node-uid',
+  targetFolderId: 'destination-folder-uid',
+});
+```
+
+## Sharing
+
+### Creating Share Links
+
+```typescript
+const shareLink = await drive.createShareLink({
+  nodeId: 'file-uid',
+  expirationDuration: 7 * 24 * 60 * 60, // 7 days in seconds
+  password: 'optional-password',
+});
+
+console.log('Share link:', shareLink.url);
+```
+
+### Managing Members
+
+```typescript
+import { MemberRole } from '@proton/drive';
+
+// Invite member
+await drive.inviteMember({
+  nodeId: 'folder-uid',
+  email: 'user@example.com',
+  role: MemberRole.Editor,
+});
+
+// List members
+const members = await drive.listMembers({
+  nodeId: 'folder-uid',
+});
+```
+
+## Photos (Experimental)
+
+```typescript
+const { internal } = useDrive();
+const photos = internal.photos;
+
+// Create album
+const album = await photos.createAlbum({
+  name: 'Vacation 2024',
+});
+
+// Upload photo
+await photos.uploadPhoto({
+  albumId: album.nodeId,
+  file: photoFile,
+  captureTime: new Date(),
+});
+```
+
+## Event Loop
+
+The Drive SDK automatically handles real-time event synchronization for file and folder updates.
+
+```typescript
+// Subscribe to drive events
+drive.on('node:created', (event) => {
+  console.log('New node created:', event.node);
+});
+
+drive.on('node:updated', (event) => {
+  console.log('Node updated:', event.node);
+});
+
+drive.on('node:deleted', (event) => {
+  console.log('Node deleted:', event.nodeId);
+});
+```
+
+## TypeScript Types
+
+The package exports comprehensive TypeScript types.
+
+```typescript
+import type {
+  ProtonDriveClient,
+  ProtonDrivePhotosClient,
+  NodeEntity,
+  Bookmark,
+  Device,
+  Member,
+  Revision,
+  ShareResult,
+  UploadController,
+  DownloadController,
+  Result,
+  MetricEvent,
+  Thumbnail,
+  PhotoNode,
+} from '@proton/drive';
+```
+
+### Enums
+
+```typescript
+import {
+  NodeType,
+  MemberRole,
+  DeviceType,
+  ThumbnailType,
+  DriveEventType,
+  RevisionState,
+  NonProtonInvitationState,
+} from '@proton/drive';
+```
+
+### Error Types
+
+```typescript
+import {
+  ProtonDriveError,
+  ValidationError,
+  DecryptionError,
+  ServerError,
+  RateLimitedError,
+  ConnectionError,
+  AbortError,
+  NodeWithSameNameExistsValidationError,
+} from '@proton/drive';
+
+try {
+  await drive.uploadFile(params);
+} catch (error) {
+  if (error instanceof NodeWithSameNameExistsValidationError) {
+    console.error('File with same name exists');
+  }
+}
+```
+
+## Debugging and Logging
+
+### Enabling Debug Logs
+
+Set the local storage flag to enable debug logging:
+
+```typescript
+localStorage.setItem('proton-drive-debug', 'true');
+```
+
+### Getting Logs
+
+```typescript
+const { getLogs } = useDrive();
+
+function BugReportButton() {
+  const handleReport = () => {
+    const logs = getLogs();
+    console.log('SDK logs:', logs);
+    // Include logs in bug report
+  };
+  
+  return <button onClick={handleReport}>Report Bug</button>;
+}
+```
+
+## Metrics & Error Reporting
+
+The Drive SDK includes automatic Sentry and metrics integration:
+
+- Automatic error monitoring
+- Performance metrics
+- Usage analytics
+
+This is enabled automatically when you initialize the SDK. No additional configuration required.
+
+## Modules and Components
+
+The package also provides higher-level modules:
+
+- **Components**: UI components for Drive features (e.g., directory tree)
+- **Modules**: Logic modules (e.g., upload/download managers, thumbnail generation)
+- **Modals**: Complete React components with UI and logic
+
+Import from module paths:
+
+```typescript
+import { DirectoryTree } from '@proton/drive/components';
+import { ThumbnailGenerator } from '@proton/drive/modules/thumbnails';
+import { CreateFolderModal } from '@proton/drive/modals';
+```
+
+## Compatibility
+
+The Drive team maintains stable interfaces for the Drive SDK. Only use exported public APIs from `@proton/drive` or module index files. Internal implementation details may change without warning.
+
+## Dependencies
+
+<AccordionGroup>
+  <Accordion title="Core Dependencies">
+    - `@protontech/drive-sdk` ^0.12.0 - Core Drive SDK
+    - `@proton/account` - Account management
+    - `@proton/crypto` - Cryptography
+    - `@proton/shared` - Shared utilities
+    - `@proton/srp` - SRP authentication
+    - `@proton/utils` - Utility functions
+    - `@proton/metrics` - Metrics reporting
+  </Accordion>
+  <Accordion title="Additional Dependencies">
+    - `exifreader` - Image metadata extraction
+    - `heic-to` - HEIC image conversion
+    - `mime-types` - MIME type detection
+    - `zustand` - State management
+  </Accordion>
+</AccordionGroup>
+
+## Related Packages
+
+<CardGroup cols={3}>
+  <Card title="@proton/drive-store" icon="database" href="/packages/drive-store">
+    Drive Redux store integration
+  </Card>
+  <Card title="@proton/crypto" icon="lock" href="/packages/crypto">
+    Cryptography utilities
+  </Card>
+  <Card title="@proton/shared" icon="share-nodes" href="/packages/shared">
+    Shared utilities
+  </Card>
+</CardGroup>

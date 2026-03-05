@@ -1,0 +1,660 @@
+---
+title: Helper Utilities
+description: Utility functions for common operations in Proton WebClients
+---
+
+## Overview
+
+Proton WebClients provides a comprehensive set of utility functions for common operations like string manipulation, object transformations, DOM operations, and URL handling.
+
+## String Helpers
+
+### normalize
+
+Normalize a string by converting to lowercase and optionally removing diacritics.
+
+```typescript
+function normalize(
+  value?: string,
+  removeDiacritics?: boolean
+): string
+```
+
+<ParamField path="value" type="string">
+  String to normalize
+</ParamField>
+
+<ParamField path="removeDiacritics" type="boolean" default="false">
+  Whether to remove accents and diacritical marks
+</ParamField>
+
+<CodeGroup>
+```tsx Basic Usage
+import { normalize } from '@proton/shared/lib/helpers/string';
+
+const result = normalize('  Hello World  ');
+// 'hello world'
+```
+
+```tsx Remove Diacritics
+const result = normalize('Café', true);
+// 'cafe'
+```
+</CodeGroup>
+
+---
+
+### truncateMore
+
+Truncate a string with customizable start/end character display.
+
+```typescript
+function truncateMore(options: {
+  string: string;
+  charsToDisplay?: number;
+  charsToDisplayStart?: number;
+  charsToDisplayEnd?: number;
+  omission?: string;
+  skewEnd?: boolean;
+}): string
+```
+
+<ParamField path="options.string" type="string" required>
+  String to truncate
+</ParamField>
+
+<ParamField path="options.charsToDisplay" type="number">
+  Total characters to display (truncates from middle)
+</ParamField>
+
+<ParamField path="options.charsToDisplayStart" type="number" default="0">
+  Characters to show at start
+</ParamField>
+
+<ParamField path="options.charsToDisplayEnd" type="number" default="0">
+  Characters to show at end
+</ParamField>
+
+<ParamField path="options.omission" type="string" default="'…'">
+  String to use for truncation indicator
+</ParamField>
+
+<ParamField path="options.skewEnd" type="boolean" default="false">
+  Skew truncation toward the end
+</ParamField>
+
+<CodeGroup>
+```tsx Middle Truncation
+import { truncateMore } from '@proton/shared/lib/helpers/string';
+
+const result = truncateMore({
+  string: 'verylongfilename.pdf',
+  charsToDisplay: 15
+});
+// 'verylo…name.pdf'
+```
+
+```tsx Start/End Display
+const result = truncateMore({
+  string: 'long-email-address@example.com',
+  charsToDisplayStart: 10,
+  charsToDisplayEnd: 8
+});
+// 'long-email…ple.com'
+```
+</CodeGroup>
+
+---
+
+### getInitials
+
+Get initials from a full name.
+
+```typescript
+function getInitials(fullName?: string): string
+```
+
+<CodeGroup>
+```tsx Usage
+import { getInitials } from '@proton/shared/lib/helpers/string';
+
+getInitials('John Doe'); // 'JD'
+getInitials('Alice'); // 'A'
+getInitials(''); // '?'
+getInitials('Jean-Pierre Martin'); // 'JM'
+```
+</CodeGroup>
+
+---
+
+### rtlSanitize
+
+Remove RTL/LTR override unicode characters that can cause security issues.
+
+```typescript
+function rtlSanitize(str: string): string
+```
+
+```tsx
+import { rtlSanitize } from '@proton/shared/lib/helpers/string';
+
+// Protects against RTL override attacks
+const safe = rtlSanitize(unsafeFilename);
+```
+
+---
+
+## Object Helpers
+
+### omit
+
+Create a new object with specified properties removed.
+
+```typescript
+function omit<T extends object, K extends keyof T>(
+  model: T,
+  properties?: readonly K[]
+): Omit<T, K>
+```
+
+<ParamField path="model" type="T" required>
+  Source object
+</ParamField>
+
+<ParamField path="properties" type="readonly K[]" default="[]">
+  Properties to omit
+</ParamField>
+
+<CodeGroup>
+```tsx Basic Usage
+import { omit } from '@proton/shared/lib/helpers/object';
+
+const user = {
+  id: '1',
+  name: 'John',
+  password: 'secret',
+  email: 'john@example.com'
+};
+
+const publicUser = omit(user, ['password']);
+// { id: '1', name: 'John', email: 'john@example.com' }
+```
+
+```tsx Multiple Properties
+const data = { a: 1, b: 2, c: 3, d: 4 };
+const filtered = omit(data, ['b', 'd']);
+// { a: 1, c: 3 }
+```
+</CodeGroup>
+
+---
+
+### pick
+
+Create a new object with only specified properties.
+
+```typescript
+function pick<T extends object, K extends keyof T>(
+  model: T,
+  properties?: readonly K[]
+): Pick<T, K>
+```
+
+<ParamField path="model" type="T" required>
+  Source object
+</ParamField>
+
+<ParamField path="properties" type="readonly K[]" default="[]">
+  Properties to keep
+</ParamField>
+
+```tsx
+import { pick } from '@proton/shared/lib/helpers/object';
+
+const user = {
+  id: '1',
+  name: 'John',
+  email: 'john@example.com',
+  password: 'secret'
+};
+
+const publicData = pick(user, ['id', 'name', 'email']);
+// { id: '1', name: 'John', email: 'john@example.com' }
+```
+
+---
+
+### toMap
+
+Convert an array to a map object keyed by a specific property.
+
+```typescript
+function toMap<T extends { [key: string]: any }, K extends keyof T>(
+  collection?: T[],
+  key?: K
+): { [key in T[K]]: T }
+```
+
+<ParamField path="collection" type="T[]" default="[]">
+  Array to convert
+</ParamField>
+
+<ParamField path="key" type="K" default="'ID'">
+  Property to use as map key
+</ParamField>
+
+<CodeGroup>
+```tsx Basic Usage
+import { toMap } from '@proton/shared/lib/helpers/object';
+
+const users = [
+  { ID: '1', name: 'John' },
+  { ID: '2', name: 'Jane' },
+  { ID: '3', name: 'Bob' }
+];
+
+const userMap = toMap(users);
+// {
+//   '1': { ID: '1', name: 'John' },
+//   '2': { ID: '2', name: 'Jane' },
+//   '3': { ID: '3', name: 'Bob' }
+// }
+```
+
+```tsx Custom Key
+const items = [
+  { code: 'A', value: 1 },
+  { code: 'B', value: 2 }
+];
+
+const itemMap = toMap(items, 'code');
+// { 'A': { code: 'A', value: 1 }, 'B': { code: 'B', value: 2 } }
+```
+</CodeGroup>
+
+---
+
+### toBitMap
+
+Convert an object of boolean flags to a bitmap number.
+
+```typescript
+function toBitMap(o?: { [key: string]: boolean }): number
+```
+
+```tsx
+import { toBitMap } from '@proton/shared/lib/helpers/object';
+
+const flags = {
+  announcements: true,
+  features: false,
+  newsletter: true,
+  beta: false
+};
+
+const bitmap = toBitMap(flags);
+// 5 (binary: 0101)
+```
+
+---
+
+### fromBitmap
+
+Convert a bitmap number to an object of boolean flags.
+
+```typescript
+function fromBitmap(
+  value: number,
+  keys?: string[]
+): { [key: string]: boolean }
+```
+
+```tsx
+import { fromBitmap } from '@proton/shared/lib/helpers/object';
+
+const flags = fromBitmap(5, [
+  'announcements',
+  'features',
+  'newsletter',
+  'beta'
+]);
+// {
+//   announcements: true,
+//   features: false,
+//   newsletter: true,
+//   beta: false
+// }
+```
+
+---
+
+## DOM Helpers
+
+### loadScript
+
+Dynamically load a JavaScript file.
+
+```typescript
+function loadScript(
+  path: string,
+  integrity?: string
+): Promise<Event>
+```
+
+<ParamField path="path" type="string" required>
+  URL of the script to load
+</ParamField>
+
+<ParamField path="integrity" type="string">
+  Subresource Integrity (SRI) hash
+</ParamField>
+
+```tsx
+import { loadScript } from '@proton/shared/lib/helpers/dom';
+
+await loadScript(
+  'https://cdn.example.com/library.js',
+  'sha384-abc123...'
+);
+```
+
+---
+
+### scrollIntoView
+
+Safely scroll an element into view with cross-browser support.
+
+```typescript
+function scrollIntoView(
+  element: HTMLElement | undefined | null,
+  extra?: boolean | ScrollIntoViewOptions
+): void
+```
+
+```tsx
+import { scrollIntoView } from '@proton/shared/lib/helpers/dom';
+
+const element = document.getElementById('target');
+scrollIntoView(element, {
+  behavior: 'smooth',
+  block: 'nearest'
+});
+```
+
+---
+
+### isElement
+
+Check if a node is an Element node.
+
+```typescript
+function isElement(node: Node | null): node is Element
+```
+
+```tsx
+import { isElement } from '@proton/shared/lib/helpers/dom';
+
+const node = document.querySelector('.item');
+if (isElement(node)) {
+  // node is typed as Element
+  node.classList.add('active');
+}
+```
+
+---
+
+### getScrollParent
+
+Find the nearest scrollable ancestor element.
+
+```typescript
+function getScrollParent(
+  element: HTMLElement | null | undefined,
+  includeHidden?: boolean
+): HTMLElement
+```
+
+<ParamField path="element" type="HTMLElement | null | undefined">
+  Element to start search from
+</ParamField>
+
+<ParamField path="includeHidden" type="boolean" default="false">
+  Include elements with overflow: hidden
+</ParamField>
+
+```tsx
+import { getScrollParent } from '@proton/shared/lib/helpers/dom';
+
+const element = document.getElementById('nested');
+const scrollContainer = getScrollParent(element);
+scrollContainer.scrollTop = 0;
+```
+
+---
+
+### isVisible
+
+Check if an element is visible (not hidden by CSS).
+
+```typescript
+function isVisible(element: HTMLElement | null): boolean
+```
+
+```tsx
+import { isVisible } from '@proton/shared/lib/helpers/dom';
+
+const element = document.querySelector('.modal');
+if (isVisible(element)) {
+  console.log('Modal is visible');
+}
+```
+
+---
+
+### rootFontSize
+
+Get the root font size in pixels.
+
+```typescript
+function rootFontSize(reset?: boolean): number
+```
+
+<ParamField path="reset" type="boolean" default="false">
+  Force recalculation of cached value
+</ParamField>
+
+```tsx
+import { rootFontSize } from '@proton/shared/lib/helpers/dom';
+
+const remValue = 2; // 2rem
+const pixels = remValue * rootFontSize();
+```
+
+---
+
+## URL Helpers
+
+### getSearchParams
+
+Parse URL search parameters into an object.
+
+```typescript
+function getSearchParams(search: string): ParsedSearchParams
+
+type ParsedSearchParams = Partial<Record<string, string>>
+```
+
+```tsx
+import { getSearchParams } from '@proton/shared/lib/helpers/url';
+
+const params = getSearchParams('?foo=bar&baz=qux');
+// { foo: 'bar', baz: 'qux' }
+```
+
+---
+
+### stringifySearchParams
+
+Convert an object to URL search parameters string.
+
+```typescript
+function stringifySearchParams(
+  params: { [key: string]: string | string[] | undefined | null },
+  prefix?: string
+): string
+```
+
+<ParamField path="params" type="object" required>
+  Parameters to stringify
+</ParamField>
+
+<ParamField path="prefix" type="string">
+  Prefix to add (e.g., '?')
+</ParamField>
+
+<CodeGroup>
+```tsx Basic Usage
+import { stringifySearchParams } from '@proton/shared/lib/helpers/url';
+
+const query = stringifySearchParams({
+  search: 'hello',
+  page: '2'
+});
+// 'search=hello&page=2'
+```
+
+```tsx With Prefix
+const query = stringifySearchParams(
+  { search: 'hello' },
+  '?'
+);
+// '?search=hello'
+```
+
+```tsx Array Values
+const query = stringifySearchParams({
+  ids: ['1', '2', '3']
+});
+// 'ids=1,2,3'
+```
+</CodeGroup>
+
+---
+
+### changeSearchParams
+
+Update URL search parameters.
+
+```typescript
+function changeSearchParams(
+  pathname: string,
+  search: string,
+  newParams?: ParsedSearchParams
+): string
+```
+
+```tsx
+import { changeSearchParams } from '@proton/shared/lib/helpers/url';
+
+const newUrl = changeSearchParams(
+  '/app',
+  '?page=1',
+  { page: '2', filter: 'active' }
+);
+// '/app#page=2&filter=active'
+```
+
+---
+
+### getHostname
+
+Extract hostname from a URL.
+
+```typescript
+function getHostname(url?: string): string
+```
+
+```tsx
+import { getHostname } from '@proton/shared/lib/helpers/url';
+
+const hostname = getHostname('https://mail.proton.me/inbox');
+// 'mail.proton.me'
+```
+
+---
+
+### isValidHttpUrl
+
+Check if a string is a valid HTTP(S) URL.
+
+```typescript
+function isValidHttpUrl(string: string): boolean
+```
+
+```tsx
+import { isValidHttpUrl } from '@proton/shared/lib/helpers/url';
+
+isValidHttpUrl('https://proton.me'); // true
+isValidHttpUrl('ftp://example.com'); // false
+isValidHttpUrl('not a url'); // false
+```
+
+---
+
+### joinPaths
+
+Safely join URL path segments.
+
+```typescript
+function joinPaths(...paths: string[]): string
+```
+
+```tsx
+import { joinPaths } from '@proton/shared/lib/helpers/url';
+
+const url = joinPaths('/api/', '/users/', '/123/');
+// '/api/users/123'
+```
+
+---
+
+## Best Practices
+
+### Import Only What You Need
+
+```tsx
+// Good - tree-shakeable
+import { normalize } from '@proton/shared/lib/helpers/string';
+
+// Avoid - imports entire module
+import * as stringHelpers from '@proton/shared/lib/helpers/string';
+```
+
+### Type Safety
+
+```tsx
+// Use type parameters for better type inference
+const users = [{ ID: '1', name: 'John' }];
+const userMap = toMap(users); // Fully typed
+
+// Use type guards
+if (isElement(node)) {
+  // TypeScript knows node is Element here
+  node.classList.add('active');
+}
+```
+
+### Performance
+
+```tsx
+// Cache root font size
+const rem = rootFontSize(); // Cached after first call
+
+// Batch DOM operations
+const elements = document.querySelectorAll('.item');
+elements.forEach(el => {
+  if (isVisible(el)) {
+    // Process visible elements
+  }
+});
+```

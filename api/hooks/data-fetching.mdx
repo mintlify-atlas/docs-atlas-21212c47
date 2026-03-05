@@ -1,0 +1,407 @@
+---
+title: Data Fetching Hooks
+description: React hooks for API interactions and data fetching in Proton WebClients
+---
+
+## useApi
+
+Access the configured API client for making HTTP requests.
+
+### Signature
+
+```typescript
+function useApi(): Api
+
+type Api = <T = any>(config: ApiConfig) => Promise<T>
+
+interface ApiConfig {
+  url: string;
+  method?: 'get' | 'post' | 'put' | 'delete';
+  data?: any;
+  params?: Record<string, any>;
+  headers?: Record<string, string>;
+  silence?: boolean | boolean[];
+  timeout?: number;
+}
+```
+
+### Returns
+
+<ResponseField name="api" type="Api">
+  Configured API client function for making HTTP requests
+</ResponseField>
+
+### Usage
+
+<CodeGroup>
+```tsx Basic GET Request
+import { useApi } from '@proton/components';
+
+function MyComponent() {
+  const api = useApi();
+
+  const fetchUser = async () => {
+    const { User } = await api<{ User: User }>({
+      url: '/core/v4/users',
+      method: 'get'
+    });
+    return User;
+  };
+
+  return <div>...</div>;
+}
+```
+
+```tsx POST Request
+const api = useApi();
+
+const createItem = async (data: CreateItemData) => {
+  const response = await api<{ Item: Item }>({
+    url: '/core/v4/items',
+    method: 'post',
+    data
+  });
+  return response.Item;
+};
+```
+
+```tsx With Error Handling
+const api = useApi();
+
+try {
+  const result = await api({
+    url: '/api/endpoint',
+    method: 'post',
+    data: { name: 'test' }
+  });
+} catch (error) {
+  // Handle API error
+  console.error('API request failed:', error);
+}
+```
+
+```tsx Silence Errors
+const api = useApi();
+
+// Don't show error notifications
+const result = await api({
+  url: '/api/endpoint',
+  silence: true
+});
+```
+</CodeGroup>
+
+### Features
+
+- Type-safe responses with generics
+- Automatic authentication token injection
+- Error handling and retry logic
+- Request/response interceptors
+- Support for error silencing
+
+---
+
+## useApiResult
+
+Fetch data from an API endpoint with automatic loading and error state management.
+
+### Signature
+
+```typescript
+function useApiResult<R, F extends QueryFunction = QueryFunction>(
+  fn: QueryFunction,
+  dependencies?: any[],
+  throwOnError?: boolean,
+  lazy?: boolean
+): Result<R, Parameters<F>>
+
+type QueryFunction = (...args: any[]) => { method: string; url: string }
+
+interface Result<R, U extends any[]> {
+  result: R | undefined;
+  error: Error;
+  loading: boolean;
+  request: (...args: U) => Promise<R>;
+}
+```
+
+### Parameters
+
+<ParamField path="fn" type="QueryFunction" required>
+  Query function that returns API config object
+</ParamField>
+
+<ParamField path="dependencies" type="any[]">
+  Dependency array for automatic refetching
+</ParamField>
+
+<ParamField path="throwOnError" type="boolean" default="true">
+  Whether to throw errors in render (for error boundaries)
+</ParamField>
+
+<ParamField path="lazy" type="boolean" default="false">
+  If true, don't fetch automatically on mount
+</ParamField>
+
+### Returns
+
+<ResponseField name="result" type="R | undefined">
+  The fetched data (undefined while loading or on error)
+</ResponseField>
+
+<ResponseField name="error" type="Error">
+  Error object if request failed
+</ResponseField>
+
+<ResponseField name="loading" type="boolean">
+  Whether the request is currently in progress
+</ResponseField>
+
+<ResponseField name="request" type="(...args: Parameters<F>) => Promise<R>">
+  Function to manually trigger the request
+</ResponseField>
+
+### Usage
+
+<CodeGroup>
+```tsx Automatic Fetching
+import { useApiResult } from '@proton/components';
+import { queryUserSettings } from '@proton/shared/lib/api/settings';
+
+function SettingsComponent() {
+  const { result: settings, loading, error } = useApiResult(
+    queryUserSettings,
+    [] // Empty array means fetch once on mount
+  );
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return <div>{settings?.Theme}</div>;
+}
+```
+
+```tsx With Dependencies
+function UserProfile({ userId }: { userId: string }) {
+  const { result: user, loading } = useApiResult(
+    () => ({ url: `/users/${userId}`, method: 'get' }),
+    [userId] // Refetch when userId changes
+  );
+
+  return loading ? <Spinner /> : <div>{user?.Name}</div>;
+}
+```
+
+```tsx Lazy Loading
+function SearchComponent() {
+  const { result, loading, request } = useApiResult(
+    (query: string) => ({
+      url: '/search',
+      method: 'get',
+      params: { query }
+    }),
+    undefined,
+    true,
+    true // Lazy mode - don't fetch on mount
+  );
+
+  const handleSearch = (query: string) => {
+    request(query);
+  };
+
+  return (
+    <div>
+      <input onChange={(e) => handleSearch(e.target.value)} />
+      {loading && <Spinner />}
+      {result && <Results data={result} />}
+    </div>
+  );
+}
+```
+
+```tsx Without Error Boundary
+const { result, error, loading } = useApiResult(
+  queryData,
+  [],
+  false // Don't throw errors, handle them manually
+);
+
+if (error) {
+  return <ErrorMessage error={error} />;
+}
+```
+</CodeGroup>
+
+### Error Handling
+
+```tsx
+// With error boundary (throwOnError: true)
+try {
+  return (
+    <ErrorBoundary>
+      <ComponentUsingApiResult />
+    </ErrorBoundary>
+  );
+} catch (error) {
+  // Error boundary catches the error
+}
+
+// Manual error handling (throwOnError: false)
+const { error } = useApiResult(queryData, [], false);
+if (error) {
+  // Handle error in component
+}
+```
+
+---
+
+## useCache
+
+Access the application-wide cache for storing and retrieving data.
+
+### Signature
+
+```typescript
+function useCache<K = string, V = any>(): Cache<K, V>
+
+interface Cache<K, V> {
+  get(key: K): V | undefined;
+  set(key: K, value: V): void;
+  has(key: K): boolean;
+  delete(key: K): boolean;
+  clear(): void;
+  subscribe(callback: (key: K, value: V) => void): () => void;
+}
+```
+
+### Usage
+
+<CodeGroup>
+```tsx Basic Cache Usage
+import { useCache } from '@proton/components';
+
+function MyComponent() {
+  const cache = useCache();
+
+  // Get cached value
+  const user = cache.get('user');
+
+  // Set cache value
+  cache.set('user', { id: 1, name: 'John' });
+
+  // Check if key exists
+  if (cache.has('user')) {
+    console.log('User is cached');
+  }
+
+  return <div>...</div>;
+}
+```
+
+```tsx With Type Safety
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+function UserComponent() {
+  const cache = useCache<string, User>();
+
+  const user = cache.get('current-user');
+  // user is typed as User | undefined
+
+  return <div>{user?.name}</div>;
+}
+```
+
+```tsx Subscribe to Changes
+const cache = useCache();
+
+useEffect(() => {
+  const unsubscribe = cache.subscribe((key, value) => {
+    console.log(`Cache updated: ${key}`, value);
+  });
+
+  return unsubscribe; // Cleanup subscription
+}, [cache]);
+```
+
+```tsx Clear Cache
+const cache = useCache();
+
+const handleLogout = () => {
+  cache.clear(); // Remove all cached data
+  // ... other logout logic
+};
+```
+</CodeGroup>
+
+### Cache Keys
+
+Common cache keys used throughout Proton WebClients:
+
+```typescript
+// User data
+cache.get('user');
+cache.get('addresses');
+cache.get('user-settings');
+
+// Organization
+cache.get('organization');
+cache.get('organization-key');
+
+// Subscription
+cache.get('subscription');
+cache.get('plans');
+
+// Mail
+cache.get('mail-settings');
+cache.get('labels');
+cache.get('folders');
+```
+
+### Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Type Parameters">
+    Always specify type parameters for type safety:
+    ```tsx
+    const cache = useCache<string, User>();
+    ```
+  </Accordion>
+
+  <Accordion title="Clean Up Subscriptions">
+    Always unsubscribe from cache changes:
+    ```tsx
+    useEffect(() => {
+      const unsubscribe = cache.subscribe(handler);
+      return unsubscribe;
+    }, []);
+    ```
+  </Accordion>
+
+  <Accordion title="Check Before Using">
+    Always check if a value exists before using it:
+    ```tsx
+    const user = cache.get('user');
+    if (user) {
+      // Use user safely
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Related Hooks
+
+- [useLoading](/api/hooks/state-management#useloading) - Track loading states
+- [useIsMounted](/api/hooks/state-management#useismounted) - Check mount status
+- [useInstance](/api/hooks/state-management#useinstance) - Create stable instances
+
+## Next Steps
+
+- Learn about [State Management Hooks](/api/hooks/state-management)
+- Explore [Helper Utilities](/api/utilities/helpers)
+- Check out [Common Types](/api/types/common)

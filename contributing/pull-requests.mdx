@@ -1,0 +1,564 @@
+---
+title: Pull Request Process
+description: Guidelines for submitting and reviewing pull requests
+---
+
+## Before You Start
+
+Before creating a pull request, make sure you've:
+
+<Steps>
+  <Step title="Read the guidelines">
+    Familiarize yourself with the [contribution guidelines](/contributing/guidelines) and [code style rules](/contributing/code-style).
+  </Step>
+  
+  <Step title="Create a feature branch">
+    ```bash
+    git checkout -b feature/your-feature-name
+    # Or for bug fixes:
+    git checkout -b fix/ISSUE-123-bug-description
+    ```
+  </Step>
+  
+  <Step title="Test locally">
+    ```bash
+    # Run linting and type checks
+    turbo run lint check-types
+    
+    # Run tests
+    yarn workspace @proton/your-package test
+    ```
+  </Step>
+</Steps>
+
+## Branch Naming Conventions
+
+Use descriptive branch names that indicate the purpose of your changes:
+
+<Tabs>
+  <Tab title="Features">
+    ```
+    feature/add-dark-mode-toggle
+    feature/MAIL-123-attachment-preview
+    ```
+  </Tab>
+  
+  <Tab title="Bug Fixes">
+    ```
+    fix/calendar-timezone-bug
+    fix/DRIVE-456-upload-error
+    ```
+  </Tab>
+  
+  <Tab title="Refactoring">
+    ```
+    refactor/simplify-auth-flow
+    refactor/SHARED-789-cleanup-utils
+    ```
+  </Tab>
+  
+  <Tab title="Other">
+    ```
+    chore/update-dependencies
+    docs/improve-readme
+    test/add-button-tests
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+  If working on an issue, include the issue/ticket number in the branch name for better traceability.
+</Tip>
+
+## Commit Messages
+
+### Format
+
+Write clear, descriptive commit messages:
+
+```
+<type>: <description>
+
+[optional body]
+
+[optional footer]
+```
+
+### Types
+
+- **feat**: New feature
+- **fix**: Bug fix
+- **refactor**: Code refactoring (no functional changes)
+- **perf**: Performance improvements
+- **style**: Code style changes (formatting, missing semicolons, etc.)
+- **test**: Adding or updating tests
+- **docs**: Documentation changes
+- **chore**: Maintenance tasks (dependencies, build config, etc.)
+
+### Examples
+
+<CodeGroup>
+```bash Feature
+feat: add dark mode toggle to settings
+
+Implements a new toggle in user settings that allows switching
+between light and dark themes. The preference is saved to local
+storage and persisted across sessions.
+
+Closes #1234
+```
+
+```bash Bug Fix
+fix: resolve calendar timezone conversion error
+
+Fixed an issue where events were displayed in the wrong timezone
+when user's system timezone differed from calendar timezone.
+
+Fixes CALENDAR-456
+```
+
+```bash Refactor
+refactor: simplify authentication flow
+
+Consolidated duplicate authentication logic across multiple
+components into a single reusable hook.
+```
+</CodeGroup>
+
+### Commit Standards
+
+<Warning>
+  **Important:** All commits must pass pre-commit hooks before they can be committed. The hooks will automatically:
+  
+  - Run ESLint with zero warnings policy
+  - Format code with Prettier
+  - Lint SCSS files with Stylelint
+  - Sort package.json files
+</Warning>
+
+## Creating a Pull Request
+
+### 1. Push Your Branch
+
+```bash
+git push origin feature/your-feature-name
+```
+
+### 2. Open a Pull Request
+
+Go to [github.com/ProtonMail/WebClients](https://github.com/ProtonMail/WebClients) and click "New Pull Request".
+
+### 3. Fill Out the PR Template
+
+Provide a clear description of your changes:
+
+<Tabs>
+  <Tab title="Title">
+    Write a concise, descriptive title:
+    
+    ```
+    ✅ Good:
+    feat: Add dark mode toggle to user settings
+    fix: Resolve calendar timezone conversion bug
+    
+    ❌ Bad:
+    Updated settings
+    Fixed bug
+    Changes
+    ```
+  </Tab>
+  
+  <Tab title="Description">
+    Explain what changes you made and why:
+    
+    ```markdown
+    ## Summary
+    
+    This PR implements a dark mode toggle in user settings.
+    
+    ## Changes
+    
+    - Added toggle component to settings page
+    - Implemented theme switching logic
+    - Added local storage persistence
+    - Updated relevant styles for dark mode
+    
+    ## Testing
+    
+    - Tested toggle functionality in Chrome, Firefox, Safari
+    - Verified persistence across sessions
+    - Checked responsive behavior on mobile
+    
+    ## Screenshots
+    
+    [Include screenshots if UI changes]
+    
+    ## Related Issues
+    
+    Closes #1234
+    ```
+  </Tab>
+  
+  <Tab title="Checklist">
+    Make sure you've completed these items:
+    
+    - [ ] Code follows the style guidelines
+    - [ ] Self-review of code completed
+    - [ ] Comments added for complex logic
+    - [ ] Documentation updated (if needed)
+    - [ ] Tests added/updated (if needed)
+    - [ ] All tests pass locally
+    - [ ] No new warnings introduced
+    - [ ] Changes are backwards compatible
+  </Tab>
+</Tabs>
+
+## PR Requirements
+
+### Automated Checks
+
+Your PR must pass all automated checks:
+
+<CardGroup cols={2}>
+  <Card title="Linting" icon="check">
+    ESLint must pass with zero warnings
+  </Card>
+  <Card title="Type Checking" icon="code">
+    TypeScript must compile without errors
+  </Card>
+  <Card title="Tests" icon="vial">
+    All existing tests must pass
+  </Card>
+  <Card title="Build" icon="hammer">
+    Application must build successfully
+  </Card>
+</CardGroup>
+
+<Info>
+  The CI will automatically run these checks when you push commits or open a PR. Check the "Checks" tab on your PR for results.
+</Info>
+
+### Code Review
+
+All pull requests require code review before merging:
+
+1. **Self-review first** - Review your own changes before requesting review
+2. **Request reviewers** - Tag relevant team members or maintainers
+3. **Address feedback** - Respond to all review comments
+4. **Resolve conversations** - Mark conversations as resolved once addressed
+
+### MergeBot Integration
+
+This repository uses **MergeBot** (`.margebot.yml`) for automated merging:
+
+```yaml
+fastTrack:
+  allowList:
+    - maintainer-username
+    # Core team members who can fast-track PRs
+    
+forbiddenTags:
+  - state::Blocked
+  
+ciFailFast: true
+```
+
+<Note>
+  - PRs labeled with `state::Blocked` will not be auto-merged
+  - CI failures will prevent merging (`ciFailFast: true`)
+  - Some team members can fast-track PRs through the review process
+</Note>
+
+## Updating Your PR
+
+### Responding to Feedback
+
+<Steps>
+  <Step title="Make requested changes">
+    ```bash
+    # Make your changes
+    git add .
+    git commit -m "refactor: address review feedback"
+    ```
+  </Step>
+  
+  <Step title="Push updates">
+    ```bash
+    git push origin feature/your-feature-name
+    ```
+    
+    The PR will automatically update with your new commits.
+  </Step>
+  
+  <Step title="Respond to comments">
+    Reply to review comments explaining your changes or asking for clarification.
+  </Step>
+</Steps>
+
+### Keeping Your Branch Updated
+
+If `main` has advanced since you created your branch:
+
+```bash
+# Update your local main branch
+git checkout main
+git pull origin main
+
+# Rebase your feature branch
+git checkout feature/your-feature-name
+git rebase main
+
+# Force push if already pushed
+git push origin feature/your-feature-name --force-with-lease
+```
+
+<Warning>
+  Use `--force-with-lease` instead of `--force` to avoid accidentally overwriting others' work.
+</Warning>
+
+## PR Size Guidelines
+
+<Tabs>
+  <Tab title="Small PRs (Ideal)">
+    **Lines changed: < 300**
+    
+    ✅ Benefits:
+    - Faster to review
+    - Easier to understand
+    - Lower risk of bugs
+    - Quicker to merge
+    
+    Examples:
+    - Single bug fix
+    - Small feature addition
+    - Documentation update
+    - Dependency update
+  </Tab>
+  
+  <Tab title="Medium PRs">
+    **Lines changed: 300-1000**
+    
+    ⚠️ Acceptable for:
+    - New component with tests
+    - Multiple related bug fixes
+    - Feature with documentation
+    
+    Tips:
+    - Break into logical commits
+    - Provide detailed description
+    - Add inline comments for complex parts
+  </Tab>
+  
+  <Tab title="Large PRs">
+    **Lines changed: > 1000**
+    
+    ❌ Avoid when possible
+    
+    If unavoidable:
+    - Discuss with maintainers first
+    - Consider splitting into multiple PRs
+    - Provide comprehensive documentation
+    - Schedule live review if needed
+    
+    <Tip>
+      For large refactors, consider opening an RFC (Request for Comments) issue first.
+    </Tip>
+  </Tab>
+</Tabs>
+
+## Common PR Issues
+
+<AccordionGroup>
+  <Accordion title="CI failing on ESLint">
+    Make sure you've run linting locally:
+    
+    ```bash
+    turbo run lint
+    ```
+    
+    Fix all warnings and errors. Remember: `--max-warnings=0` is enforced.
+  </Accordion>
+  
+  <Accordion title="Type errors in CI">
+    Run type checking locally:
+    
+    ```bash
+    turbo run check-types
+    ```
+    
+    Fix all TypeScript errors before pushing.
+  </Accordion>
+  
+  <Accordion title="Merge conflicts">
+    Rebase your branch on the latest `main`:
+    
+    ```bash
+    git checkout main
+    git pull origin main
+    git checkout your-branch
+    git rebase main
+    # Resolve conflicts
+    git push origin your-branch --force-with-lease
+    ```
+  </Accordion>
+  
+  <Accordion title="Pre-commit hooks failing">
+    The pre-commit hooks run:
+    - ESLint with `--fix`
+    - Prettier with `--write`
+    - Stylelint with `--fix`
+    
+    Let them auto-fix what they can, then stage and commit again.
+    
+    If hooks aren't running at all:
+    ```bash
+    yarn husky
+    ```
+  </Accordion>
+  
+  <Accordion title="Test failures">
+    Run tests locally to debug:
+    
+    ```bash
+    yarn workspace @proton/your-package test
+    
+    # Run specific test file
+    yarn workspace @proton/your-package test path/to/test.spec.ts
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## After Your PR is Merged
+
+<Steps>
+  <Step title="Update your local repository">
+    ```bash
+    git checkout main
+    git pull origin main
+    ```
+  </Step>
+  
+  <Step title="Delete your feature branch">
+    ```bash
+    # Delete local branch
+    git branch -d feature/your-feature-name
+    
+    # Delete remote branch (if not auto-deleted)
+    git push origin --delete feature/your-feature-name
+    ```
+  </Step>
+  
+  <Step title="Celebrate!">
+    🎉 Your contribution is now part of Proton WebClients!
+  </Step>
+</Steps>
+
+## PR Review Guidelines
+
+### For Reviewers
+
+If you're reviewing a PR:
+
+<Tabs>
+  <Tab title="What to Check">
+    - [ ] Code follows style guidelines
+    - [ ] Logic is clear and maintainable
+    - [ ] No unnecessary complexity
+    - [ ] Tests cover new functionality
+    - [ ] No security vulnerabilities
+    - [ ] Performance impact is acceptable
+    - [ ] Backwards compatibility maintained
+    - [ ] Documentation is updated
+  </Tab>
+  
+  <Tab title="How to Review">
+    **Be constructive:**
+    - Point out issues clearly
+    - Suggest specific improvements
+    - Acknowledge good work
+    - Ask questions for clarification
+    
+    **Be respectful:**
+    - Focus on code, not the person
+    - Assume good intentions
+    - Offer to help if needed
+    
+    **Be thorough:**
+    - Test the changes locally if possible
+    - Consider edge cases
+    - Think about future maintenance
+  </Tab>
+  
+  <Tab title="Review Actions">
+    **Approve:** Changes look good and meet all requirements
+    
+    **Request Changes:** Issues that must be fixed before merge
+    
+    **Comment:** Suggestions or questions that don't block merge
+    
+    ```markdown
+    # Example feedback:
+    
+    ## Required Changes
+    - Fix the type error in `UserService.ts:45`
+    - Add tests for the error handling path
+    
+    ## Suggestions
+    - Consider using a `Map` instead of an object for O(1) lookups
+    - This function could be simplified using `Array.reduce()`
+    
+    ## Questions
+    - How does this handle the case when user is undefined?
+    ```
+  </Tab>
+</Tabs>
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="GitHub Issues" icon="github" href="https://github.com/ProtonMail/WebClients/issues">
+    Browse existing issues or report new ones
+  </Card>
+  
+  <Card title="Contribution Guidelines" icon="book" href="/contributing/guidelines">
+    General guidelines for contributing
+  </Card>
+  
+  <Card title="Code Style Guide" icon="code" href="/contributing/code-style">
+    Linting and formatting standards
+  </Card>
+  
+  <Card title="Yarn Workspaces" icon="box" href="https://yarnpkg.com/">
+    Learn about monorepo management
+  </Card>
+</CardGroup>
+
+## Getting Help
+
+<Tabs>
+  <Tab title="Questions">
+    Use the [Ask a Question](https://github.com/ProtonMail/WebClients/issues/new/choose) issue template for:
+    - Code-related questions
+    - Technical discussions
+    - Implementation advice
+  </Tab>
+  
+  <Tab title="PR Issues">
+    If you're stuck on your PR:
+    - Comment on your PR describing the issue
+    - Tag a maintainer for guidance
+    - Ask in PR comments for clarification
+  </Tab>
+  
+  <Tab title="Bugs">
+    For production bugs (not dev-related):
+    - Use appropriate support channels on proton.me
+    - Don't use GitHub issues for app support
+  </Tab>
+</Tabs>
+
+---
+
+<Note>
+  Thank you for contributing to Proton WebClients! Your efforts help make privacy and security accessible to everyone.
+</Note>

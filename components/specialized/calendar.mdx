@@ -1,0 +1,473 @@
+---
+title: Calendar Components
+description: Calendar and date-related components
+---
+
+# Calendar Components
+
+Proton provides calendar components for displaying and selecting dates, including a comprehensive mini calendar component.
+
+## MiniCalendar
+
+A compact calendar component for date selection and display.
+
+**Location**: `components/miniCalendar/MiniCalendar.tsx`
+
+### Basic Usage
+
+```tsx
+import { useState } from 'react';
+import MiniCalendar from '@proton/components/components/miniCalendar/MiniCalendar';
+
+const MyCalendar = () => {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  return (
+    <MiniCalendar
+      date={selectedDate}
+      onSelectDate={setSelectedDate}
+    />
+  );
+};
+```
+
+### Props
+
+<ParamField path="date" type="Date" required>
+  Currently displayed/selected date
+</ParamField>
+
+<ParamField path="onSelectDate" type="(date: Date) => void">
+  Callback when a date is selected
+</ParamField>
+
+<ParamField path="onSelectDateRange" type="(range: DateTuple, resetRange?: boolean) => void">
+  Callback when a date range is selected
+</ParamField>
+
+<ParamField path="dateRange" type="DateTuple">
+  Selected date range [startDate, endDate]
+</ParamField>
+
+<ParamField path="now" type="Date">
+  Current date for highlighting. Default: `new Date()`
+</ParamField>
+
+<ParamField path="min" type="Date">
+  Minimum selectable date
+</ParamField>
+
+<ParamField path="max" type="Date">
+  Maximum selectable date
+</ParamField>
+
+<ParamField path="hasCursors" type="boolean">
+  Show previous/next month navigation. Default: `true`
+</ParamField>
+
+<ParamField path="hasToday" type="boolean">
+  Show "today" button. Default: `false`
+</ParamField>
+
+<ParamField path="displayWeekNumbers" type="boolean">
+  Display week numbers. Default: `false`
+</ParamField>
+
+<ParamField path="onMonthChange" type="(date: Date) => void">
+  Callback when month changes
+</ParamField>
+
+<ParamField path="weekStartsOn" type="WeekStartsOn">
+  First day of week (0=Sunday, 1=Monday). Default: `1`
+</ParamField>
+
+<ParamField path="formatDay" type="(date: Date) => string">
+  Custom day formatting function
+</ParamField>
+
+<ParamField path="getDayClassName" type="(date: Date) => string | undefined">
+  Function to get custom className for specific days
+</ParamField>
+
+<ParamField path="numberOfWeeks" type="number">
+  Number of weeks to display. Default: `6`
+</ParamField>
+
+<ParamField path="numberOfDays" type="number">
+  Number of days per week. Default: `7`
+</ParamField>
+
+<ParamField path="fixedSize" type="boolean">
+  Use fixed size cells. Default: `false`
+</ParamField>
+
+<ParamField path="preventLeaveFocus" type="boolean">
+  Prevent focus from leaving component. Default: `false`
+</ParamField>
+
+<ParamField path="todayTitle" type="string">
+  Tooltip for today button
+</ParamField>
+
+<ParamField path="miniCalendarNextPrevButtonsColor" type="'weak' | 'norm'">
+  Color for navigation buttons. Default: `weak`
+</ParamField>
+
+<ParamField path="highlightedDates" type="Date[]">
+  Array of dates to highlight
+</ParamField>
+
+<ParamField path="disableNonHighlightedDates" type="boolean">
+  Disable dates not in highlightedDates. Default: `false`
+</ParamField>
+
+### Examples
+
+<Tabs>
+  <Tab title="Basic Calendar">
+    ```tsx
+    const [date, setDate] = useState(new Date());
+
+    <MiniCalendar
+      date={date}
+      onSelectDate={setDate}
+    />
+    ```
+  </Tab>
+  
+  <Tab title="Date Range Selection">
+    ```tsx
+    const [dateRange, setDateRange] = useState<[Date, Date]>([
+      new Date(),
+      addDays(new Date(), 7)
+    ]);
+
+    <MiniCalendar
+      date={dateRange[0]}
+      dateRange={dateRange}
+      onSelectDateRange={setDateRange}
+    />
+    ```
+  </Tab>
+  
+  <Tab title="With Constraints">
+    ```tsx
+    <MiniCalendar
+      date={date}
+      onSelectDate={setDate}
+      min={new Date()}
+      max={addMonths(new Date(), 6)}
+    />
+    ```
+  </Tab>
+  
+  <Tab title="With Week Numbers">
+    ```tsx
+    <MiniCalendar
+      date={date}
+      onSelectDate={setDate}
+      displayWeekNumbers
+      weekStartsOn={1}
+    />
+    ```
+  </Tab>
+  
+  <Tab title="With Today Button">
+    ```tsx
+    <MiniCalendar
+      date={date}
+      onSelectDate={setDate}
+      hasToday
+      todayTitle="Go to today"
+    />
+    ```
+  </Tab>
+  
+  <Tab title="Custom Styling">
+    ```tsx
+    <MiniCalendar
+      date={date}
+      onSelectDate={setDate}
+      getDayClassName={(date) => {
+        if (isWeekend(date)) return 'color-weak';
+        if (isHoliday(date)) return 'color-danger';
+        return undefined;
+      }}
+      highlightedDates={holidays}
+    />
+    ```
+  </Tab>
+</Tabs>
+
+## LocalizedMiniCalendar
+
+MiniCalendar with automatic localization.
+
+**Location**: `components/miniCalendar/LocalizedMiniCalendar.tsx`
+
+### Usage
+
+```tsx
+import LocalizedMiniCalendar from '@proton/components/components/miniCalendar/LocalizedMiniCalendar';
+
+const MyLocalizedCalendar = () => {
+  const [date, setDate] = useState(new Date());
+
+  return (
+    <LocalizedMiniCalendar
+      date={date}
+      onSelectDate={setDate}
+    />
+  );
+};
+```
+
+This component automatically provides localized month names, weekday names, and date formatting based on the user's locale.
+
+## CalendarEventDateHeader
+
+Header component for displaying calendar event dates.
+
+**Location**: `components/calendarEventDateHeader/`
+
+### Usage
+
+```tsx
+import CalendarEventDateHeader from '@proton/components/components/calendarEventDateHeader';
+
+const MyEventHeader = () => {
+  return (
+    <CalendarEventDateHeader
+      startDate={new Date()}
+      endDate={addHours(new Date(), 2)}
+    />
+  );
+};
+```
+
+## CalendarSelect
+
+Dropdown for selecting calendars.
+
+**Location**: `components/calendarSelect/`
+
+### Usage
+
+```tsx
+import CalendarSelect from '@proton/components/components/calendarSelect';
+
+const MyCalendarSelect = () => {
+  const [selectedCalendar, setSelectedCalendar] = useState(null);
+
+  return (
+    <CalendarSelect
+      value={selectedCalendar}
+      onChange={setSelectedCalendar}
+      calendars={calendars}
+    />
+  );
+};
+```
+
+## Best Practices
+
+### Date Range Selection
+
+```tsx
+const DateRangePicker = () => {
+  const [range, setRange] = useState<[Date, Date] | null>(null);
+
+  const handleRangeSelect = (newRange: [Date, Date], reset?: boolean) => {
+    if (reset) {
+      // Start new range
+      setRange([newRange[0], newRange[0]]);
+    } else {
+      setRange(newRange);
+    }
+  };
+
+  return (
+    <div>
+      <MiniCalendar
+        date={range?.[0] || new Date()}
+        dateRange={range || undefined}
+        onSelectDateRange={handleRangeSelect}
+      />
+      {range && (
+        <div className="mt-4">
+          <p>From: {format(range[0], 'PP')}</p>
+          <p>To: {format(range[1], 'PP')}</p>
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+### Disabling Dates
+
+```tsx
+const BookingCalendar = () => {
+  const [date, setDate] = useState(new Date());
+  const availableDates = getAvailableDates(); // Array of available dates
+
+  return (
+    <MiniCalendar
+      date={date}
+      onSelectDate={setDate}
+      highlightedDates={availableDates}
+      disableNonHighlightedDates
+      getDayClassName={(date) => {
+        if (!isAvailable(date)) return 'disabled';
+        return undefined;
+      }}
+    />
+  );
+};
+```
+
+### Custom Formatting
+
+```tsx
+const CustomCalendar = () => {
+  const [date, setDate] = useState(new Date());
+
+  return (
+    <MiniCalendar
+      date={date}
+      onSelectDate={setDate}
+      formatDay={(date) => {
+        // Custom day formatting
+        return format(date, 'd');
+      }}
+      getDayClassName={(date) => {
+        // Highlight special dates
+        if (isToday(date)) return 'font-bold color-primary';
+        if (isWeekend(date)) return 'color-weak';
+        return undefined;
+      }}
+    />
+  );
+};
+```
+
+### Month Navigation
+
+```tsx
+const NavigableCalendar = () => {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  const handleMonthChange = (newDate: Date) => {
+    setCurrentMonth(newDate);
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h3>{format(currentMonth, 'MMMM yyyy')}</h3>
+      </div>
+      <MiniCalendar
+        date={currentMonth}
+        onSelectDate={setSelectedDate}
+        onMonthChange={handleMonthChange}
+        hasCursors
+      />
+      {selectedDate && (
+        <p className="mt-4">
+          Selected: {format(selectedDate, 'PP')}
+        </p>
+      )}
+    </div>
+  );
+};
+```
+
+## Accessibility
+
+```tsx
+<MiniCalendar
+  date={date}
+  onSelectDate={setDate}
+  // Calendar already includes proper ARIA labels
+  // Month label is automatically set
+  // Navigation buttons have proper titles
+/>
+```
+
+The MiniCalendar component includes:
+- Proper ARIA labels for navigation
+- Keyboard navigation support
+- Screen reader announcements
+- Accessible date selection
+
+## Integration Examples
+
+### With Modal
+
+```tsx
+const DatePickerModal = ({ open, onClose, onSelect }) => {
+  const [tempDate, setTempDate] = useState(new Date());
+
+  const handleConfirm = () => {
+    onSelect(tempDate);
+    onClose();
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} size="small">
+      <ModalHeader title="Select Date" />
+      <ModalContent>
+        <MiniCalendar
+          date={tempDate}
+          onSelectDate={setTempDate}
+        />
+      </ModalContent>
+      <ModalFooter>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={handleConfirm} color="norm">Confirm</Button>
+      </ModalFooter>
+    </Modal>
+  );
+};
+```
+
+### With Dropdown
+
+```tsx
+const DatePickerDropdown = () => {
+  const [date, setDate] = useState(new Date());
+  const [isOpen, setIsOpen] = useState(false);
+  const anchorRef = useRef<HTMLButtonElement>(null);
+
+  const handleSelectDate = (newDate: Date) => {
+    setDate(newDate);
+    setIsOpen(false);
+  };
+
+  return (
+    <>
+      <Button ref={anchorRef} onClick={() => setIsOpen(!isOpen)}>
+        {format(date, 'PP')}
+      </Button>
+      <Dropdown
+        isOpen={isOpen}
+        anchorRef={anchorRef}
+        onClose={() => setIsOpen(false)}
+      >
+        <MiniCalendar
+          date={date}
+          onSelectDate={handleSelectDate}
+        />
+      </Dropdown>
+    </>
+  );
+};
+```
+
+## Source Code
+
+View source:
+- MiniCalendar: `packages/components/components/miniCalendar/MiniCalendar.tsx:1`
+- LocalizedMiniCalendar: `packages/components/components/miniCalendar/LocalizedMiniCalendar.tsx:1`
+- MonthDays: `packages/components/components/miniCalendar/MonthDays.tsx:1`

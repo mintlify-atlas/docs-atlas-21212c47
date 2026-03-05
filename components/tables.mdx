@@ -1,0 +1,655 @@
+---
+title: Table Components
+description: Table components for displaying tabular data
+---
+
+# Table Components
+
+Proton provides table components for displaying structured data with support for sorting, responsive layouts, and custom styling.
+
+## Table
+
+The main table component with responsive capabilities.
+
+**Location**: `components/table/Table.tsx`
+
+### Basic Usage
+
+```tsx
+import Table from '@proton/components/components/table/Table';
+import TableHeader from '@proton/components/components/table/TableHeader';
+import TableBody from '@proton/components/components/table/TableBody';
+import TableRow from '@proton/components/components/table/TableRow';
+import TableCell from '@proton/components/components/table/TableCell';
+import TableHeaderCell from '@proton/components/components/table/TableHeaderCell';
+
+const MyTable = () => {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHeaderCell>Name</TableHeaderCell>
+          <TableHeaderCell>Email</TableHeaderCell>
+          <TableHeaderCell>Role</TableHeaderCell>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow>
+          <TableCell>John Doe</TableCell>
+          <TableCell>john@example.com</TableCell>
+          <TableCell>Admin</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell>Jane Smith</TableCell>
+          <TableCell>jane@example.com</TableCell>
+          <TableCell>User</TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
+  );
+};
+```
+
+### Props
+
+<ParamField path="children" type="ReactNode" required>
+  Table content (typically TableHeader and TableBody)
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes
+</ParamField>
+
+<ParamField path="caption" type="string">
+  Screen-reader accessible table caption
+</ParamField>
+
+<ParamField path="responsive" type="'cards' | 'stacked'">
+  Responsive table layout mode
+</ParamField>
+
+<ParamField path="hasActions" type="boolean">
+  Indicates table has action column. Default: `false`
+</ParamField>
+
+<ParamField path="borderWeak" type="boolean">
+  Use weaker border styling. Default: `false`
+</ParamField>
+
+### Examples
+
+<Tabs>
+  <Tab title="Basic Table">
+    ```tsx
+    <Table caption="User List">
+      <TableHeader>
+        <TableRow>
+          <TableHeaderCell>Name</TableHeaderCell>
+          <TableHeaderCell>Email</TableHeaderCell>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow>
+          <TableCell>John Doe</TableCell>
+          <TableCell>john@example.com</TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
+    ```
+  </Tab>
+  
+  <Tab title="Responsive Cards">
+    ```tsx
+    <Table responsive="cards">
+      <TableHeader>
+        <TableRow>
+          <TableHeaderCell>Product</TableHeaderCell>
+          <TableHeaderCell>Price</TableHeaderCell>
+          <TableHeaderCell>Stock</TableHeaderCell>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {products.map(product => (
+          <TableRow key={product.id}>
+            <TableCell>{product.name}</TableCell>
+            <TableCell>${product.price}</TableCell>
+            <TableCell>{product.stock}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+    ```
+  </Tab>
+  
+  <Tab title="With Actions">
+    ```tsx
+    <Table hasActions>
+      <TableHeader>
+        <TableRow>
+          <TableHeaderCell>User</TableHeaderCell>
+          <TableHeaderCell>Status</TableHeaderCell>
+          <TableHeaderCell>Actions</TableHeaderCell>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {users.map(user => (
+          <TableRow key={user.id}>
+            <TableCell>{user.name}</TableCell>
+            <TableCell>{user.status}</TableCell>
+            <TableCell>
+              <Button size="small" onClick={() => handleEdit(user)}>
+                Edit
+              </Button>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+    ```
+  </Tab>
+  
+  <Tab title="Stacked Layout">
+    ```tsx
+    <Table responsive="stacked">
+      <TableHeader>
+        <TableRow>
+          <TableHeaderCell>Field</TableHeaderCell>
+          <TableHeaderCell>Value</TableHeaderCell>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow>
+          <TableCell>Name</TableCell>
+          <TableCell>John Doe</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell>Email</TableCell>
+          <TableCell>john@example.com</TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
+    ```
+  </Tab>
+</Tabs>
+
+## TableHeader
+
+Table header container.
+
+**Location**: `components/table/TableHeader.tsx`
+
+### Usage
+
+```tsx
+import TableHeader from '@proton/components/components/table/TableHeader';
+
+<TableHeader>
+  <TableRow>
+    {/* Header cells */}
+  </TableRow>
+</TableHeader>
+```
+
+## TableBody
+
+Table body container.
+
+**Location**: `components/table/TableBody.tsx`
+
+### Usage
+
+```tsx
+import TableBody from '@proton/components/components/table/TableBody';
+
+<TableBody>
+  {data.map(item => (
+    <TableRow key={item.id}>
+      {/* Table cells */}
+    </TableRow>
+  ))}
+</TableBody>
+```
+
+## TableRow
+
+Table row component.
+
+**Location**: `components/table/TableRow.tsx`
+
+### Usage
+
+```tsx
+import TableRow from '@proton/components/components/table/TableRow';
+
+<TableRow>
+  <TableCell>Cell 1</TableCell>
+  <TableCell>Cell 2</TableCell>
+</TableRow>
+```
+
+### Props
+
+<ParamField path="className" type="string">
+  Additional CSS classes
+</ParamField>
+
+<ParamField path="onClick" type="() => void">
+  Click handler for clickable rows
+</ParamField>
+
+## TableCell
+
+Table data cell.
+
+**Location**: `components/table/TableCell.tsx`
+
+### Usage
+
+```tsx
+import TableCell from '@proton/components/components/table/TableCell';
+
+<TableCell>Cell content</TableCell>
+```
+
+### Props
+
+<ParamField path="className" type="string">
+  Additional CSS classes
+</ParamField>
+
+<ParamField path="colSpan" type="number">
+  Number of columns to span
+</ParamField>
+
+<ParamField path="rowSpan" type="number">
+  Number of rows to span
+</ParamField>
+
+## TableHeaderCell
+
+Table header cell.
+
+**Location**: `components/table/TableHeaderCell.tsx`
+
+### Usage
+
+```tsx
+import TableHeaderCell from '@proton/components/components/table/TableHeaderCell';
+
+<TableHeaderCell>Header</TableHeaderCell>
+```
+
+### Props
+
+<ParamField path="className" type="string">
+  Additional CSS classes
+</ParamField>
+
+<ParamField path="colSpan" type="number">
+  Number of columns to span
+</ParamField>
+
+## SortingTableHeader
+
+Header cell with sorting functionality.
+
+**Location**: `components/table/SortingTableHeader.tsx`
+
+### Usage
+
+```tsx
+import SortingTableHeader from '@proton/components/components/table/SortingTableHeader';
+import { useState } from 'react';
+
+const MySortableTable = () => {
+  const [sortField, setSortField] = useState('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <SortingTableHeader
+            onSort={() => handleSort('name')}
+            active={sortField === 'name'}
+            direction={sortDirection}
+          >
+            Name
+          </SortingTableHeader>
+          <SortingTableHeader
+            onSort={() => handleSort('email')}
+            active={sortField === 'email'}
+            direction={sortDirection}
+          >
+            Email
+          </SortingTableHeader>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {/* Sorted data rows */}
+      </TableBody>
+    </Table>
+  );
+};
+```
+
+### Props
+
+<ParamField path="onSort" type="() => void" required>
+  Sort handler function
+</ParamField>
+
+<ParamField path="active" type="boolean">
+  Whether this column is currently sorted
+</ParamField>
+
+<ParamField path="direction" type="'asc' | 'desc'">
+  Sort direction when active
+</ParamField>
+
+## TableRowBusy
+
+Row with loading state.
+
+**Location**: `components/table/TableRowBusy.tsx`
+
+### Usage
+
+```tsx
+import TableRowBusy from '@proton/components/components/table/TableRowBusy';
+
+<TableBody>
+  {loading ? (
+    <TableRowBusy colSpan={3} />
+  ) : (
+    data.map(item => <TableRow key={item.id}>...</TableRow>)
+  )}
+</TableBody>
+```
+
+## TableCellBusy
+
+Cell with loading state.
+
+**Location**: `components/table/TableCellBusy.tsx`
+
+### Usage
+
+```tsx
+import TableCellBusy from '@proton/components/components/table/TableCellBusy';
+
+<TableCell>
+  {loading ? <TableCellBusy /> : data}
+</TableCell>
+```
+
+## Best Practices
+
+### Sorting Implementation
+
+```tsx
+const [sortConfig, setSortConfig] = useState<{
+  key: string;
+  direction: 'asc' | 'desc';
+}>({ key: 'name', direction: 'asc' });
+
+const sortedData = useMemo(() => {
+  const sorted = [...data].sort((a, b) => {
+    if (a[sortConfig.key] < b[sortConfig.key]) {
+      return sortConfig.direction === 'asc' ? -1 : 1;
+    }
+    if (a[sortConfig.key] > b[sortConfig.key]) {
+      return sortConfig.direction === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+  return sorted;
+}, [data, sortConfig]);
+
+const handleSort = (key: string) => {
+  setSortConfig({
+    key,
+    direction:
+      sortConfig.key === key && sortConfig.direction === 'asc'
+        ? 'desc'
+        : 'asc',
+  });
+};
+```
+
+### Responsive Tables
+
+```tsx
+// Use responsive="cards" for mobile-friendly card layout
+<Table responsive="cards">
+  <TableHeader>
+    <TableRow>
+      <TableHeaderCell>Name</TableHeaderCell>
+      <TableHeaderCell>Email</TableHeaderCell>
+      <TableHeaderCell>Status</TableHeaderCell>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {users.map(user => (
+      <TableRow key={user.id}>
+        <TableCell data-label="Name">{user.name}</TableCell>
+        <TableCell data-label="Email">{user.email}</TableCell>
+        <TableCell data-label="Status">{user.status}</TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
+```
+
+### Loading States
+
+```tsx
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHeaderCell>Name</TableHeaderCell>
+      <TableHeaderCell>Email</TableHeaderCell>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {loading ? (
+      <TableRowBusy colSpan={2} />
+    ) : data.length === 0 ? (
+      <TableRow>
+        <TableCell colSpan={2} className="text-center">
+          No data available
+        </TableCell>
+      </TableRow>
+    ) : (
+      data.map(item => (
+        <TableRow key={item.id}>
+          <TableCell>{item.name}</TableCell>
+          <TableCell>{item.email}</TableCell>
+        </TableRow>
+      ))
+    )}
+  </TableBody>
+</Table>
+```
+
+### Accessibility
+
+```tsx
+// Provide table caption for screen readers
+<Table caption="User accounts list">
+  {/* Table content */}
+</Table>
+
+// Use proper scope for headers
+<TableHeaderCell scope="col">Name</TableHeaderCell>
+<TableHeaderCell scope="col">Email</TableHeaderCell>
+
+// Provide aria-labels for sortable columns
+<SortingTableHeader
+  onSort={handleSort}
+  aria-label={`Sort by name ${sortDirection === 'asc' ? 'descending' : 'ascending'}`}
+>
+  Name
+</SortingTableHeader>
+```
+
+### Row Actions
+
+```tsx
+<Table hasActions>
+  <TableHeader>
+    <TableRow>
+      <TableHeaderCell>Name</TableHeaderCell>
+      <TableHeaderCell>Email</TableHeaderCell>
+      <TableHeaderCell>Actions</TableHeaderCell>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {data.map(item => (
+      <TableRow key={item.id}>
+        <TableCell>{item.name}</TableCell>
+        <TableCell>{item.email}</TableCell>
+        <TableCell>
+          <div className="flex gap-2">
+            <Button
+              size="small"
+              shape="ghost"
+              onClick={() => handleEdit(item)}
+            >
+              Edit
+            </Button>
+            <Button
+              size="small"
+              shape="ghost"
+              color="danger"
+              onClick={() => handleDelete(item)}
+            >
+              Delete
+            </Button>
+          </div>
+        </TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
+```
+
+## Common Patterns
+
+### Selectable Rows
+
+```tsx
+const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+const toggleSelect = (id: string) => {
+  const newSelected = new Set(selectedIds);
+  if (newSelected.has(id)) {
+    newSelected.delete(id);
+  } else {
+    newSelected.add(id);
+  }
+  setSelectedIds(newSelected);
+};
+
+const toggleSelectAll = () => {
+  if (selectedIds.size === data.length) {
+    setSelectedIds(new Set());
+  } else {
+    setSelectedIds(new Set(data.map(item => item.id)));
+  }
+};
+
+return (
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHeaderCell>
+          <Checkbox
+            checked={selectedIds.size === data.length}
+            indeterminate={selectedIds.size > 0 && selectedIds.size < data.length}
+            onChange={toggleSelectAll}
+          />
+        </TableHeaderCell>
+        <TableHeaderCell>Name</TableHeaderCell>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      {data.map(item => (
+        <TableRow key={item.id}>
+          <TableCell>
+            <Checkbox
+              checked={selectedIds.has(item.id)}
+              onChange={() => toggleSelect(item.id)}
+            />
+          </TableCell>
+          <TableCell>{item.name}</TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+);
+```
+
+### Expandable Rows
+
+```tsx
+const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+const toggleExpand = (id: string) => {
+  const newExpanded = new Set(expandedIds);
+  if (newExpanded.has(id)) {
+    newExpanded.delete(id);
+  } else {
+    newExpanded.add(id);
+  }
+  setExpandedIds(newExpanded);
+};
+
+return (
+  <Table>
+    <TableBody>
+      {data.map(item => (
+        <>
+          <TableRow key={item.id}>
+            <TableCell>
+              <Button
+                icon
+                size="small"
+                onClick={() => toggleExpand(item.id)}
+              >
+                <Icon name={expandedIds.has(item.id) ? 'chevron-down' : 'chevron-right'} />
+              </Button>
+            </TableCell>
+            <TableCell>{item.name}</TableCell>
+          </TableRow>
+          {expandedIds.has(item.id) && (
+            <TableRow>
+              <TableCell colSpan={2}>
+                <div className="p-4">
+                  {/* Expanded content */}
+                </div>
+              </TableCell>
+            </TableRow>
+          )}
+        </>
+      ))}
+    </TableBody>
+  </Table>
+);
+```
+
+## Source Code
+
+View source:
+- Table: `packages/components/components/table/Table.tsx:1`
+- SortingTableHeader: `packages/components/components/table/SortingTableHeader.tsx:1`
+- TableRow: `packages/components/components/table/TableRow.tsx:1`

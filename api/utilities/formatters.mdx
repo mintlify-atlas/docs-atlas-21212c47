@@ -1,0 +1,423 @@
+---
+title: Formatting Utilities
+description: Utilities for formatting strings, numbers, dates, and other data in Proton WebClients
+---
+
+## String Formatting
+
+### replaceLineBreak
+
+Replace line breaks with HTML `<br />` tags.
+
+```typescript
+function replaceLineBreak(content?: string): string
+```
+
+<ParamField path="content" type="string">
+  String with line breaks
+</ParamField>
+
+<CodeGroup>
+```tsx Basic Usage
+import { replaceLineBreak } from '@proton/shared/lib/helpers/string';
+
+const text = 'Line 1\nLine 2\r\nLine 3';
+const html = replaceLineBreak(text);
+// 'Line 1<br />Line 2<br />Line 3'
+```
+
+```tsx In Component
+function Comment({ text }: { text: string }) {
+  return (
+    <div
+      dangerouslySetInnerHTML={{
+        __html: replaceLineBreak(text)
+      }}
+    />
+  );
+}
+```
+</CodeGroup>
+
+---
+
+### toCRLF
+
+Convert line breaks to CRLF (\r\n) format.
+
+```typescript
+function toCRLF(str: string): string
+```
+
+```tsx
+import { toCRLF } from '@proton/shared/lib/helpers/string';
+
+const unix = 'Line 1\nLine 2\nLine 3';
+const windows = toCRLF(unix);
+// 'Line 1\r\nLine 2\r\nLine 3'
+```
+
+---
+
+### addPlus
+
+Format an array by showing the first item and a count of remaining items.
+
+```typescript
+function addPlus(items?: string[]): string
+```
+
+<ParamField path="items" type="string[]">
+  Array of strings to format
+</ParamField>
+
+<CodeGroup>
+```tsx Basic Usage
+import { addPlus } from '@proton/shared/lib/helpers/string';
+
+addPlus(['Alice']);
+// 'Alice'
+
+addPlus(['Alice', 'Bob', 'Charlie']);
+// 'Alice, +2'
+
+addPlus([]);
+// ''
+```
+
+```tsx Display Recipients
+function RecipientList({ recipients }: { recipients: string[] }) {
+  return <div>{addPlus(recipients)}</div>;
+}
+
+// Renders: "john@example.com, +4"
+```
+</CodeGroup>
+
+---
+
+### stripLeadingSlash / stripTrailingSlash
+
+Remove leading or trailing slashes from strings.
+
+```typescript
+function stripLeadingSlash(str: string): string
+function stripTrailingSlash(str: string): string
+function stripLeadingAndTrailingSlash(str: string): string
+```
+
+<CodeGroup>
+```tsx Strip Leading Slash
+import { stripLeadingSlash } from '@proton/shared/lib/helpers/string';
+
+stripLeadingSlash('/path/to/file');
+// 'path/to/file'
+
+stripLeadingSlash('///multiple');
+// 'multiple'
+```
+
+```tsx Strip Trailing Slash
+import { stripTrailingSlash } from '@proton/shared/lib/helpers/string';
+
+stripTrailingSlash('path/to/file/');
+// 'path/to/file'
+
+stripTrailingSlash('multiple///');
+// 'multiple'
+```
+
+```tsx Strip Both
+import { stripLeadingAndTrailingSlash } from '@proton/shared/lib/helpers/string';
+
+stripLeadingAndTrailingSlash('/path/to/file/');
+// 'path/to/file'
+```
+</CodeGroup>
+
+---
+
+### removeDiacritics
+
+Remove diacritical marks from characters.
+
+```typescript
+function removeDiacritics(str: string): string
+```
+
+```tsx
+import { removeDiacritics } from '@proton/shared/lib/helpers/string';
+
+removeDiacritics('Café');
+// 'Cafe'
+
+removeDiacritics('Naïve');
+// 'Naive'
+
+removeDiacritics('Zürich');
+// 'Zurich'
+```
+
+---
+
+### truncatePossiblyQuotedString
+
+Truncate a string that may be wrapped in quotes.
+
+```typescript
+function truncatePossiblyQuotedString(
+  string: string,
+  charsToDisplay: number
+): string
+```
+
+<ParamField path="string" type="string" required>
+  String to truncate (may be quoted)
+</ParamField>
+
+<ParamField path="charsToDisplay" type="number" required>
+  Maximum characters to display
+</ParamField>
+
+```tsx
+import { truncatePossiblyQuotedString } from '@proton/shared/lib/helpers/string';
+
+truncatePossiblyQuotedString('"Long filename.pdf"', 15);
+// '"Long fil…e.pdf"'
+
+truncatePossiblyQuotedString('Regular filename.pdf', 15);
+// 'Regular…me.pdf'
+```
+
+---
+
+## Hash Utilities
+
+### getHashCode
+
+Compute a deterministic numeric hash for a string.
+
+```typescript
+function getHashCode(str: string): number
+```
+
+<ParamField path="str" type="string" required>
+  String to hash
+</ParamField>
+
+<Warning>
+  This is NOT a cryptographic hash function. Different strings may produce the same hash code.
+</Warning>
+
+<CodeGroup>
+```tsx Basic Usage
+import { getHashCode } from '@proton/shared/lib/helpers/string';
+
+const hash1 = getHashCode('hello');
+const hash2 = getHashCode('hello');
+console.log(hash1 === hash2); // true (deterministic)
+
+const hash3 = getHashCode('world');
+console.log(hash1 === hash3); // false (different strings)
+```
+
+```tsx Use Case: Stable Keys
+function ItemList({ items }: { items: string[] }) {
+  return (
+    <ul>
+      {items.map((item) => (
+        <li key={getHashCode(item)}>{item}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+```tsx Use Case: Color Assignment
+function getUserColor(username: string): string {
+  const colors = ['red', 'blue', 'green', 'yellow', 'purple'];
+  const hash = Math.abs(getHashCode(username));
+  return colors[hash % colors.length];
+}
+```
+</CodeGroup>
+
+---
+
+## HTML Utilities
+
+### removeHTMLComments
+
+Remove HTML comments from a string.
+
+```typescript
+function removeHTMLComments(str: string): string
+```
+
+```tsx
+import { removeHTMLComments } from '@proton/shared/lib/helpers/string';
+
+const html = '<div><!-- Comment -->Content</div>';
+const clean = removeHTMLComments(html);
+// '<div>Content</div>'
+```
+
+---
+
+## URL Formatting
+
+### buildMailTo
+
+Build a mailto: URL from an email address.
+
+```typescript
+function buildMailTo(email?: string): string
+```
+
+```tsx
+import { buildMailTo } from '@proton/shared/lib/helpers/email';
+
+const mailtoUrl = buildMailTo('user@example.com');
+// 'mailto:user@example.com'
+
+<a href={mailtoUrl}>Email User</a>
+```
+
+---
+
+### getEmailTo
+
+Extract email address from a mailto: URL or return the input string.
+
+```typescript
+function getEmailTo(str: string, decode?: boolean): string
+```
+
+<ParamField path="str" type="string" required>
+  Mailto URL or email string
+</ParamField>
+
+<ParamField path="decode" type="boolean" default="true">
+  Whether to decode URI components
+</ParamField>
+
+```tsx
+import { getEmailTo } from '@proton/shared/lib/helpers/email';
+
+getEmailTo('mailto:user@example.com');
+// 'user@example.com'
+
+getEmailTo('user@example.com');
+// 'user@example.com'
+
+getEmailTo('mailto:user%2Btag@example.com', true);
+// 'user+tag@example.com'
+```
+
+---
+
+## Practical Examples
+
+### Format Comment Display
+
+```tsx
+import { replaceLineBreak, truncateMore } from '@proton/shared/lib/helpers/string';
+
+function Comment({ text, maxLength }: { text: string; maxLength?: number }) {
+  const displayText = maxLength
+    ? truncateMore({ string: text, charsToDisplay: maxLength })
+    : text;
+
+  return (
+    <div
+      className="comment"
+      dangerouslySetInnerHTML={{
+        __html: replaceLineBreak(displayText)
+      }}
+    />
+  );
+}
+```
+
+### Build Clean URL Paths
+
+```tsx
+import {
+  stripLeadingSlash,
+  stripTrailingSlash
+} from '@proton/shared/lib/helpers/string';
+
+function buildApiUrl(baseUrl: string, endpoint: string): string {
+  const cleanBase = stripTrailingSlash(baseUrl);
+  const cleanEndpoint = stripLeadingSlash(endpoint);
+  return `${cleanBase}/${cleanEndpoint}`;
+}
+
+buildApiUrl('https://api.example.com/', '/users/');
+// 'https://api.example.com/users'
+```
+
+### Search with Diacritics Insensitivity
+
+```tsx
+import { removeDiacritics } from '@proton/shared/lib/helpers/string';
+
+function searchItems(items: string[], query: string): string[] {
+  const normalizedQuery = removeDiacritics(query.toLowerCase());
+
+  return items.filter((item) => {
+    const normalizedItem = removeDiacritics(item.toLowerCase());
+    return normalizedItem.includes(normalizedQuery);
+  });
+}
+
+const items = ['Café', 'Restaurant', 'Zürich'];
+searchItems(items, 'Cafe'); // ['Café']
+searchItems(items, 'Zurich'); // ['Zürich']
+```
+
+### Generate Stable Avatar Colors
+
+```tsx
+import { getHashCode, getInitials } from '@proton/shared/lib/helpers/string';
+
+function UserAvatar({ name }: { name: string }) {
+  const colors = [
+    '#FF6B6B', '#4ECDC4', '#45B7D1',
+    '#FFA07A', '#98D8C8', '#F7DC6F'
+  ];
+
+  const hash = Math.abs(getHashCode(name));
+  const color = colors[hash % colors.length];
+  const initials = getInitials(name);
+
+  return (
+    <div
+      className="avatar"
+      style={{ backgroundColor: color }}
+    >
+      {initials}
+    </div>
+  );
+}
+```
+
+### Format File Path Display
+
+```tsx
+import { truncateMore, rtlSanitize } from '@proton/shared/lib/helpers/string';
+
+function FilePath({ path }: { path: string }) {
+  const safePath = rtlSanitize(path);
+  const displayPath = truncateMore({
+    string: safePath,
+    charsToDisplayStart: 20,
+    charsToDisplayEnd: 15
+  });
+
+  return <span className="file-path">{displayPath}</span>;
+}
+
+// Very long path shows as:
+// "/very/long/path/t…/filename.ext"
+```

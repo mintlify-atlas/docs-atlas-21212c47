@@ -1,0 +1,527 @@
+---
+title: Internationalization (i18n)
+description: Translation workflow and i18n management in Proton WebClients
+---
+
+## Overview
+
+Proton WebClients uses `ttag` for internationalization and the `@proton/i18n` package for translation management. Translations are managed through Crowdin and extracted from the codebase.
+
+## Translation System
+
+<CardGroup cols={2}>
+  <Card title="ttag" icon="language">
+    JavaScript i18n library for marking translatable strings
+  </Card>
+  
+  <Card title="@proton/i18n" icon="toolbox">
+    CLI tool for extracting, validating, and managing translations
+  </Card>
+  
+  <Card title="Crowdin" icon="cloud">
+    Translation management platform for collaborating with translators
+  </Card>
+  
+  <Card title="gettext" icon="file-lines">
+    PO file format for storing translations
+  </Card>
+</CardGroup>
+
+## proton-i18n CLI
+
+The `@proton/i18n` package provides the `proton-i18n` command-line tool:
+
+<CodeGroup>
+```json package.json
+{
+  "bin": {
+    "proton-i18n": "index.js"
+  }
+}
+```
+</CodeGroup>
+
+### Building i18n Tools
+
+Before using i18n commands, build the i18n package:
+
+```bash
+yarn workspace @proton/i18n build
+```
+
+<Note>
+The build script runs automatically via Turbo when needed by dependent tasks.
+</Note>
+
+## Translation Workflow
+
+### 1. Extract Translations
+
+Extract translatable strings from source code:
+
+<Tabs>
+  <Tab title="Mail">
+    ```bash
+    yarn workspace proton-mail i18n:extract:web
+    ```
+    
+    This runs:
+    ```bash
+    proton-i18n extract
+    ```
+  </Tab>
+  
+  <Tab title="Drive">
+    ```bash
+    yarn workspace proton-drive i18n:extract:web
+    ```
+    
+    Local extraction (includes build):
+    ```bash
+    yarn workspace proton-drive i18n:extract:local
+    ```
+    
+    Which runs:
+    ```bash
+    yarn workspace @proton/i18n build && \
+    yarn build:web && \
+    proton-i18n extract
+    ```
+  </Tab>
+  
+  <Tab title="Calendar">
+    ```bash
+    yarn workspace proton-calendar i18n:extract:web
+    ```
+  </Tab>
+  
+  <Tab title="Pass">
+    ```bash
+    yarn workspace proton-pass i18n:extract:web
+    ```
+  </Tab>
+</Tabs>
+
+<Info>
+Extraction creates or updates `.po` files in the `po/` directory.
+</Info>
+
+### 2. Validate Translations
+
+Validate translation strings for common issues:
+
+<Tabs>
+  <Tab title="Lint Functions">
+    Validate that translatable strings follow best practices:
+    ```bash
+    yarn workspace proton-mail i18n:validate
+    ```
+    
+    This runs:
+    ```bash
+    proton-i18n validate lint-functions
+    ```
+    
+    Can also target specific directories:
+    ```bash
+    proton-i18n validate lint-functions lib
+    ```
+  </Tab>
+  
+  <Tab title="Context Validation">
+    Validate translation context:
+    ```bash
+    yarn workspace proton-mail i18n:validate:context:web
+    ```
+    
+    This runs:
+    ```bash
+    proton-i18n validate
+    ```
+  </Tab>
+</Tabs>
+
+### 3. Update Crowdin
+
+Upload translations to Crowdin for translator collaboration:
+
+```bash
+yarn workspace proton-mail i18n:upgrade
+```
+
+This runs:
+```bash
+proton-i18n extract --verbose && \
+proton-i18n crowdin -u --verbose
+```
+
+<Steps>
+  <Step title="Extract">
+    Extract latest strings from source code
+  </Step>
+  
+  <Step title="Upload">
+    Upload extracted strings to Crowdin with `-u` flag
+  </Step>
+</Steps>
+
+### 4. Get Latest Translations
+
+Download latest translations from Crowdin:
+
+```bash
+yarn workspace proton-mail i18n:getlatest
+```
+
+This runs:
+```bash
+proton-i18n upgrade
+```
+
+<Note>
+This downloads updated `.po` files from Crowdin into your `po/` directory.
+</Note>
+
+## Common i18n Scripts
+
+All applications follow these script conventions:
+
+| Script | Description | Command |
+|--------|-------------|----------|
+| `i18n:extract:web` | Extract strings | `proton-i18n extract` |
+| `i18n:validate` | Validate lint functions | `proton-i18n validate lint-functions` |
+| `i18n:validate:context:web` | Validate context | `proton-i18n validate` |
+| `i18n:upgrade` | Extract & upload to Crowdin | `proton-i18n extract && crowdin -u` |
+| `i18n:getlatest` | Download from Crowdin | `proton-i18n upgrade` |
+
+### Application Examples
+
+<AccordionGroup>
+  <Accordion title="Mail">
+    ```json package.json
+    {
+      "scripts": {
+        "i18n:extract:web": "proton-i18n extract",
+        "i18n:getlatest": "proton-i18n upgrade",
+        "i18n:upgrade": "proton-i18n extract --verbose && proton-i18n crowdin -u --verbose",
+        "i18n:validate": "proton-i18n validate lint-functions",
+        "i18n:validate:context:web": "proton-i18n validate"
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Drive">
+    ```json package.json
+    {
+      "scripts": {
+        "i18n:extract:local": "yarn workspace @proton/i18n build && yarn build:web && proton-i18n extract",
+        "i18n:extract:web": "proton-i18n extract",
+        "i18n:getlatest": "proton-i18n upgrade",
+        "i18n:upgrade": "proton-i18n extract --verbose && proton-i18n crowdin -u --verbose",
+        "i18n:validate": "proton-i18n validate lint-functions",
+        "i18n:validate:context:web": "proton-i18n validate"
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Calendar">
+    ```json package.json
+    {
+      "scripts": {
+        "i18n:extract:web": "proton-i18n extract",
+        "i18n:upgrade": "proton-i18n extract --verbose && proton-i18n crowdin --verbose",
+        "i18n:validate": "proton-i18n validate lint-functions",
+        "i18n:validate:context:web": "proton-i18n validate"
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Pass">
+    ```json package.json
+    {
+      "scripts": {
+        "i18n:extract:web": "proton-i18n extract",
+        "i18n:getlatest": "proton-i18n upgrade",
+        "i18n:upgrade": "proton-i18n extract --verbose && proton-i18n crowdin -u --verbose",
+        "i18n:validate": "proton-i18n validate lint-functions",
+        "i18n:validate:context:web": "proton-i18n validate"
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Shared Package">
+    ```json package.json
+    {
+      "scripts": {
+        "i18n:validate": "proton-i18n validate lint-functions lib"
+      }
+    }
+    ```
+    
+    <Note>
+    Packages can specify a directory (`lib`) for validation.
+    </Note>
+  </Accordion>
+</AccordionGroup>
+
+## Using ttag in Code
+
+### Basic Translation
+
+```javascript
+import { c } from 'ttag';
+
+const message = c('Action').t`Delete`;
+```
+
+### Translation with Variables
+
+```javascript
+import { c } from 'ttag';
+
+const count = 5;
+const message = c('Info').t`You have ${count} unread messages`;
+```
+
+### Plural Forms
+
+```javascript
+import { c } from 'ttag';
+
+const n = items.length;
+const message = c('Info').ngettext(
+  msgid`${n} item selected`,
+  `${n} items selected`,
+  n
+);
+```
+
+### Context
+
+Provide context to help translators:
+
+```javascript
+import { c } from 'ttag';
+
+// Context helps distinguish "Mail" (email) from "Mail" (send)
+const mailNoun = c('Navigation').t`Mail`;
+const mailVerb = c('Action').t`Mail`;
+```
+
+## Translation File Structure
+
+### PO Files
+
+Translations are stored in `.po` files in the `po/` directory:
+
+```
+applications/mail/po/
+├── en.po          # English (source)
+├── fr.po          # French
+├── de.po          # German
+├── es.po          # Spanish
+└── ...
+```
+
+### PO File Format
+
+```po
+#: src/app/components/Header.tsx
+msgctxt "Action"
+msgid "Delete"
+msgstr "Supprimer"
+
+#: src/app/components/List.tsx
+msgctxt "Info"
+msgid "You have ${count} unread messages"
+msgstr "Vous avez ${count} messages non lus"
+```
+
+## Turbo Configuration
+
+Translation tasks are orchestrated through Turbo:
+
+<CodeGroup>
+```json turbo.json
+{
+  "tasks": {
+    "@proton/i18n#build": {},
+    "i18n:validate": {},
+    "i18n:extract:web": {
+      "dependsOn": ["@proton/i18n#build", "build:web"],
+      "outputs": ["po/**"]
+    },
+    "i18n:validate:context:web": {
+      "inputs": ["po/**"]
+    }
+  }
+}
+```
+</CodeGroup>
+
+<Info>
+Turbo ensures i18n tools are built before extraction and caches translation outputs.
+</Info>
+
+## Validation Rules
+
+### Lint Functions
+
+The `validate lint-functions` command checks for:
+
+- **Missing context**: All strings should have context (e.g., `c('Action')`)
+- **Invalid placeholders**: Variables must use valid syntax
+- **Concatenation issues**: Strings should not be concatenated
+- **HTML in strings**: Avoid raw HTML in translatable strings
+
+### Context Validation
+
+The `validate` command checks:
+
+- **Consistent translations**: Same source string with different contexts
+- **Variable consistency**: Placeholders match across translations
+- **Plural forms**: Correct plural form syntax
+
+## Best Practices
+
+<Steps>
+  <Step title="Always Provide Context">
+    Use context to help translators understand meaning:
+    ```javascript
+    c('Action').t`Save`  // Button label
+    c('Title').t`Save`   // Dialog title
+    ```
+  </Step>
+  
+  <Step title="Avoid String Concatenation">
+    Use template literals instead:
+    ```javascript
+    // Bad
+    c('Info').t`Hello ` + userName
+    
+    // Good
+    c('Info').t`Hello ${userName}`
+    ```
+  </Step>
+  
+  <Step title="Extract After Changes">
+    Run extraction after adding new translatable strings:
+    ```bash
+    yarn workspace <app> i18n:extract:web
+    ```
+  </Step>
+  
+  <Step title="Validate Before Committing">
+    Always validate translations:
+    ```bash
+    yarn workspace <app> i18n:validate
+    yarn workspace <app> i18n:validate:context:web
+    ```
+  </Step>
+</Steps>
+
+## Crowdin Integration
+
+### Upload to Crowdin
+
+```bash
+yarn workspace proton-mail i18n:upgrade
+```
+
+This command:
+1. Extracts latest strings from source
+2. Uploads `.po` files to Crowdin
+3. Makes strings available for translation
+
+### Download from Crowdin
+
+```bash
+yarn workspace proton-mail i18n:getlatest
+```
+
+This command:
+1. Downloads translated `.po` files
+2. Updates local `po/` directory
+3. Translations become available in the app
+
+<Warning>
+Crowdin credentials are required for upload/download operations. These are typically configured in CI/CD environments.
+</Warning>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Extraction fails">
+    Ensure the application is built first:
+    ```bash
+    yarn workspace proton-mail build:web
+    yarn workspace proton-mail i18n:extract:web
+    ```
+    
+    Or use the local extraction script:
+    ```bash
+    yarn workspace proton-drive i18n:extract:local
+    ```
+  </Accordion>
+  
+  <Accordion title="Validation errors">
+    Fix reported issues in source code:
+    - Add missing context: `c('Context').t`
+    - Fix placeholder syntax: Use `${variable}`
+    - Avoid concatenation: Use template literals
+    
+    Re-run validation after fixes:
+    ```bash
+    yarn workspace proton-mail i18n:validate
+    ```
+  </Accordion>
+  
+  <Accordion title="Missing translations">
+    Download latest from Crowdin:
+    ```bash
+    yarn workspace proton-mail i18n:getlatest
+    ```
+    
+    If still missing, strings may not be translated yet in Crowdin.
+  </Accordion>
+  
+  <Accordion title="PO file conflicts">
+    PO files can have merge conflicts. Use gettext tools to resolve:
+    ```bash
+    msgcat --use-first file1.po file2.po -o merged.po
+    ```
+    
+    Or download fresh from Crowdin:
+    ```bash
+    yarn workspace proton-mail i18n:getlatest
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Additional Resources
+
+<CardGroup cols={2}>
+  <Card title="ttag Documentation" icon="book" href="https://ttag.js.org/">
+    Official ttag library documentation
+  </Card>
+  
+  <Card title="Crowdin" icon="globe" href="https://crowdin.com/">
+    Translation management platform
+  </Card>
+  
+  <Card title="GNU gettext" icon="file-code" href="https://www.gnu.org/software/gettext/">
+    PO file format specification
+  </Card>
+  
+  <Card title="Translation Community" icon="users" href="https://proton.me/blog/translation-community">
+    Proton's translation community blog post
+  </Card>
+</CardGroup>
+
+<Note>
+For contributing translations, visit the Proton translation community page to learn how you can help translate Proton products into your language.
+</Note>

@@ -1,0 +1,268 @@
+---
+title: Workspace Management
+description: Managing the Yarn workspace in Proton WebClients monorepo
+---
+
+## Overview
+
+Proton WebClients is a Yarn 4 monorepo containing multiple web applications and shared packages. The workspace structure enables efficient dependency management and code sharing across projects.
+
+## Workspace Structure
+
+The monorepo is organized into the following workspace categories:
+
+<CodeGroup>
+```json package.json
+{
+  "workspaces": [
+    "applications/*",
+    "applications/pass-desktop/native",
+    "packages/*",
+    "packages/wasm/*",
+    "tests",
+    "tests/mail-renderer",
+    "tests/packages/*",
+    "utilities/*",
+    "vendor/*/*"
+  ]
+}
+```
+</CodeGroup>
+
+### Directory Layout
+
+- **applications/** - Web applications (Mail, Drive, Calendar, Pass, etc.)
+- **packages/** - Shared libraries and utilities
+- **packages/wasm/** - WebAssembly modules
+- **tests/** - Test utilities and configurations
+- **vendor/** - Third-party dependencies
+
+## Managing Dependencies
+
+### Installing Dependencies
+
+Install all dependencies for the entire monorepo:
+
+```bash
+yarn install
+```
+
+<Note>
+Yarn 4 uses the `node_modules` linker strategy as configured in `.yarnrc.yml`.
+</Note>
+
+### Adding Dependencies
+
+<Tabs>
+  <Tab title="To Workspace Root">
+    Add a dependency to the root workspace:
+    ```bash
+    yarn add <package-name> -W
+    ```
+  </Tab>
+  
+  <Tab title="To Specific Package">
+    Add a dependency to a specific workspace package:
+    ```bash
+    yarn workspace <workspace-name> add <package-name>
+    ```
+    
+    Example:
+    ```bash
+    yarn workspace proton-mail add lodash
+    ```
+  </Tab>
+  
+  <Tab title="Dev Dependencies">
+    Add a dev dependency:
+    ```bash
+    yarn workspace <workspace-name> add -D <package-name>
+    ```
+  </Tab>
+</Tabs>
+
+### Removing Dependencies
+
+```bash
+yarn workspace <workspace-name> remove <package-name>
+```
+
+## Workspace Commands
+
+### List Workspaces
+
+List all workspaces in the monorepo:
+
+```bash
+yarn workspaces list
+```
+
+List with location information:
+
+```bash
+yarn workspaces list --verbose
+```
+
+### Run Commands in Workspaces
+
+<Tabs>
+  <Tab title="Single Workspace">
+    Run a script in a specific workspace:
+    ```bash
+    yarn workspace <workspace-name> <script-name>
+    ```
+    
+    Examples:
+    ```bash
+    yarn workspace proton-mail start
+    yarn workspace proton-drive build:web
+    yarn workspace @proton/components test
+    ```
+  </Tab>
+  
+  <Tab title="All Workspaces">
+    Run a command across all workspaces:
+    ```bash
+    yarn workspaces foreach <command>
+    ```
+    
+    Example:
+    ```bash
+    yarn workspaces foreach run lint
+    ```
+  </Tab>
+</Tabs>
+
+## Workspace Naming
+
+<Info>
+Workspace names follow these conventions:
+- **Applications**: `proton-<app-name>` (e.g., `proton-mail`, `proton-drive`)
+- **Packages**: `@proton/<package-name>` (e.g., `@proton/shared`, `@proton/components`)
+</Info>
+
+## Common Workspace Packages
+
+### Core Packages
+
+| Package | Description |
+|---------|-------------|
+| `@proton/shared` | Shared utilities and business logic |
+| `@proton/components` | React component library |
+| `@proton/pack` | Build tooling (webpack configuration) |
+| `@proton/i18n` | Internationalization utilities |
+| `@proton/crypto` | Cryptography utilities |
+| `@proton/styles` | Shared styles and themes |
+| `@proton/icons` | Icon library |
+
+### Application Packages
+
+| Package | Application |
+|---------|-------------|
+| `proton-mail` | Proton Mail |
+| `proton-calendar` | Proton Calendar |
+| `proton-drive` | Proton Drive |
+| `proton-pass` | Proton Pass |
+| `proton-account` | Account settings |
+| `proton-vpn-settings` | VPN settings |
+
+## Version Management
+
+### Requirements
+
+<CodeGroup>
+```json package.json
+{
+  "packageManager": "yarn@4.12.0",
+  "engines": {
+    "node": ">= 22.14.0 <23.6.0"
+  }
+}
+```
+</CodeGroup>
+
+### Manual Versioning
+
+Version an application manually from the root folder:
+
+```bash
+yarn workspace @proton/version run version --applications proton-X --version x.x.x.x
+```
+
+## Turbo Configuration
+
+The monorepo uses Turbo for task orchestration and caching:
+
+<CodeGroup>
+```json turbo.json
+{
+  "tasks": {
+    "build:web": {
+      "outputs": ["dist/**", "webapp-bundle.tar.gz"]
+    },
+    "test:ci": {
+      "dependsOn": ["transit"]
+    },
+    "lint": {},
+    "check-types": {
+      "dependsOn": ["transit"]
+    }
+  }
+}
+```
+</CodeGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Dependency resolution issues">
+    Clear the cache and reinstall:
+    ```bash
+    yarn cache clean
+    rm -rf node_modules
+    yarn install
+    ```
+  </Accordion>
+  
+  <Accordion title="Workspace not found">
+    Verify the workspace name:
+    ```bash
+    yarn workspaces list | grep <workspace-name>
+    ```
+    
+    Check that the package exists in the correct directory.
+  </Accordion>
+  
+  <Accordion title="Version conflicts">
+    Check for dependency version mismatches:
+    ```bash
+    yarn why <package-name>
+    ```
+    
+    Review `resolutions` in root `package.json` for pinned versions.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+The monorepo uses workspace protocol (`workspace:^`) for internal dependencies. Do not manually modify these to version numbers.
+</Warning>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Use Workspace Protocol" icon="link">
+    Always use `workspace:^` for internal package dependencies
+  </Card>
+  
+  <Card title="Run from Root" icon="folder-tree">
+    Execute workspace commands from the monorepo root directory
+  </Card>
+  
+  <Card title="Check Dependencies" icon="magnifying-glass">
+    Use `yarn why` to understand dependency resolution
+  </Card>
+  
+  <Card title="Leverage Turbo" icon="gauge-high">
+    Take advantage of Turbo's caching for faster builds
+  </Card>
+</CardGroup>

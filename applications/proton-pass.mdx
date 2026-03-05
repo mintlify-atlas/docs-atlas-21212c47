@@ -1,0 +1,370 @@
+---
+title: Proton Pass
+description: Password manager and credential vault with end-to-end encryption
+icon: key
+---
+
+## Overview
+
+Proton Pass is a password manager and credential vault providing secure storage for passwords, login credentials, credit cards, and notes. It's available as a web application, browser extension, and desktop application.
+
+<Note>
+  Package name: `proton-pass` | License: GPL-3.0
+</Note>
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Password Vault" icon="vault">
+    Secure storage for passwords and credentials
+  </Card>
+  <Card title="Autofill" icon="fill">
+    Browser autofill for login forms
+  </Card>
+  <Card title="Password Generator" icon="key">
+    Generate strong, random passwords
+  </Card>
+  <Card title="Secure Notes" icon="note-sticky">
+    Encrypted note storage
+  </Card>
+  <Card title="2FA Support" icon="shield-check">
+    Two-factor authentication code storage
+  </Card>
+  <Card title="Credit Cards" icon="credit-card">
+    Secure credit card information storage
+  </Card>
+  <Card title="Item Sharing" icon="share-nodes">
+    Share credentials securely with others
+  </Card>
+  <Card title="Breach Monitoring" icon="triangle-exclamation">
+    Monitor for compromised credentials
+  </Card>
+</CardGroup>
+
+## Architecture
+
+### Directory Structure
+
+```
+pass/src/app/
+├── App.tsx              # Main application component
+├── AppGuard.tsx         # Authentication guard
+├── Auth/                # Authentication logic
+├── Views/               # Main application views
+│   ├── Vault/
+│   ├── Items/
+│   ├── Settings/
+│   └── Sharing/
+├── Store/               # State management
+├── ServiceWorker/       # Service worker integration
+├── DeepLinks/           # Deep link handling
+└── config.ts            # App configuration
+```
+
+### State Management
+
+Proton Pass uses the shared `@proton/pass` workspace package which includes:
+
+- Redux-based state management
+- Encrypted local storage
+- Sync with backend
+- Multi-device coordination
+
+## Key Dependencies
+
+```json
+{
+  "dependencies": {
+    "@proton/atoms": "workspace:^",
+    "@proton/components": "workspace:^",
+    "@proton/icons": "workspace:^",
+    "@proton/pass": "workspace:^",
+    "@proton/polyfill": "workspace:^",
+    "@proton/shared": "workspace:^",
+    "@proton/styles": "workspace:^",
+    "@proton/utils": "workspace:^"
+  }
+}
+```
+
+<Note>
+  Pass is a thin client - most logic lives in the `@proton/pass` workspace package.
+</Note>
+
+## NPM Scripts
+
+### Development
+
+```bash
+# Start development server
+yarn start
+
+# Full command
+proton-pack dev-server --appMode=standalone \
+  --no-error-logs \
+  --noLogicalScss
+```
+
+<Note>
+  Uses `--no-error-logs` flag to reduce console noise during development.
+</Note>
+
+### Build
+
+```bash
+# Production build
+yarn build:web
+
+# Full command
+proton-pack build --appMode=sso --noLogicalScss
+```
+
+### Testing
+
+```bash
+# Run tests
+yarn test
+
+# Run tests with coverage
+yarn test:ci
+
+# Watch mode
+yarn test:watch
+```
+
+### Code Quality
+
+```bash
+# Type checking
+yarn check-types
+
+# Linting
+yarn lint
+
+# Format code
+yarn pretty
+```
+
+### Internationalization
+
+```bash
+# Extract translation strings
+yarn i18n:extract:web
+
+# Get latest translations
+yarn i18n:getlatest
+
+# Upload to Crowdin
+yarn i18n:upgrade
+
+# Validate translations
+yarn i18n:validate
+```
+
+## Application Structure
+
+### App Guard
+
+Authentication and authorization:
+
+```typescript
+// AppGuard.tsx
+// Protects routes requiring authentication
+// Handles session management
+// Redirects to login when needed
+```
+
+### Views
+
+Main application views:
+
+| View | Purpose |
+|------|--------|
+| `Vault/` | Password vault browsing |
+| `Items/` | Individual item management |
+| `Settings/` | Application settings |
+| `Sharing/` | Credential sharing |
+
+### Deep Links
+
+Handle deep link navigation:
+
+```
+DeepLinks/
+├── DeepLinkHandler.tsx
+└── routes.ts
+```
+
+- Open specific items
+- Navigate from notifications
+- Handle external links
+
+### Service Worker
+
+Background sync and offline support:
+
+```
+ServiceWorker/
+├── register.ts
+├── events.ts
+└── sync.ts
+```
+
+## Related Applications
+
+### Browser Extension
+
+**proton-pass-extension** - Browser extension version:
+
+- Chrome, Firefox, Edge, Safari support
+- Autofill functionality
+- Context menu integration
+- Shared codebase with web app
+
+### Desktop Application
+
+**proton-pass-desktop** - Electron desktop app:
+
+- Native desktop integration
+- System tray icon
+- Keyboard shortcuts
+- Biometric authentication
+
+## Core Functionality
+
+### Password Management
+
+Provided by `@proton/pass` workspace package:
+
+- **Storage** - Encrypted credential storage
+- **Sync** - Multi-device synchronization
+- **Autofill** - Form detection and filling
+- **Generator** - Password generation with customizable rules
+
+### Item Types
+
+Supported item types:
+
+1. **Login** - Username/password credentials
+2. **Credit Card** - Payment information
+3. **Note** - Secure text notes
+4. **Identity** - Personal information (future)
+
+### Vaults
+
+Organizational structure:
+
+- Multiple vaults per user
+- Vault sharing with teams
+- Granular permissions
+- Separate encryption keys
+
+### Security Features
+
+- **Zero-knowledge architecture** - Proton cannot access data
+- **End-to-end encryption** - All items encrypted client-side
+- **Secure sharing** - Asymmetric encryption for sharing
+- **Session management** - Automatic lock on inactivity
+- **Breach monitoring** - Check for compromised passwords
+
+## Build Configuration
+
+Special build flags:
+
+```bash
+--appMode=sso          # SSO integration for production
+--appMode=standalone   # Standalone auth for development
+--noLogicalScss        # Disable logical CSS
+--no-error-logs        # Reduce console noise (dev only)
+```
+
+## Testing
+
+Test setup:
+
+- **Jest** for unit tests
+- **@proton/testing** for test utilities
+- **@proton/jest-env** for custom test environment
+
+```bash
+yarn test              # Run all tests
+yarn test:ci           # CI mode with coverage
+yarn test:watch        # Watch mode for development
+```
+
+## Integration Points
+
+### Proton Account
+
+Integrates with Proton account system:
+
+- Single sign-on
+- Subscription management
+- Account recovery
+
+### Proton Mail
+
+Email integration:
+
+- Save passwords from emails
+- Share credentials via email
+
+### Other Proton Apps
+
+Shared authentication across:
+
+- Proton Mail
+- Proton Drive
+- Proton Calendar
+- Proton VPN
+
+## Development Notes
+
+<Warning>
+  The web app is a thin wrapper around `@proton/pass`. Most development happens in the workspace package.
+</Warning>
+
+<Tip>
+  For extension or desktop development, see:
+  - `/applications/pass-extension/`
+  - `/applications/pass-desktop/`
+</Tip>
+
+### Local Development
+
+1. Start dev server: `yarn start`
+2. Access at `http://localhost:8080`
+3. Uses standalone authentication
+4. Local vault storage
+
+### Package Architecture
+
+Most logic is in `packages/pass/`:
+
+```
+packages/pass/
+├── store/           # Redux store
+├── lib/             # Core libraries
+├── hooks/           # React hooks
+├── components/      # UI components
+└── crypto/          # Cryptographic operations
+```
+
+## Performance
+
+- **Lazy Loading** - Views loaded on demand
+- **Service Worker** - Offline support and caching
+- **Minimal Dependencies** - Lean dependency tree
+- **Code Splitting** - Separate bundles per view
+
+## Security Considerations
+
+<Warning>
+  Never log sensitive data. All credential operations should be audited.
+</Warning>
+
+- All crypto operations client-side
+- Master password never sent to server
+- Encrypted search for vault items
+- Secure memory handling
+- Auto-lock on inactivity

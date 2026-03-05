@@ -1,0 +1,528 @@
+---
+title: Input Components
+description: Form input components for user data entry
+---
+
+# Input Components
+
+Proton provides a comprehensive set of input components for forms and data entry, including text inputs, checkboxes, radio buttons, and specialized inputs.
+
+## Input
+
+The base text input component.
+
+**Location**: `components/input/Input.tsx`
+
+<Note>
+  This component is deprecated. Consider using `Input` from `@proton/atoms` or `InputFieldTwo` for new code.
+</Note>
+
+### Basic Usage
+
+```tsx
+import Input from '@proton/components/components/input/Input';
+import { useState } from 'react';
+
+const MyForm = () => {
+  const [value, setValue] = useState('');
+
+  return (
+    <Input
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      placeholder="Enter text"
+    />
+  );
+};
+```
+
+### Props
+
+Extends `InputHTMLAttributes<HTMLInputElement>`
+
+<ParamField path="value" type="string" required>
+  The input value
+</ParamField>
+
+<ParamField path="onChange" type="(e: ChangeEvent) => void" required>
+  Change event handler
+</ParamField>
+
+<ParamField path="placeholder" type="string">
+  Placeholder text
+</ParamField>
+
+<ParamField path="error" type="string">
+  Error message to display below the input
+</ParamField>
+
+<ParamField path="icon" type="ReactElement">
+  Icon element to display on the right side
+</ParamField>
+
+<ParamField path="loading" type="boolean">
+  Shows loading state and disables input. Default: `false`
+</ParamField>
+
+<ParamField path="fullWidth" type="boolean">
+  Makes input take full width. Default: `true`
+</ParamField>
+
+<ParamField path="disabled" type="boolean">
+  Disables the input
+</ParamField>
+
+<ParamField path="required" type="boolean">
+  Marks field as required. Default: `false`
+</ParamField>
+
+<ParamField path="onPressEnter" type="KeyboardEventHandler">
+  Handler called when Enter key is pressed
+</ParamField>
+
+### Examples
+
+<Tabs>
+  <Tab title="Basic Input">
+    ```tsx
+    <Input
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      placeholder="Enter your name"
+    />
+    ```
+  </Tab>
+  
+  <Tab title="With Error">
+    ```tsx
+    <Input
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+      error={emailError}
+      type="email"
+      placeholder="Email address"
+    />
+    ```
+  </Tab>
+  
+  <Tab title="With Icon">
+    ```tsx
+    <Input
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      icon={<Icon name="magnifier" />}
+      placeholder="Search"
+    />
+    ```
+  </Tab>
+  
+  <Tab title="Required Field">
+    ```tsx
+    <Input
+      value={username}
+      onChange={(e) => setUsername(e.target.value)}
+      required
+      placeholder="Username"
+    />
+    ```
+  </Tab>
+</Tabs>
+
+## SearchInput
+
+Specialized input for search functionality with built-in magnifier icon.
+
+**Location**: `components/input/SearchInput.tsx`
+
+### Usage
+
+```tsx
+import SearchInput from '@proton/components/components/input/SearchInput';
+
+const MySearch = () => {
+  const [query, setQuery] = useState('');
+
+  return (
+    <SearchInput
+      value={query}
+      onChange={(e) => setQuery(e.target.value)}
+      placeholder="Search..."
+    />
+  );
+};
+```
+
+## PasswordInput
+
+Input with show/hide password toggle.
+
+**Location**: `components/input/PasswordInput.tsx`
+
+<Note>
+  This component is deprecated. Use `PasswordInputTwo` instead.
+</Note>
+
+### Usage
+
+```tsx
+import PasswordInput from '@proton/components/components/input/PasswordInput';
+
+const MyLoginForm = () => {
+  const [password, setPassword] = useState('');
+
+  return (
+    <PasswordInput
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      placeholder="Password"
+    />
+  );
+};
+```
+
+## Checkbox
+
+Checkbox input with label support.
+
+**Location**: `components/input/Checkbox.tsx`
+
+### Usage
+
+```tsx
+import Checkbox from '@proton/components/components/input/Checkbox';
+
+const MyForm = () => {
+  const [agreed, setAgreed] = useState(false);
+
+  return (
+    <Checkbox
+      checked={agreed}
+      onChange={(e) => setAgreed(e.target.checked)}
+    >
+      I agree to the terms and conditions
+    </Checkbox>
+  );
+};
+```
+
+### Props
+
+<ParamField path="checked" type="boolean">
+  Whether checkbox is checked
+</ParamField>
+
+<ParamField path="onChange" type="(e: ChangeEvent) => void">
+  Change event handler
+</ParamField>
+
+<ParamField path="indeterminate" type="boolean">
+  Display a third state `[–]`. Default: `false`
+</ParamField>
+
+<ParamField path="loading" type="boolean">
+  Shows loading state. Interactions blocked. Default: `false`
+</ParamField>
+
+<ParamField path="disabled" type="boolean">
+  Disables the checkbox
+</ParamField>
+
+<ParamField path="backgroundColor" type="string">
+  Custom background color (CSS color value)
+</ParamField>
+
+<ParamField path="borderColor" type="string">
+  Custom border color (CSS color value)
+</ParamField>
+
+<ParamField path="color" type="string">
+  Custom checkmark color (CSS color value)
+</ParamField>
+
+<ParamField path="gap" type="string">
+  Gap between checkbox and label. Default: `gap-2`
+</ParamField>
+
+### Examples
+
+<Tabs>
+  <Tab title="Basic Checkbox">
+    ```tsx
+    <Checkbox checked={isChecked} onChange={handleChange}>
+      Enable notifications
+    </Checkbox>
+    ```
+  </Tab>
+  
+  <Tab title="Indeterminate State">
+    ```tsx
+    <Checkbox 
+      checked={someChecked} 
+      indeterminate={!allChecked && someChecked}
+      onChange={handleSelectAll}
+    >
+      Select all
+    </Checkbox>
+    ```
+  </Tab>
+  
+  <Tab title="Custom Colors">
+    ```tsx
+    <Checkbox
+      checked={isChecked}
+      backgroundColor="#ff0000"
+      borderColor="#cc0000"
+      color="#ffffff"
+    >
+      Custom styled checkbox
+    </Checkbox>
+    ```
+  </Tab>
+</Tabs>
+
+## Radio & RadioGroup
+
+Radio button inputs with group management.
+
+**Location**: `components/input/Radio.tsx`, `components/input/RadioGroup.tsx`
+
+### Usage
+
+```tsx
+import Radio from '@proton/components/components/input/Radio';
+import RadioGroup from '@proton/components/components/input/RadioGroup';
+
+const MyForm = () => {
+  const [selected, setSelected] = useState('option1');
+
+  return (
+    <RadioGroup
+      name="my-options"
+      value={selected}
+      onChange={setSelected}
+      options={[
+        { value: 'option1', label: 'Option 1' },
+        { value: 'option2', label: 'Option 2' },
+        { value: 'option3', label: 'Option 3' },
+      ]}
+    />
+  );
+};
+```
+
+## TextArea
+
+Multi-line text input.
+
+**Location**: `components/input/TextArea.tsx`
+
+### Usage
+
+```tsx
+import TextArea from '@proton/components/components/input/TextArea';
+
+const MyForm = () => {
+  const [message, setMessage] = useState('');
+
+  return (
+    <TextArea
+      value={message}
+      onChange={(e) => setMessage(e.target.value)}
+      placeholder="Enter your message"
+      rows={5}
+    />
+  );
+};
+```
+
+## DateInput
+
+Date picker input component.
+
+**Location**: `components/input/DateInput.tsx`
+
+### Usage
+
+```tsx
+import DateInput from '@proton/components/components/input/DateInput';
+
+const MyForm = () => {
+  const [date, setDate] = useState<Date>(new Date());
+
+  return (
+    <DateInput
+      value={date}
+      onChange={setDate}
+      placeholder="Select date"
+    />
+  );
+};
+```
+
+## TimeInput
+
+Time picker input component.
+
+**Location**: `components/input/TimeInput.tsx`
+
+### Usage
+
+```tsx
+import TimeInput from '@proton/components/components/input/TimeInput';
+
+const MyForm = () => {
+  const [time, setTime] = useState('12:00');
+
+  return (
+    <TimeInput
+      value={time}
+      onChange={setTime}
+      placeholder="Select time"
+    />
+  );
+};
+```
+
+## EmailInput
+
+Email input with validation.
+
+**Location**: `components/input/EmailInput.tsx`
+
+### Usage
+
+```tsx
+import EmailInput from '@proton/components/components/input/EmailInput';
+
+const MyForm = () => {
+  const [email, setEmail] = useState('');
+
+  return (
+    <EmailInput
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+      placeholder="email@example.com"
+    />
+  );
+};
+```
+
+## IntegerInput
+
+Numeric input restricted to integers.
+
+**Location**: `components/input/IntegerInput.tsx`
+
+### Usage
+
+```tsx
+import IntegerInput from '@proton/components/components/input/IntegerInput';
+
+const MyForm = () => {
+  const [count, setCount] = useState(0);
+
+  return (
+    <IntegerInput
+      value={count}
+      onChange={setCount}
+      min={0}
+      max={100}
+    />
+  );
+};
+```
+
+## FileInput
+
+File upload input component.
+
+**Location**: `components/input/FileInput.tsx`
+
+### Usage
+
+```tsx
+import FileInput from '@proton/components/components/input/FileInput';
+
+const MyUpload = () => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    console.log('Selected files:', files);
+  };
+
+  return (
+    <FileInput
+      onChange={handleFileChange}
+      accept="image/*"
+      multiple
+    >
+      Choose files
+    </FileInput>
+  );
+};
+```
+
+## Best Practices
+
+### Form Validation
+
+```tsx
+const [email, setEmail] = useState('');
+const [error, setError] = useState('');
+
+const validateEmail = (value: string) => {
+  if (!value) {
+    setError('Email is required');
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    setError('Invalid email format');
+  } else {
+    setError('');
+  }
+};
+
+<Input
+  type="email"
+  value={email}
+  onChange={(e) => {
+    setEmail(e.target.value);
+    validateEmail(e.target.value);
+  }}
+  error={error}
+  required
+/>
+```
+
+### Accessibility
+
+```tsx
+// Provide proper labels
+<label htmlFor="username">Username</label>
+<Input
+  id="username"
+  value={username}
+  onChange={(e) => setUsername(e.target.value)}
+  aria-describedby="username-help"
+/>
+<span id="username-help" className="text-sm color-weak">
+  Choose a unique username
+</span>
+```
+
+### Controlled Components
+
+Always use controlled components with state:
+
+```tsx
+const [value, setValue] = useState('');
+
+<Input
+  value={value}
+  onChange={(e) => setValue(e.target.value)}
+/>
+```
+
+## Source Code
+
+View source:
+- Input: `packages/components/components/input/Input.tsx:1`
+- Checkbox: `packages/components/components/input/Checkbox.tsx:1`
+- PasswordInput: `packages/components/components/input/PasswordInput.tsx:1`

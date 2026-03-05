@@ -1,0 +1,515 @@
+---
+title: '@proton/i18n'
+description: 'CLI tool for extracting and validating translations from Proton applications'
+---
+
+## Overview
+
+The `@proton/i18n` package is a command-line tool for extracting and validating translations from Proton application codebases. It works with the `ttag` library to manage internationalization (i18n) in JavaScript and TypeScript projects.
+
+## Installation
+
+<CodeGroup>
+```bash npm
+npm install -D @proton/i18n
+```
+
+```bash yarn
+yarn add -D @proton/i18n
+```
+
+```bash pnpm
+pnpm add -D @proton/i18n
+```
+</CodeGroup>
+
+## Key Features
+
+- Extract translatable strings from source code
+- Validate translation files
+- Lint translation function usage
+- Support for ttag library
+- POT/PO file generation and validation
+- TypeScript and JavaScript support
+
+## CLI Usage
+
+The package provides a `proton-i18n` command-line tool.
+
+### Commands
+
+<Tabs>
+  <Tab title="extract">
+    Extract translatable strings from source code
+    
+    ```bash
+    proton-i18n extract [options]
+    ```
+  </Tab>
+  <Tab title="validate">
+    Validate translation files and function usage
+    
+    ```bash
+    proton-i18n validate [command] [directory] [options]
+    ```
+  </Tab>
+  <Tab title="help">
+    Display help information
+    
+    ```bash
+    proton-i18n help
+    ```
+  </Tab>
+</Tabs>
+
+## Extracting Translations
+
+Extract translatable strings from your codebase to create POT files.
+
+```bash
+# Extract from default locations
+proton-i18n extract
+
+# Extract with custom configuration
+proton-i18n extract --config ./i18n.config.js
+```
+
+### Configuration
+
+Create an `i18n.config.js` file:
+
+```javascript
+module.exports = {
+  // Source files to extract from
+  source: './src',
+  
+  // Output POT file
+  output: './locales/template.pot',
+  
+  // File patterns to include
+  include: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+  
+  // File patterns to exclude
+  exclude: ['**/*.test.ts', '**/*.spec.ts', 'node_modules/**'],
+};
+```
+
+## Validating Translations
+
+Validate translation files and usage patterns.
+
+```bash
+# Validate all translations
+proton-i18n validate
+
+# Validate specific directory
+proton-i18n validate lint-functions ./src
+
+# Verbose output
+proton-i18n validate --verbose
+```
+
+### Validation Commands
+
+<AccordionGroup>
+  <Accordion title="lint-functions">
+    Validates that translation functions (c, t, jt, etc.) are used correctly
+    
+    ```bash
+    proton-i18n validate lint-functions ./src
+    ```
+    
+    Checks for:
+    - Correct function usage
+    - String literals (no template literals)
+    - Proper context usage
+    - Missing translations
+  </Accordion>
+  
+  <Accordion title="check-files">
+    Validates PO/POT file structure and syntax
+    
+    ```bash
+    proton-i18n validate check-files ./locales
+    ```
+    
+    Checks for:
+    - Valid PO file format
+    - Consistent msgid/msgstr pairs
+    - Proper headers
+    - Encoding issues
+  </Accordion>
+</AccordionGroup>
+
+## Usage in Applications
+
+### With ttag Library
+
+The i18n tool works with the `ttag` library for runtime translations.
+
+```typescript
+import { c, t, jt, msgid, ngettext } from 'ttag';
+
+// Simple translation
+const translated = t`Hello, world!`;
+
+// Translation with context
+const withContext = c('Button label').t`Save`;
+
+// Translation with variable
+const userName = 'Alice';
+const greeting = t`Hello, ${userName}!`;
+
+// Plural translations
+const count = 5;
+const message = ngettext(
+  msgid`You have ${count} message`,
+  `You have ${count} messages`,
+  count
+);
+
+// JSX translation with components
+const jsxMessage = jt`Click ${
+  <a href="/settings">here</a>
+} to update settings`;
+```
+
+### Setting Up in a Project
+
+```typescript
+// app/i18n.ts
+import { addLocale, useLocale } from 'ttag';
+
+export async function loadLocale(locale: string) {
+  if (locale === 'en') {
+    // English is the default
+    return;
+  }
+  
+  try {
+    const translations = await import(
+      `../locales/${locale}.json`
+    );
+    addLocale(locale, translations);
+    useLocale(locale);
+  } catch (error) {
+    console.error(`Failed to load locale: ${locale}`, error);
+  }
+}
+```
+
+```typescript
+// app/App.tsx
+import { useEffect } from 'react';
+import { loadLocale } from './i18n';
+
+function App() {
+  useEffect(() => {
+    const userLocale = navigator.language.split('-')[0];
+    loadLocale(userLocale);
+  }, []);
+  
+  return <div>{/* Your app */}</div>;
+}
+```
+
+## Translation Workflow
+
+<Steps>
+  <Step title="Extract strings">
+    Run extraction to create POT template file
+    
+    ```bash
+    proton-i18n extract
+    ```
+  </Step>
+  
+  <Step title="Create PO files">
+    Create language-specific PO files from template
+    
+    ```bash
+    msginit -i locales/template.pot -o locales/fr.po -l fr
+    ```
+  </Step>
+  
+  <Step title="Translate">
+    Use a PO editor (Poedit, Lokalize) or translation platform to translate strings
+  </Step>
+  
+  <Step title="Validate">
+    Validate translations before committing
+    
+    ```bash
+    proton-i18n validate
+    ```
+  </Step>
+  
+  <Step title="Compile">
+    Convert PO files to JSON for runtime use
+    
+    ```bash
+    ttag po2json locales/fr.po > locales/fr.json
+    ```
+  </Step>
+</Steps>
+
+## Best Practices
+
+### Writing Translatable Strings
+
+<Warning>
+  Always use string literals, never template literals or concatenated strings
+</Warning>
+
+```typescript
+// ✅ Good - String literal
+const msg = t`Welcome to Proton`;
+
+// ❌ Bad - Template literal
+const msg = t`Welcome to ${appName}`; // Won't be extracted
+
+// ✅ Good - Variable interpolation
+const msg = t`Welcome to ${appName}`; // If appName is in scope
+
+// ✅ Good - With context
+const msg = c('Navigation').t`Home`;
+```
+
+### Providing Context
+
+Use context to disambiguate identical strings with different meanings:
+
+```typescript
+// "Close" as verb
+const closeAction = c('Action').t`Close`;
+
+// "Close" as adjective (near)
+const closeDistance = c('Distance').t`Close`;
+```
+
+### Pluralization
+
+Handle plural forms correctly:
+
+```typescript
+import { ngettext, msgid } from 'ttag';
+
+function ItemCount({ count }: { count: number }) {
+  const text = ngettext(
+    msgid`${count} item`,
+    `${count} items`,
+    count
+  );
+  
+  return <span>{text}</span>;
+}
+```
+
+### Variables in Translations
+
+```typescript
+// ✅ Simple variable
+const msg = t`Hello, ${userName}`;
+
+// ✅ Multiple variables
+const msg = t`${userName} sent you ${count} messages`;
+
+// ✅ With formatting
+const msg = t`Last login: ${formatDate(date)}`;
+```
+
+## Package Scripts
+
+Add these scripts to your `package.json`:
+
+```json
+{
+  "scripts": {
+    "i18n:extract": "proton-i18n extract",
+    "i18n:validate": "proton-i18n validate lint-functions",
+    "i18n:validate:files": "proton-i18n validate check-files ./locales",
+    "i18n:compile": "ttag po2json locales/*.po"
+  }
+}
+```
+
+## Directory Structure
+
+Recommended project structure:
+
+```
+project/
+├── src/
+│   ├── app/
+│   │   └── i18n.ts          # i18n setup
+│   └── components/
+│       └── *.tsx            # Components with translations
+├── locales/
+│   ├── template.pot         # Extraction template
+│   ├── en.po                # English translations
+│   ├── fr.po                # French translations
+│   ├── de.po                # German translations
+│   └── *.json               # Compiled translations
+└── i18n.config.js           # i18n configuration
+```
+
+## Linting Rules
+
+The validator checks for common mistakes:
+
+<AccordionGroup>
+  <Accordion title="No template literals">
+    ```typescript
+    // ❌ Bad
+    const msg = t`Hello ${name}`; // If name is dynamic
+    
+    // ✅ Good
+    const msg = t`Hello ${userName}`; // If userName is in scope at extraction
+    ```
+  </Accordion>
+  
+  <Accordion title="No concatenation">
+    ```typescript
+    // ❌ Bad
+    const msg = t`Hello ` + name;
+    
+    // ✅ Good
+    const msg = t`Hello ${name}`;
+    ```
+  </Accordion>
+  
+  <Accordion title="Use context for ambiguous strings">
+    ```typescript
+    // ❌ Bad - Ambiguous
+    const label = t`Close`;
+    
+    // ✅ Good - Clear context
+    const label = c('Button').t`Close`;
+    ```
+  </Accordion>
+  
+  <Accordion title="Proper plural forms">
+    ```typescript
+    // ❌ Bad
+    const msg = count === 1 ? t`1 item` : t`${count} items`;
+    
+    // ✅ Good
+    const msg = ngettext(msgid`${count} item`, `${count} items`, count);
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## CI Integration
+
+Add validation to your CI pipeline:
+
+```yaml
+# .github/workflows/i18n.yml
+name: i18n
+
+on: [push, pull_request]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 22
+      - run: yarn install
+      - run: yarn i18n:validate
+      - run: yarn i18n:validate:files
+```
+
+## Verbose Output
+
+Get detailed information during validation:
+
+```bash
+proton-i18n validate --verbose
+```
+
+This will show:
+- Files being processed
+- Specific validation errors
+- Line numbers and context
+- Suggestions for fixes
+
+## Dependencies
+
+<AccordionGroup>
+  <Accordion title="Runtime Dependencies">
+    - `ttag-cli` - ttag CLI tools
+    - `gettext-parser` - PO/POT file parsing
+    - `glob` - File pattern matching
+    - `execa` - Process execution
+  </Accordion>
+</AccordionGroup>
+
+## Node.js Requirements
+
+<Warning>
+  Requires Node.js >= 22.14.0
+</Warning>
+
+```bash
+# Check your Node version
+node --version
+
+# Should output v22.14.0 or higher
+```
+
+## Testing
+
+```bash
+# Run test suite
+yarn test
+
+# Run tests in CI mode
+yarn test:ci
+```
+
+## Related Resources
+
+<CardGroup cols={2}>
+  <Card title="ttag Documentation" icon="book" href="https://ttag.js.org">
+    Official ttag library documentation
+  </Card>
+  <Card title="gettext Manual" icon="book" href="https://www.gnu.org/software/gettext/manual/">
+    GNU gettext documentation
+  </Card>
+</CardGroup>
+
+## Common Issues
+
+<AccordionGroup>
+  <Accordion title="Extraction not finding strings">
+    - Check that files match `include` patterns
+    - Verify you're using template literals: `` t`text` ``
+    - Make sure strings are not in excluded directories
+  </Accordion>
+  
+  <Accordion title="Validation failing">
+    - Use `--verbose` flag to see detailed errors
+    - Check for template literals in translation calls
+    - Verify PO file format is correct
+  </Accordion>
+  
+  <Accordion title="Missing translations at runtime">
+    - Ensure PO files are compiled to JSON
+    - Check locale is loaded before use
+    - Verify JSON files are imported correctly
+  </Accordion>
+</AccordionGroup>
+
+## Related Packages
+
+<CardGroup cols={2}>
+  <Card title="ttag" icon="language" href="https://www.npmjs.com/package/ttag">
+    Runtime translation library
+  </Card>
+  <Card title="@proton/shared" icon="share-nodes" href="/packages/shared">
+    Shared utilities including i18n helpers
+  </Card>
+</CardGroup>

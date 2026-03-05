@@ -1,0 +1,173 @@
+---
+title: Header Component
+description: Application header layout component
+---
+
+# Header Component
+
+The Header component provides a consistent application header layout across Proton applications.
+
+**Location**: `components/header/Header.tsx`
+
+## Basic Usage
+
+```tsx
+import Header from '@proton/components/components/header/Header';
+import { Button } from '@proton/atoms/Button/Button';
+
+const MyApp = () => {
+  return (
+    <Header>
+      <div className="flex flex-1 items-center">
+        <h1>My Application</h1>
+      </div>
+      <div className="flex gap-2">
+        <Button>Action</Button>
+      </div>
+    </Header>
+  );
+};
+```
+
+## Props
+
+Extends `HTMLAttributes<HTMLDivElement>`
+
+<ParamField path="children" type="ReactNode">
+  Header content
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes
+</ParamField>
+
+## Examples
+
+<Tabs>
+  <Tab title="Basic Header">
+    ```tsx
+    <Header>
+      <div className="flex items-center gap-4">
+        <Logo />
+        <h1>Proton Mail</h1>
+      </div>
+    </Header>
+    ```
+  </Tab>
+  
+  <Tab title="With Actions">
+    ```tsx
+    <Header>
+      <div className="flex flex-1 items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Logo />
+          <SearchInput placeholder="Search..." />
+        </div>
+        <div className="flex gap-2">
+          <Button icon>
+            <Icon name="cog-wheel" />
+          </Button>
+          <UserDropdown />
+        </div>
+      </div>
+    </Header>
+    ```
+  </Tab>
+  
+  <Tab title="With Navigation">
+    ```tsx
+    <Header>
+      <div className="flex flex-1 flex-column">
+        <div className="flex items-center justify-between">
+          <Logo />
+          <UserDropdown />
+        </div>
+        <nav className="flex gap-4 mt-2">
+          <a href="/inbox">Inbox</a>
+          <a href="/sent">Sent</a>
+          <a href="/drafts">Drafts</a>
+        </nav>
+      </div>
+    </Header>
+    ```
+  </Tab>
+</Tabs>
+
+## Styling
+
+The Header component applies base styling:
+- Flex container with nowrap
+- Reset for print media
+- Additional classes can be added via `className`
+
+## Layout Pattern
+
+```tsx
+const AppLayout = () => {
+  return (
+    <div className="flex flex-column h-full">
+      <Header>
+        {/* Header content */}
+      </Header>
+      <div className="flex flex-1">
+        <Sidebar>
+          {/* Sidebar content */}
+        </Sidebar>
+        <main className="flex-1">
+          {/* Main content */}
+        </main>
+      </div>
+    </div>
+  );
+};
+```
+
+## Best Practices
+
+### Responsive Design
+
+```tsx
+<Header>
+  <div className="flex flex-1 items-center">
+    {/* Mobile: Show hamburger */}
+    <Button className="md:hidden" icon>
+      <Icon name="hamburger" />
+    </Button>
+    
+    {/* Desktop: Show full navigation */}
+    <nav className="hidden md:flex gap-4">
+      <a href="/home">Home</a>
+      <a href="/about">About</a>
+    </nav>
+  </div>
+</Header>
+```
+
+### Accessibility
+
+```tsx
+<Header role="banner">
+  <nav aria-label="Main navigation">
+    <a href="/" aria-current="page">Home</a>
+    <a href="/settings">Settings</a>
+  </nav>
+</Header>
+```
+
+### Consistent Height
+
+```tsx
+// Use consistent height across the app
+<Header className="h-custom" style={{ '--h-custom': '4rem' }}>
+  {/* Content */}
+</Header>
+```
+
+## Related Components
+
+- [Sidebar](/components/layout/sidebar) - Sidebar navigation component
+- [Container](/components/layout/container) - Content container components
+
+## Source Code
+
+View source: `packages/components/components/header/Header.tsx:1`

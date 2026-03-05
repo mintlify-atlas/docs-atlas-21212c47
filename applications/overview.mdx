@@ -1,0 +1,136 @@
+---
+title: Applications Overview
+description: Overview of all Proton WebClients applications in the monorepo
+icon: grid
+---
+
+## Proton WebClients Applications
+
+The Proton WebClients monorepo contains multiple React-based web applications that make up the Proton ecosystem. Each application is built using a shared component library and follows consistent architectural patterns.
+
+<CardGroup cols={2}>
+  <Card title="Proton Mail" icon="envelope" href="/applications/proton-mail">
+    Secure email application with end-to-end encryption
+  </Card>
+  <Card title="Proton Calendar" icon="calendar" href="/applications/proton-calendar">
+    Encrypted calendar with event management and scheduling
+  </Card>
+  <Card title="Proton Drive" icon="folder" href="/applications/proton-drive">
+    Secure cloud storage with file sharing and collaboration
+  </Card>
+  <Card title="Proton Pass" icon="key" href="/applications/proton-pass">
+    Password manager and credential vault
+  </Card>
+  <Card title="Proton VPN" icon="shield" href="/applications/proton-vpn">
+    VPN settings and configuration interface
+  </Card>
+  <Card title="Proton Wallet" icon="wallet" href="/applications/proton-wallet">
+    Bitcoin wallet with privacy features
+  </Card>
+</CardGroup>
+
+## Architecture
+
+All applications share a common architecture:
+
+<Steps>
+  <Step title="Workspace Organization">
+    Applications are located in `applications/` directory, each with its own `package.json` and source code
+  </Step>
+  <Step title="Shared Packages">
+    All apps use workspace packages like `@proton/components`, `@proton/shared`, `@proton/atoms`, and `@proton/styles`
+  </Step>
+  <Step title="Build System">
+    Applications use `@proton/pack` (proton-pack) for building and bundling with Webpack
+  </Step>
+  <Step title="State Management">
+    Most apps use Redux Toolkit (`@reduxjs/toolkit`) with shared Redux stores
+  </Step>
+</Steps>
+
+## Common Technologies
+
+### Core Stack
+
+- **React 18.3.1** - UI framework
+- **TypeScript 5.9.3** - Type safety
+- **React Router** - Client-side routing
+- **Redux Toolkit** - State management (most apps)
+- **ttag** - Internationalization
+
+### Build & Development
+
+```json
+{
+  "scripts": {
+    "start": "proton-pack dev-server",
+    "build:web": "proton-pack build",
+    "test": "jest",
+    "check-types": "tsc",
+    "lint": "eslint"
+  }
+}
+```
+
+### Testing
+
+All applications use:
+- **Jest** - Testing framework
+- **@testing-library/react** - Component testing
+- **@testing-library/user-event** - User interaction testing
+
+## Development Workflow
+
+<Note>
+  All applications support both standalone and SSO (single sign-on) modes for development and production.
+</Note>
+
+### Starting an Application
+
+```bash
+# From the monorepo root
+yarn workspace proton-mail start
+
+# Or from the application directory
+cd applications/mail
+yarn start
+```
+
+### Building for Production
+
+```bash
+yarn workspace proton-mail build:web
+```
+
+### Running Tests
+
+```bash
+yarn workspace proton-mail test
+```
+
+## Shared Infrastructure
+
+All applications leverage shared packages:
+
+| Package | Purpose |
+|---------|--------|
+| `@proton/components` | UI components library |
+| `@proton/shared` | Shared utilities and constants |
+| `@proton/atoms` | Atomic design components |
+| `@proton/styles` | CSS styles and themes |
+| `@proton/crypto` | Cryptographic operations |
+| `@proton/hooks` | React hooks library |
+| `@proton/icons` | Icon components |
+| `@proton/pack` | Build and bundling tool |
+
+## Application Modes
+
+Applications can run in different modes:
+
+- **Standalone Mode** - Independent application with its own authentication
+- **SSO Mode** - Integrated with Proton account single sign-on
+- **Desktop Mode** - Some apps have Electron desktop versions (Mail, Pass, Meet)
+
+## License
+
+All applications are licensed under **GPL-3.0**.

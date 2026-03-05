@@ -1,0 +1,593 @@
+---
+title: Code Style & Linting
+description: Code quality tools and standards for Proton WebClients
+---
+
+## Overview
+
+Proton WebClients uses a comprehensive suite of tools to maintain code quality and consistency across the monorepo:
+
+<CardGroup cols={3}>
+  <Card title="ESLint" icon="check">
+    JavaScript/TypeScript linting
+  </Card>
+  <Card title="Prettier" icon="wand-magic-sparkles">
+    Code formatting
+  </Card>
+  <Card title="Stylelint" icon="palette">
+    CSS/SCSS linting
+  </Card>
+</CardGroup>
+
+## EditorConfig
+
+The project uses [EditorConfig](https://editorconfig.org/) to maintain consistent coding styles:
+
+```properties .editorconfig
+root = true
+
+[*]
+indent_size = 4
+indent_style = space
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.scss]
+indent_size = 2
+indent_style = tab
+```
+
+<Tip>
+  Install the EditorConfig plugin for your editor to automatically apply these settings.
+</Tip>
+
+## TypeScript Configuration
+
+### Compiler Options
+
+The base TypeScript configuration (`tsconfig.base.json`) enforces strict type checking:
+
+<AccordionGroup>
+  <Accordion title="Type Checking Settings">
+    ```json
+    {
+      "strict": true,
+      "noImplicitAny": true,
+      "noUnusedLocals": true,
+      "forceConsistentCasingInFileNames": true
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Module Resolution">
+    ```json
+    {
+      "module": "esnext",
+      "moduleResolution": "bundler",
+      "esModuleInterop": true,
+      "resolveJsonModule": true
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="JSX Settings">
+    ```json
+    {
+      "jsx": "preserve",
+      "lib": ["dom", "dom.iterable", "esnext"]
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Path Aliases
+
+The monorepo uses TypeScript path aliases for cleaner imports:
+
+```typescript
+// Instead of:
+import { Button } from '../../../packages/components/src/Button';
+
+// Use:
+import { Button } from '@proton/components';
+```
+
+## ESLint
+
+### Configuration
+
+ESLint is configured using the flat config format (`eslint.config.mjs`) with the shared `@proton/eslint-config-proton` package.
+
+<Info>
+  Each package and application has its own `eslint.config.mjs` that extends the base configuration.
+</Info>
+
+### Key Rules
+
+<Tabs>
+  <Tab title="TypeScript">
+    ```javascript
+    '@typescript-eslint/array-type': ['error', { default: 'array' }],
+    '@typescript-eslint/no-floating-promises': 'warn',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/consistent-type-imports': 'error',
+    '@typescript-eslint/no-import-type-side-effects': 'error',
+    ```
+    
+    **Type imports must be marked explicitly:**
+    ```typescript
+    // Good
+    import type { User } from './types';
+    import { fetchUser } from './api';
+    
+    // Bad
+    import { User, fetchUser } from './types';
+    ```
+  </Tab>
+  
+  <Tab title="Naming Conventions">
+    ```javascript
+    '@typescript-eslint/naming-convention': [
+      'error',
+      { selector: 'variable', format: ['camelCase', 'PascalCase', 'UPPER_CASE'] },
+      { selector: 'function', format: ['camelCase', 'PascalCase'] },
+      { selector: 'typeLike', format: ['PascalCase', 'UPPER_CASE'] },
+      { selector: 'enum', format: ['PascalCase', 'UPPER_CASE'] }
+    ]
+    ```
+    
+    <Warning>
+      Variables and functions must use camelCase or PascalCase. Types and interfaces must use PascalCase.
+    </Warning>
+  </Tab>
+  
+  <Tab title="Imports">
+    ```javascript
+    'import/no-extraneous-dependencies': 'error',
+    'no-duplicate-imports': ['warn', { allowSeparateTypeImports: true }],
+    'lodash/import-scope': [2, 'method']
+    ```
+    
+    **Import lodash methods individually:**
+    ```typescript
+    // Good
+    import map from 'lodash/map';
+    
+    // Bad
+    import { map } from 'lodash';
+    ```
+  </Tab>
+  
+  <Tab title="Brand Names">
+    The ESLint config enforces proper brand name usage to ensure translatability:
+    
+    ```javascript
+    // Use constants instead of hardcoded brand names
+    // Good:
+    const message = c('Info').t`Welcome to ${BRAND_NAME}`;
+    const mailApp = MAIL_APP_NAME;
+    const driveApp = DRIVE_APP_NAME;
+    
+    // Bad:
+    const message = "Welcome to Proton";
+    const mailApp = "Proton Mail";
+    ```
+    
+    <Note>
+      This ensures that brand names can be properly localized and updated across the entire codebase.
+    </Note>
+  </Tab>
+  
+  <Tab title="Security">
+    ```javascript
+    'no-console': 'warn',
+    'no-debugger': 'error',
+    '@typescript-eslint/no-implied-eval': 'error',
+    ```
+    
+    **Restricted imports for security:**
+    ```javascript
+    'no-restricted-properties': [
+      'error',
+      {
+        object: 'crypto',
+        property: 'subtle',
+        message: 'Use helpers from @proton/crypto/lib/subtle'
+      }
+    ]
+    ```
+  </Tab>
+</Tabs>
+
+### Running ESLint
+
+```bash
+# Lint a specific package
+yarn workspace @proton/components eslint --fix
+
+# Lint with Turbo (recommended for CI)
+turbo run lint
+```
+
+## Prettier
+
+### Configuration
+
+Prettier is configured via `@proton/prettier-config-proton` package with the following settings:
+
+```javascript prettier.config.mjs
+export default {
+  printWidth: 120,
+  arrowParens: 'always',
+  singleQuote: true,
+  trailingComma: 'es5',
+  tabWidth: 4,
+  proseWrap: 'never'
+};
+```
+
+### Import Ordering
+
+Prettier automatically sorts imports using `@trivago/prettier-plugin-sort-imports`:
+
+```typescript
+// Imports are automatically organized in this order:
+
+// 1. React imports
+import React from 'react';
+import { useState } from 'react';
+
+// 2. React ecosystem
+import { useHistory } from 'react-router-dom';
+
+// 3. Third-party modules
+import axios from 'axios';
+
+// 4. Proton packages (non-styles)
+import { Button } from '@proton/components';
+import { getUser } from '@proton/shared/lib/api/users';
+
+// 5. Relative imports (non-styles)
+import { formatDate } from './utils';
+
+// 6. Proton package styles
+import '@proton/components/styles/index.scss';
+
+// 7. Relative styles
+import './styles.scss';
+```
+
+<Tip>
+  Import order is enforced automatically on save and during pre-commit hooks.
+</Tip>
+
+### SCSS Specific Settings
+
+SCSS files use different indentation:
+
+```javascript
+{
+  files: '*.scss',
+  options: {
+    tabWidth: 2,
+    useTabs: true,
+    singleQuote: true
+  }
+}
+```
+
+### Running Prettier
+
+```bash
+# Format all files
+prettier --write .
+
+# Check formatting without writing
+prettier --check .
+
+# Format specific file types
+prettier --write "**/*.{ts,tsx,scss}"
+```
+
+## Stylelint
+
+### Configuration
+
+Stylelint is configured via `@proton/stylelint-config-proton` which extends:
+
+- `stylelint-config-standard-scss`
+- `stylelint-config-prettier-scss`
+- Custom Proton rules
+
+### Key Rules
+
+<Tabs>
+  <Tab title="Color & Values">
+    ```javascript
+    'alpha-value-notation': 'number',
+    'color-function-notation': 'modern',
+    'color-named': ['always-where-possible', { ignore: ['inside-function'] }],
+    'font-weight-notation': 'named-where-possible',
+    'number-max-precision': 4
+    ```
+    
+    **Examples:**
+    ```scss
+    // Good
+    color: rgb(255 0 0 / 0.5);
+    font-weight: bold;
+    
+    // Bad
+    color: rgba(255, 0, 0, 0.5);
+    font-weight: 700;
+    ```
+  </Tab>
+  
+  <Tab title="Vendor Prefixes">
+    ```javascript
+    'value-no-vendor-prefix': true,
+    'property-no-vendor-prefix': true
+    ```
+    
+    <Warning>
+      Don't use vendor prefixes manually. They're added automatically by PostCSS/Autoprefixer.
+    </Warning>
+    
+    ```scss
+    // Good
+    display: flex;
+    
+    // Bad
+    display: -webkit-flex;
+    display: flex;
+    ```
+  </Tab>
+  
+  <Tab title="Logical Properties">
+    ```javascript
+    'liberty/use-logical-spec': 'always'
+    ```
+    
+    Use logical properties for better RTL support:
+    
+    ```scss
+    // Good
+    margin-inline-start: 16px;
+    padding-block: 8px;
+    inset-inline-end: 0;
+    
+    // Bad
+    margin-left: 16px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    right: 0;
+    ```
+  </Tab>
+  
+  <Tab title="SCSS Specific">
+    ```javascript
+    'at-rule-no-unknown': [
+      true,
+      {
+        ignoreAtRules: [
+          'use', 'forward', 'import',
+          'mixin', 'include', 'function',
+          'extend', 'at-root',
+          'if', 'else', 'each', 'for', 'while'
+        ]
+      }
+    ]
+    ```
+    
+    All standard SCSS at-rules are supported.
+  </Tab>
+</Tabs>
+
+### Running Stylelint
+
+```bash
+# Lint SCSS files
+stylelint "**/*.scss" --fix
+
+# Lint specific directory
+stylelint "packages/components/**/*.scss"
+```
+
+## Pre-commit Hooks
+
+The project uses **Husky** for Git hooks and **lint-staged** for running linters on staged files.
+
+### Automatic Checks
+
+When you commit, the following checks run automatically:
+
+<Steps>
+  <Step title="TypeScript/JavaScript Files">
+    ```bash
+    eslint --fix --max-warnings=0
+    prettier --write
+    ```
+  </Step>
+  
+  <Step title="SCSS/CSS Files">
+    ```bash
+    prettier --write
+    stylelint --fix
+    ```
+  </Step>
+  
+  <Step title="JSON, Markdown, YAML, SVG">
+    ```bash
+    prettier --write
+    ```
+  </Step>
+  
+  <Step title="package.json">
+    ```bash
+    sort-package-json
+    ```
+    
+    Package.json files are automatically sorted for consistency.
+  </Step>
+</Steps>
+
+### Configuration
+
+The pre-commit hook is defined in `.husky/pre-commit`:
+
+```bash
+yarn run lint-staged
+```
+
+And `lint-staged.config.mjs` specifies what to run:
+
+```javascript lint-staged.config.mjs
+export default {
+  '(*.ts|*.tsx|*.js)': [
+    'eslint --fix --max-warnings=0 --no-warn-ignored --flag v10_config_lookup_from_file',
+    'prettier --write',
+  ],
+  '(*.scss|.css)': ['prettier --write', 'stylelint --fix'],
+  '(*.json|*.md|*.mdx|*.html|*.mjs|*.yml|*.svg)': 'prettier --write',
+  'package.json': 'sort-package-json',
+};
+```
+
+<Warning>
+  **Zero warnings policy:** ESLint is configured with `--max-warnings=0`, so even warnings will fail the commit. Fix all warnings before committing.
+</Warning>
+
+### Bypassing Hooks
+
+While **not recommended**, you can bypass hooks in emergencies:
+
+```bash
+git commit --no-verify -m "Emergency fix"
+```
+
+<Warning>
+  Bypassing hooks may cause CI failures. Only use in exceptional circumstances.
+</Warning>
+
+## CI/CD Integration
+
+The project uses **Turbo** for task orchestration in CI:
+
+```bash
+# Run all lint tasks across the monorepo
+turbo run lint
+
+# Run type checking
+turbo run check-types
+
+# Run tests
+turbo run test:ci
+```
+
+### Turbo Configuration
+
+Key tasks defined in `turbo.json`:
+
+```json
+{
+  "tasks": {
+    "lint": {},
+    "check-types": {
+      "dependsOn": ["transit"]
+    },
+    "test:ci": {
+      "dependsOn": ["transit"]
+    }
+  }
+}
+```
+
+## Package-Specific Configurations
+
+<Info>
+  Each package and application can extend the base ESLint configuration with package-specific rules in its own `eslint.config.mjs` file.
+</Info>
+
+### Example Package Config
+
+```javascript applications/mail/eslint.config.mjs
+import config from '@proton/eslint-config-proton';
+
+export default [
+  ...config,
+  {
+    // Package-specific rules
+    rules: {
+      'no-console': 'error' // Stricter in production apps
+    }
+  }
+];
+```
+
+## Common Issues
+
+<AccordionGroup>
+  <Accordion title="ESLint: 'no-duplicate-imports' warnings">
+    Type imports and value imports can be separate:
+    
+    ```typescript
+    // This is allowed:
+    import type { User } from './types';
+    import { fetchUser } from './types';
+    ```
+  </Accordion>
+  
+  <Accordion title="Prettier: Import order changes">
+    Prettier automatically sorts imports. Don't fight it - let it organize your imports consistently.
+  </Accordion>
+  
+  <Accordion title="Stylelint: Logical properties errors">
+    Use logical CSS properties instead of directional ones:
+    
+    - `margin-inline-start` instead of `margin-left`
+    - `padding-block` instead of `padding-top/bottom`
+    - `inset-inline-end` instead of `right`
+  </Accordion>
+  
+  <Accordion title="Pre-commit hooks not running">
+    If hooks aren't running, reinstall them:
+    
+    ```bash
+    yarn husky
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Run Checks Locally" icon="laptop">
+    Always run lint and type checks before pushing:
+    ```bash
+    turbo run lint check-types
+    ```
+  </Card>
+  
+  <Card title="Fix Warnings" icon="triangle-exclamation">
+    Don't ignore ESLint warnings. Fix them or add justification comments.
+  </Card>
+  
+  <Card title="Use Type Imports" icon="typescript">
+    Always use `import type` for type-only imports to enable proper tree-shaking.
+  </Card>
+  
+  <Card title="Logical CSS" icon="arrows-left-right">
+    Use logical properties for better internationalization support.
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<Card title="Pull Request Process" icon="git-pull-request" href="/contributing/pull-requests">
+  Learn how to submit your changes for review
+</Card>

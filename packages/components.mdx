@@ -1,0 +1,520 @@
+---
+title: '@proton/components'
+description: React component library for building Proton applications
+---
+
+The `@proton/components` package is the comprehensive React component library containing UI components, containers, and hooks used to build all Proton web applications.
+
+## Installation
+
+```bash
+yarn add @proton/components
+```
+
+<Warning>
+This package has several peer dependencies that must be installed:
+```bash
+yarn add @proton/shared @proton/crypto @proton/key-transparency @proton/srp @proton/cross-storage date-fns
+```
+</Warning>
+
+## Package Information
+
+<CodeGroup>
+```json package.json
+{
+  "name": "@proton/components",
+  "license": "GPL-3.0",
+  "sideEffects": false,
+  "main": "index.ts"
+}
+```
+</CodeGroup>
+
+## Architecture
+
+The package is organized into three main directories:
+
+<Tabs>
+  <Tab title="Components">
+    **Presentational components** - Reusable UI elements
+    
+    - Buttons, inputs, modals, dropdowns
+    - Layout components
+    - Data display components
+    - Generally stateless or with minimal local state
+  </Tab>
+  
+  <Tab title="Containers">
+    **Connected components** - Business logic integration
+    
+    - API-connected components
+    - Redux-connected components
+    - Complex feature components
+    - Settings and configuration UIs
+  </Tab>
+  
+  <Tab title="Hooks">
+    **Custom hooks** - Proton-specific business logic
+    
+    - API hooks
+    - Authentication hooks
+    - Feature flag hooks
+    - State management hooks
+  </Tab>
+</Tabs>
+
+## Component Categories
+
+### Form Components
+
+<CardGroup cols={2}>
+  <Card title="Input Fields" icon="keyboard">
+    Text inputs, email inputs, password fields with validation
+  </Card>
+  
+  <Card title="Select & Dropdowns" icon="list">
+    Dropdowns, autocomplete, multi-select components
+  </Card>
+  
+  <Card title="Buttons" icon="hand-pointer">
+    Primary, secondary, ghost, icon buttons with loading states
+  </Card>
+  
+  <Card title="Form Controls" icon="toggle-on">
+    Checkboxes, radio buttons, toggles, switches
+  </Card>
+</CardGroup>
+
+### Common Components
+
+```typescript
+import {
+  Alert,
+  Badge,
+  Button,
+  ButtonGroup,
+  Dropdown,
+  DropdownMenu,
+  DropdownMenuButton,
+  Icon,
+  Info,
+  InputFieldTwo,
+  Label,
+  Loader,
+  Modal,
+  ModalTwo,
+  Option,
+  PrimaryButton,
+  SelectTwo,
+  Tooltip,
+} from '@proton/components';
+```
+
+#### Button Examples
+
+```tsx
+import { Button, PrimaryButton } from '@proton/components';
+
+// Basic button
+<Button onClick={handleClick}>Click me</Button>
+
+// Primary button
+<PrimaryButton loading={isLoading}>Submit</PrimaryButton>
+
+// Button with icon
+<Button icon={<Icon name="plus" />}>Add item</Button>
+
+// Disabled button
+<Button disabled>Disabled</Button>
+```
+
+#### Modal Examples
+
+```tsx
+import { ModalTwo, ModalTwoContent, ModalTwoHeader, ModalTwoFooter, Button } from '@proton/components';
+
+function MyModal({ open, onClose }) {
+  return (
+    <ModalTwo open={open} onClose={onClose}>
+      <ModalTwoHeader title="Confirmation" />
+      <ModalTwoContent>
+        <p>Are you sure you want to proceed?</p>
+      </ModalTwoContent>
+      <ModalTwoFooter>
+        <Button onClick={onClose}>Cancel</Button>
+        <PrimaryButton onClick={handleConfirm}>Confirm</PrimaryButton>
+      </ModalTwoFooter>
+    </ModalTwo>
+  );
+}
+```
+
+### Layout Components
+
+```typescript
+import {
+  AppContainer,
+  Sidebar,
+  Header,
+  PrivateMainArea,
+  TopNavbar,
+  SettingsContainer,
+  Section,
+  Row,
+  Field,
+  Label,
+} from '@proton/components';
+```
+
+#### Layout Example
+
+```tsx
+import { AppContainer, Sidebar, PrivateMainArea } from '@proton/components';
+
+function App() {
+  return (
+    <AppContainer>
+      <Sidebar>
+        {/* Navigation items */}
+      </Sidebar>
+      <PrivateMainArea>
+        {/* Main content */}
+      </PrivateMainArea>
+    </AppContainer>
+  );
+}
+```
+
+### Data Display
+
+<AccordionGroup>
+  <Accordion title="Tables">
+    ```tsx
+    import { Table, TableBody, TableRow, TableCell } from '@proton/components';
+
+    <Table>
+      <TableBody>
+        {items.map(item => (
+          <TableRow key={item.id}>
+            <TableCell>{item.name}</TableCell>
+            <TableCell>{item.value}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+    ```
+  </Accordion>
+  
+  <Accordion title="Lists">
+    ```tsx
+    import { OrderableTable } from '@proton/components';
+
+    <OrderableTable
+      items={items}
+      onSortEnd={handleSortEnd}
+      renderItem={(item) => (
+        <div>{item.name}</div>
+      )}
+    />
+    ```
+  </Accordion>
+  
+  <Accordion title="Badges & Pills">
+    ```tsx
+    import { Badge, BetaBadge } from '@proton/components';
+
+    <Badge type="success">Active</Badge>
+    <Badge type="error">Failed</Badge>
+    <Badge type="warning">Pending</Badge>
+    <BetaBadge />
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Container Components
+
+Containers integrate with APIs and state management:
+
+```typescript
+import {
+  AddressesSection,
+  PasswordSection,
+  RecoveryMethodsSection,
+  SubscriptionSection,
+  UsernameSection,
+  SecuritySection,
+} from '@proton/components';
+```
+
+### Settings Containers
+
+```tsx
+import { SettingsContainer, UsernameSection, PasswordSection } from '@proton/components';
+
+function AccountSettings() {
+  return (
+    <SettingsContainer>
+      <UsernameSection />
+      <PasswordSection />
+      {/* More settings sections */}
+    </SettingsContainer>
+  );
+}
+```
+
+## Custom Hooks
+
+### API Hooks
+
+```typescript
+import {
+  useApi,
+  useApiResult,
+  useApiWithoutResult,
+  useCachedModelResult,
+  useGetAddresses,
+  useGetUser,
+  useGetUserKeys,
+} from '@proton/components';
+```
+
+#### Example Usage
+
+```tsx
+import { useGetUser, useGetAddresses, useApi } from '@proton/components';
+import { updateUsername } from '@proton/shared/lib/api/settings';
+
+function UserProfile() {
+  const api = useApi();
+  const [user, loadingUser] = useGetUser();
+  const [addresses] = useGetAddresses();
+  
+  const handleUpdateUsername = async (newUsername: string) => {
+    await api(updateUsername(newUsername));
+  };
+  
+  if (loadingUser) {
+    return <Loader />;
+  }
+  
+  return (
+    <div>
+      <h1>{user.Name}</h1>
+      <p>{addresses[0]?.Email}</p>
+    </div>
+  );
+}
+```
+
+### Authentication Hooks
+
+```typescript
+import {
+  useAuthentication,
+  useUser,
+  useUserSettings,
+  useOrganization,
+  useSubscription,
+} from '@proton/components';
+```
+
+### Feature Flag Hooks
+
+```typescript
+import { useFeature, useEarlyAccess } from '@proton/components';
+
+function NewFeature() {
+  const { feature, loading } = useFeature('FeatureCode');
+  
+  if (loading || !feature?.Value) {
+    return null;
+  }
+  
+  return <div>New feature enabled!</div>;
+}
+```
+
+## Form Handling
+
+Components use Formik for form management:
+
+```tsx
+import { useFormik } from 'formik';
+import { InputFieldTwo, Button } from '@proton/components';
+
+function LoginForm() {
+  const formik = useFormik({
+    initialValues: {
+      username: '',
+      password: '',
+    },
+    onSubmit: async (values) => {
+      // Handle submission
+    },
+  });
+  
+  return (
+    <form onSubmit={formik.handleSubmit}>
+      <InputFieldTwo
+        id="username"
+        label="Username"
+        value={formik.values.username}
+        onChange={formik.handleChange}
+        error={formik.errors.username}
+      />
+      <InputFieldTwo
+        id="password"
+        type="password"
+        label="Password"
+        value={formik.values.password}
+        onChange={formik.handleChange}
+        error={formik.errors.password}
+      />
+      <Button type="submit" loading={formik.isSubmitting}>
+        Login
+      </Button>
+    </form>
+  );
+}
+```
+
+## Notifications
+
+```typescript
+import { useNotifications } from '@proton/components';
+
+function MyComponent() {
+  const { createNotification } = useNotifications();
+  
+  const handleSuccess = () => {
+    createNotification({
+      type: 'success',
+      text: 'Operation completed successfully',
+    });
+  };
+  
+  const handleError = (error: Error) => {
+    createNotification({
+      type: 'error',
+      text: error.message,
+    });
+  };
+}
+```
+
+## Drawer System
+
+Integrated drawer for quick actions:
+
+```typescript
+import {
+  DrawerApp,
+  DrawerSidebar,
+  CalendarDrawerAppButton,
+  ContactDrawerAppButton,
+  SecurityCenterDrawerAppButton,
+} from '@proton/components';
+```
+
+## Dependencies
+
+<Tabs>
+  <Tab title="Proton Packages">
+    ```json
+    {
+      "@proton/account": "workspace:^",
+      "@proton/atoms": "workspace:^",
+      "@proton/calendar": "workspace:^",
+      "@proton/features": "workspace:^",
+      "@proton/icons": "workspace:^",
+      "@proton/mail": "workspace:^",
+      "@proton/styles": "workspace:^"
+    }
+    ```
+  </Tab>
+  
+  <Tab title="UI Libraries">
+    ```json
+    {
+      "react": "^18.3.1",
+      "react-dom": "^18.3.1",
+      "react-router-dom": "^5.3.4",
+      "formik": "^2.4.9",
+      "@dnd-kit/core": "^6.3.1",
+      "emoji-mart": "^5.1.0",
+      "markdown-it": "^14.1.1"
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Utilities">
+    ```json
+    {
+      "date-fns": "^2.30.0",
+      "dompurify": "^3.3.1",
+      "tinycolor2": "^1.6.0",
+      "libphonenumber-js": "^1.12.36",
+      "card-validator": "^10.0.4"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Testing
+
+```bash
+# Run tests
+yarn workspace @proton/components test
+
+# Run tests with coverage
+yarn workspace @proton/components test:ci
+
+# Type checking
+yarn workspace @proton/components check-types
+```
+
+### Testing Components
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { Button } from '@proton/components';
+
+test('renders button with text', () => {
+  render(<Button>Click me</Button>);
+  expect(screen.getByText('Click me')).toBeInTheDocument();
+});
+```
+
+## Best Practices
+
+<Warning>
+**Peer Dependencies**: Ensure all peer dependencies are installed to avoid runtime errors.
+</Warning>
+
+<Tip>
+**Component Selection**: 
+- Use `@proton/atoms` for basic UI elements
+- Use `@proton/components` for complex, feature-rich components
+- Create custom components in your app for app-specific logic
+</Tip>
+
+<Note>
+**Styling**: Components use SCSS from `@proton/styles`. Import styles in your application entry point.
+</Note>
+
+## Migration Guide
+
+<Steps>
+  <Step title="ModalTwo vs Modal">
+    Prefer `ModalTwo` for new code. It has better accessibility and mobile support.
+  </Step>
+  
+  <Step title="InputFieldTwo vs Input">
+    Use `InputFieldTwo` for form fields. It includes built-in label and error handling.
+  </Step>
+  
+  <Step title="SelectTwo vs Select">
+    `SelectTwo` provides better keyboard navigation and accessibility.
+  </Step>
+</Steps>

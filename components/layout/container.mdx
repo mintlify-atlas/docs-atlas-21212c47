@@ -1,0 +1,404 @@
+---
+title: Container Components
+description: Layout container components for structuring content
+---
+
+# Container Components
+
+Proton provides several container components for organizing and structuring content in consistent layouts.
+
+**Location**: `components/container/`
+
+## Row
+
+Horizontal row container for grouping elements.
+
+**Location**: `components/container/Row.tsx`
+
+### Usage
+
+```tsx
+import Row from '@proton/components/components/container/Row';
+
+const MyLayout = () => {
+  return (
+    <Row>
+      <div>Column 1</div>
+      <div>Column 2</div>
+    </Row>
+  );
+};
+```
+
+### Props
+
+Extends standard HTML div attributes.
+
+<ParamField path="children" type="ReactNode">
+  Content to display in the row
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes
+</ParamField>
+
+## Field
+
+Form field container.
+
+**Location**: `components/container/Field.tsx`
+
+### Usage
+
+```tsx
+import Field from '@proton/components/components/container/Field';
+import Input from '@proton/components/components/input/Input';
+
+const MyForm = () => {
+  return (
+    <Field>
+      <label>Email</label>
+      <Input type="email" />
+    </Field>
+  );
+};
+```
+
+## Bordered
+
+Container with border styling.
+
+**Location**: `components/container/Bordered.tsx`
+
+### Usage
+
+```tsx
+import Bordered from '@proton/components/components/container/Bordered';
+
+const MyCard = () => {
+  return (
+    <Bordered>
+      <h3>Card Title</h3>
+      <p>Card content goes here</p>
+    </Bordered>
+  );
+};
+```
+
+### Props
+
+<ParamField path="children" type="ReactNode">
+  Content to display
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes
+</ParamField>
+
+## Details
+
+Collapsible details container.
+
+**Location**: `components/container/Details.tsx`
+
+### Usage
+
+```tsx
+import Details from '@proton/components/components/container/Details';
+import Summary from '@proton/components/components/container/Summary';
+
+const MyCollapsible = () => {
+  return (
+    <Details>
+      <Summary>Click to expand</Summary>
+      <div>Hidden content that appears when expanded</div>
+    </Details>
+  );
+};
+```
+
+### Props
+
+<ParamField path="open" type="boolean">
+  Whether details is initially open
+</ParamField>
+
+<ParamField path="onToggle" type="(open: boolean) => void">
+  Callback when details is toggled
+</ParamField>
+
+## Summary
+
+Summary component for Details.
+
+**Location**: `components/container/Summary.tsx`
+
+### Usage
+
+```tsx
+import Summary from '@proton/components/components/container/Summary';
+
+<Summary>Summary text</Summary>
+```
+
+## EditableSection
+
+Section with edit mode toggle.
+
+**Location**: `components/container/EditableSection.tsx`
+
+### Usage
+
+```tsx
+import EditableSection from '@proton/components/components/container/EditableSection';
+import { Button } from '@proton/atoms/Button/Button';
+
+const MyEditableSection = () => {
+  const [editing, setEditing] = useState(false);
+
+  return (
+    <EditableSection>
+      <div className="flex justify-between">
+        <h3>Profile Information</h3>
+        <Button onClick={() => setEditing(!editing)}>
+          {editing ? 'Save' : 'Edit'}
+        </Button>
+      </div>
+      {editing ? (
+        <div>
+          {/* Edit form */}
+        </div>
+      ) : (
+        <div>
+          {/* Display content */}
+        </div>
+      )}
+    </EditableSection>
+  );
+};
+```
+
+## Examples
+
+<Tabs>
+  <Tab title="Form Layout">
+    ```tsx
+    <div>
+      <Row>
+        <Field>
+          <label>First Name</label>
+          <Input />
+        </Field>
+        <Field>
+          <label>Last Name</label>
+          <Input />
+        </Field>
+      </Row>
+      
+      <Row>
+        <Field>
+          <label>Email</label>
+          <Input type="email" />
+        </Field>
+      </Row>
+    </div>
+    ```
+  </Tab>
+  
+  <Tab title="Card Layout">
+    ```tsx
+    <div className="grid grid-cols-3 gap-4">
+      <Bordered>
+        <h3>Card 1</h3>
+        <p>Content</p>
+      </Bordered>
+      <Bordered>
+        <h3>Card 2</h3>
+        <p>Content</p>
+      </Bordered>
+      <Bordered>
+        <h3>Card 3</h3>
+        <p>Content</p>
+      </Bordered>
+    </div>
+    ```
+  </Tab>
+  
+  <Tab title="Collapsible Sections">
+    ```tsx
+    <div>
+      <Details>
+        <Summary>Account Settings</Summary>
+        <div className="p-4">
+          {/* Account settings content */}
+        </div>
+      </Details>
+      
+      <Details>
+        <Summary>Privacy Settings</Summary>
+        <div className="p-4">
+          {/* Privacy settings content */}
+        </div>
+      </Details>
+      
+      <Details>
+        <Summary>Security Settings</Summary>
+        <div className="p-4">
+          {/* Security settings content */}
+        </div>
+      </Details>
+    </div>
+    ```
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+### Consistent Spacing
+
+Use container components for consistent spacing:
+
+```tsx
+<div className="flex flex-column gap-4">
+  <Row className="gap-4">
+    <Field className="flex-1">
+      <label>First Name</label>
+      <Input />
+    </Field>
+    <Field className="flex-1">
+      <label>Last Name</label>
+      <Input />
+    </Field>
+  </Row>
+  
+  <Row>
+    <Field className="w-full">
+      <label>Email</label>
+      <Input type="email" fullWidth />
+    </Field>
+  </Row>
+</div>
+```
+
+### Responsive Layouts
+
+```tsx
+<Row className="flex-column md:flex-row gap-4">
+  <Field className="flex-1">
+    <label>Field 1</label>
+    <Input />
+  </Field>
+  <Field className="flex-1">
+    <label>Field 2</label>
+    <Input />
+  </Field>
+</Row>
+```
+
+### Nested Containers
+
+```tsx
+<Bordered className="p-4">
+  <h2 className="mb-4">Section Title</h2>
+  
+  <Details>
+    <Summary>Subsection 1</Summary>
+    <Row className="p-4">
+      <Field>
+        <label>Field</label>
+        <Input />
+      </Field>
+    </Row>
+  </Details>
+  
+  <Details>
+    <Summary>Subsection 2</Summary>
+    <div className="p-4">
+      {/* Content */}
+    </div>
+  </Details>
+</Bordered>
+```
+
+## Common Patterns
+
+### Two-Column Layout
+
+```tsx
+const TwoColumnLayout = () => {
+  return (
+    <Row className="gap-8">
+      <div className="flex-1">
+        <h3>Left Column</h3>
+        <p>Content for left side</p>
+      </div>
+      <div className="flex-1">
+        <h3>Right Column</h3>
+        <p>Content for right side</p>
+      </div>
+    </Row>
+  );
+};
+```
+
+### Settings Layout
+
+```tsx
+const SettingsLayout = () => {
+  return (
+    <div className="flex flex-column gap-4">
+      <Bordered className="p-4">
+        <Details>
+          <Summary>General Settings</Summary>
+          <div className="p-4">
+            <Row className="gap-4">
+              <Field>
+                <label>Username</label>
+                <Input />
+              </Field>
+              <Field>
+                <label>Display Name</label>
+                <Input />
+              </Field>
+            </Row>
+          </div>
+        </Details>
+      </Bordered>
+      
+      <Bordered className="p-4">
+        <Details>
+          <Summary>Privacy Settings</Summary>
+          <div className="p-4">
+            {/* Privacy settings */}
+          </div>
+        </Details>
+      </Bordered>
+    </div>
+  );
+};
+```
+
+### Card Grid
+
+```tsx
+const CardGrid = ({ items }) => {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {items.map(item => (
+        <Bordered key={item.id} className="p-4">
+          <h3>{item.title}</h3>
+          <p>{item.description}</p>
+        </Bordered>
+      ))}
+    </div>
+  );
+};
+```
+
+## Source Code
+
+View source:
+- Row: `packages/components/components/container/Row.tsx:1`
+- Field: `packages/components/components/container/Field.tsx:1`
+- Bordered: `packages/components/components/container/Bordered.tsx:1`
+- Details: `packages/components/components/container/Details.tsx:1`

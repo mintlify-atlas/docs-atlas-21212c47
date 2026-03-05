@@ -1,0 +1,517 @@
+---
+title: '@proton/hooks'
+description: Generic business-agnostic React hooks for common use cases
+---
+
+The `@proton/hooks` package provides a collection of generic, reusable React hooks that solve common problems in React applications. These hooks are business-agnostic and don't depend on Proton-specific logic.
+
+## Installation
+
+```bash
+yarn add @proton/hooks
+```
+
+<Info>
+This package has minimal dependencies and can be used in any React project.
+</Info>
+
+## Package Information
+
+<CodeGroup>
+```json package.json
+{
+  "name": "@proton/hooks",
+  "description": "Generic business use-case agnostic helper hooks"
+}
+```
+</CodeGroup>
+
+## Available Hooks
+
+The package exports 13 carefully crafted hooks:
+
+<CardGroup cols={2}>
+  <Card title="useLoading" icon="spinner">
+    Handle async operations with loading states
+  </Card>
+  
+  <Card title="useStateRef" icon="link">
+    Combine state with ref for immediate access
+  </Card>
+  
+  <Card title="useCombinedRefs" icon="code-merge">
+    Merge multiple refs into a single ref
+  </Card>
+  
+  <Card title="useInterval" icon="clock">
+    Declarative interval with cleanup
+  </Card>
+</CardGroup>
+
+## Core Hooks
+
+### useLoading
+
+Manage loading states for async operations with automatic cleanup:
+
+```typescript
+import { useLoading } from '@proton/hooks';
+
+function DataFetcher() {
+  const [loading, withLoading] = useLoading();
+  const [data, setData] = useState(null);
+  
+  const fetchData = async () => {
+    await withLoading(async () => {
+      const result = await api.getData();
+      setData(result);
+    });
+  };
+  
+  return (
+    <div>
+      <button onClick={fetchData} disabled={loading}>
+        {loading ? 'Loading...' : 'Fetch Data'}
+      </button>
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+    </div>
+  );
+}
+```
+
+<Tip>
+**Auto-cleanup**: The hook automatically handles component unmounting, preventing state updates on unmounted components.
+</Tip>
+
+#### Advanced Usage: Multiple Loading States
+
+```typescript
+import { useLoadingByKey } from '@proton/hooks';
+
+function MultiOperation() {
+  const [loadingMap, withLoading] = useLoadingByKey();
+  
+  const operation1 = () => withLoading('op1', fetchData1());
+  const operation2 = () => withLoading('op2', fetchData2());
+  
+  return (
+    <>
+      <button disabled={loadingMap.op1}>Operation 1</button>
+      <button disabled={loadingMap.op2}>Operation 2</button>
+    </>
+  );
+}
+```
+
+### useStateRef
+
+Combine `useState` and `useRef` to get both reactive updates and immediate access:
+
+```typescript
+import { useStateRef } from '@proton/hooks';
+
+function Counter() {
+  const [count, setCount, countRef] = useStateRef(0);
+  
+  const handleClick = () => {
+    setCount(count + 1);
+    
+    // countRef.current has the latest value immediately
+    console.log('Current count:', countRef.current);
+  };
+  
+  return <button onClick={handleClick}>Count: {count}</button>;
+}
+```
+
+<Note>
+**Use case**: Perfect for event handlers that need immediate access to current state without waiting for re-render.
+</Note>
+
+### useCombinedRefs
+
+Merge multiple refs into one, useful when using `forwardRef` with internal refs:
+
+```typescript
+import { forwardRef, useRef } from 'react';
+import { useCombinedRefs } from '@proton/hooks';
+
+const Input = forwardRef<HTMLInputElement>((props, ref) => {
+  const internalRef = useRef<HTMLInputElement>(null);
+  const combinedRef = useCombinedRefs(ref, internalRef);
+  
+  // Use internalRef for internal logic
+  const focus = () => internalRef.current?.focus();
+  
+  return <input ref={combinedRef} {...props} />;
+});
+```
+
+### useInterval
+
+Declarative interval that cleans up automatically:
+
+```typescript
+import { useInterval } from '@proton/hooks';
+
+function Clock() {
+  const [time, setTime] = useState(new Date());
+  
+  // Update every second
+  useInterval(() => {
+    setTime(new Date());
+  }, 1000);
+  
+  return <div>{time.toLocaleTimeString()}</div>;
+}
+```
+
+<Accordion title="Pause/Resume Intervals">
+```typescript
+function PausableClock() {
+  const [delay, setDelay] = useState(1000);
+  
+  useInterval(() => {
+    console.log('Tick');
+  }, delay);
+  
+  // Pause by setting delay to null
+  const pause = () => setDelay(null);
+  const resume = () => setDelay(1000);
+}
+```
+</Accordion>
+
+## State Management Hooks
+
+### usePrevious
+
+Access the previous value of a state or prop:
+
+```typescript
+import { usePrevious } from '@proton/hooks';
+
+function Counter({ count }: { count: number }) {
+  const previousCount = usePrevious(count);
+  
+  return (
+    <div>
+      <p>Current: {count}</p>
+      <p>Previous: {previousCount}</p>
+    </div>
+  );
+}
+```
+
+### usePreviousDistinct
+
+Like `usePrevious` but only updates when the value actually changes:
+
+```typescript
+import { usePreviousDistinct } from '@proton/hooks';
+
+function UserProfile({ userId }: { userId: string }) {
+  const previousUserId = usePreviousDistinct(userId);
+  
+  useEffect(() => {
+    if (previousUserId && previousUserId !== userId) {
+      // User changed, cleanup old data
+    }
+  }, [userId, previousUserId]);
+}
+```
+
+### useSynchronizingState
+
+Synchronize local state with external props:
+
+```typescript
+import { useSynchronizingState } from '@proton/hooks';
+
+function ControlledInput({ value: externalValue }) {
+  const [value, setValue] = useSynchronizingState(externalValue);
+  
+  // Automatically syncs when externalValue changes
+  return (
+    <input
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+    />
+  );
+}
+```
+
+### useControlled
+
+Create controlled/uncontrolled components easily:
+
+```typescript
+import { useControlled } from '@proton/hooks';
+
+function Toggle({ value, defaultValue, onChange }) {
+  const [isOn, setIsOn] = useControlled({
+    controlled: value,
+    default: defaultValue ?? false,
+  });
+  
+  const handleToggle = () => {
+    const newValue = !isOn;
+    setIsOn(newValue);
+    onChange?.(newValue);
+  };
+  
+  return <button onClick={handleToggle}>{isOn ? 'ON' : 'OFF'}</button>;
+}
+
+// Use as controlled
+<Toggle value={isOn} onChange={setIsOn} />
+
+// Or uncontrolled
+<Toggle defaultValue={false} />
+```
+
+## Utility Hooks
+
+### useInstance
+
+Create a stable instance that persists across renders:
+
+```typescript
+import { useInstance } from '@proton/hooks';
+
+function EventEmitter() {
+  const emitter = useInstance(() => new EventEmitter());
+  
+  // emitter is created once and reused
+  return <div>...</div>;
+}
+```
+
+<Warning>
+**Initialization**: The factory function runs only once. Changes to it won't affect the instance.
+</Warning>
+
+### useIsMounted
+
+Check if component is still mounted:
+
+```typescript
+import { useIsMounted } from '@proton/hooks';
+
+function AsyncComponent() {
+  const isMounted = useIsMounted();
+  
+  const fetchData = async () => {
+    const data = await api.getData();
+    
+    if (isMounted()) {
+      // Safe to update state
+      setData(data);
+    }
+  };
+}
+```
+
+### useEffectOnce
+
+Run an effect exactly once (like `componentDidMount`):
+
+```typescript
+import { useEffectOnce } from '@proton/hooks';
+
+function Analytics() {
+  useEffectOnce(() => {
+    trackPageView();
+    
+    return () => {
+      // Cleanup on unmount
+    };
+  });
+}
+```
+
+### useAsyncError
+
+Throw async errors to error boundaries:
+
+```typescript
+import { useAsyncError } from '@proton/hooks';
+
+function DataLoader() {
+  const throwError = useAsyncError();
+  
+  const fetchData = async () => {
+    try {
+      await api.getData();
+    } catch (error) {
+      // Throw to nearest error boundary
+      throwError(error);
+    }
+  };
+}
+```
+
+## Advanced Hooks
+
+### useStableLoading
+
+Prevents loading state flicker for fast operations:
+
+```typescript
+import { useStableLoading } from '@proton/hooks';
+
+function QuickAction() {
+  const [loading, withLoading] = useStableLoading();
+  
+  // Won't show loading for operations < 500ms
+  const quickAction = () => withLoading(
+    api.quickOperation()
+  );
+}
+```
+
+### useDateCountdown
+
+Countdown to a target date:
+
+```typescript
+import { useDateCountdown } from '@proton/hooks';
+
+function Countdown({ targetDate }: { targetDate: Date }) {
+  const { days, hours, minutes, seconds, isExpired } = useDateCountdown(
+    targetDate
+  );
+  
+  if (isExpired) {
+    return <div>Expired!</div>;
+  }
+  
+  return (
+    <div>
+      {days}d {hours}h {minutes}m {seconds}s
+    </div>
+  );
+}
+```
+
+### useSearchParams
+
+Work with URL search parameters:
+
+```typescript
+import { useSearchParams } from '@proton/hooks';
+
+function FilteredList() {
+  const [params, setParams] = useSearchParams();
+  
+  const filter = params.get('filter') || 'all';
+  
+  const setFilter = (newFilter: string) => {
+    setParams({ filter: newFilter });
+  };
+  
+  return (
+    <div>
+      <button onClick={() => setFilter('active')}>Active</button>
+      <button onClick={() => setFilter('archived')}>Archived</button>
+    </div>
+  );
+}
+```
+
+## Testing
+
+All hooks are thoroughly tested:
+
+```bash
+# Run tests
+yarn workspace @proton/hooks test
+
+# Watch mode
+yarn workspace @proton/hooks test:watch
+```
+
+### Testing Example
+
+```typescript
+import { renderHook, act } from '@testing-library/react';
+import { useLoading } from '@proton/hooks';
+
+test('useLoading manages loading state', async () => {
+  const { result } = renderHook(() => useLoading());
+  
+  expect(result.current[0]).toBe(false);
+  
+  let promise;
+  act(() => {
+    promise = result.current[1](
+      new Promise(resolve => setTimeout(resolve, 100))
+    );
+  });
+  
+  expect(result.current[0]).toBe(true);
+  
+  await act(() => promise);
+  
+  expect(result.current[0]).toBe(false);
+});
+```
+
+## TypeScript Support
+
+All hooks are fully typed:
+
+```typescript
+import type { WithLoading, LoadingByKey } from '@proton/hooks';
+
+// Generic types available
+const [loading, withLoading] = useLoading();
+const result = await withLoading<UserData>(
+  api.getUser()
+);
+// result is typed as UserData | void
+```
+
+## Best Practices
+
+<Tip>
+**Composition**: These hooks are designed to be composed together:
+```typescript
+function useDataFetcher() {
+  const [loading, withLoading] = useLoading();
+  const [data, setData, dataRef] = useStateRef(null);
+  const isMounted = useIsMounted();
+  
+  const fetch = async () => {
+    await withLoading(async () => {
+      const result = await api.getData();
+      if (isMounted()) {
+        setData(result);
+      }
+    });
+  };
+  
+  return { data, loading, fetch, dataRef };
+}
+```
+</Tip>
+
+<Warning>
+**Memory Leaks**: Always use hooks like `useLoading` and `useIsMounted` to prevent state updates on unmounted components.
+</Warning>
+
+<Note>
+**Custom Hooks**: Build your own hooks by combining these primitives for application-specific logic.
+</Note>
+
+## Dependencies
+
+Minimal dependencies for maximum portability:
+
+```json
+{
+  "react": "^18.3.1"
+}
+```
+
+No external dependencies beyond React!

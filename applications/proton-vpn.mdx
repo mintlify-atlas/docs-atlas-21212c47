@@ -1,0 +1,323 @@
+---
+title: Proton VPN
+description: ProtonVPN settings and configuration web interface
+icon: shield
+---
+
+## Overview
+
+Proton VPN Settings is the web interface for managing ProtonVPN configuration, subscriptions, and preferences. It provides access to VPN settings, server management, and account configuration.
+
+<Note>
+  Package name: `proton-vpn-settings` | License: GPL-3.0
+</Note>
+
+<Warning>
+  This is the settings/configuration interface only. The actual VPN client applications are separate native apps for desktop and mobile.
+</Warning>
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Server Selection" icon="server">
+    Browse and select VPN servers by country
+  </Card>
+  <Card title="Protocol Settings" icon="network-wired">
+    Configure VPN protocols and connection settings
+  </Card>
+  <Card title="Account Management" icon="user">
+    Manage VPN subscription and account details
+  </Card>
+  <Card title="Kill Switch" icon="power-off">
+    Configure kill switch and security settings
+  </Card>
+  <Card title="Split Tunneling" icon="code-branch">
+    Manage split tunneling configuration
+  </Card>
+  <Card title="Connection Logs" icon="list">
+    View connection history and logs
+  </Card>
+</CardGroup>
+
+## Architecture
+
+### Directory Structure
+
+```
+vpn-settings/src/app/
+├── App.tsx              # Main application component
+├── containers/          # Container components
+├── components/          # UI components
+├── hooks/               # Custom React hooks
+└── config.ts            # App configuration
+```
+
+### State Management
+
+Uses **Redux** with shared stores:
+
+- `@proton/react-redux-store` - Shared Redux store
+- `@proton/redux-shared-store` - Cross-app state
+- `@proton/redux-shared-store-types` - TypeScript types
+
+## Key Dependencies
+
+```json
+{
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^5.3.4",
+    "@proton/account": "workspace:^",
+    "@proton/components": "workspace:^",
+    "@proton/hooks": "workspace:^",
+    "@proton/vpn": "workspace:^",
+    "@proton/react-redux-store": "workspace:^",
+    "@proton/redux-shared-store": "workspace:^",
+    "lodash": "^4.17.23",
+    "ttag": "^1.8.12"
+  }
+}
+```
+
+### Key Packages
+
+- **@proton/vpn** - VPN-specific logic and components
+- **@proton/account** - Account management integration
+- **@proton/components** - Shared UI components
+
+## NPM Scripts
+
+### Development
+
+```bash
+# Start development server
+yarn start
+
+# Full command
+proton-pack dev-server
+```
+
+<Note>
+  VPN settings app runs in default mode (no special flags).
+</Note>
+
+### Build
+
+```bash
+# Production build (standalone mode)
+yarn build:web
+
+# Full command
+proton-pack build --appMode=standalone
+```
+
+<Warning>
+  Unlike other apps, VPN settings builds in **standalone** mode, not SSO mode.
+</Warning>
+
+### Testing
+
+```bash
+# No tests implemented yet
+yarn test        # Outputs: "No test yet"
+yarn test:ci     # Outputs: "No test yet"
+```
+
+### Code Quality
+
+```bash
+# Type checking
+yarn check-types
+
+# Linting
+yarn lint
+
+# Format code
+yarn pretty
+```
+
+### Internationalization
+
+```bash
+# Extract translation strings
+yarn i18n:extract:web
+
+# Upload to Crowdin
+yarn i18n:upgrade
+
+# Validate translations
+yarn i18n:validate
+```
+
+## VPN Workspace Package
+
+Most VPN logic lives in `@proton/vpn` workspace package:
+
+```
+packages/vpn/
+├── components/      # VPN-specific components
+├── hooks/           # VPN hooks
+├── helpers/         # VPN utilities
+└── constants/       # VPN constants
+```
+
+## Application Features
+
+### Server Management
+
+- Browse servers by country
+- Server load indicators
+- Server capabilities (P2P, Tor, Streaming)
+- Favorite servers
+
+### Connection Settings
+
+- Protocol selection (OpenVPN, WireGuard, IKEv2)
+- Port configuration
+- DNS settings
+- IPv6 support
+
+### Security Settings
+
+- Kill switch configuration
+- DNS leak protection
+- Protocol fallback
+- Auto-connect settings
+
+### Account Integration
+
+Integrates with Proton account:
+
+- Subscription management
+- Plan upgrades
+- Payment settings
+- Usage statistics
+
+## Integration Points
+
+### Proton Account
+
+Uses `@proton/account` for:
+
+- User authentication
+- Subscription details
+- Payment processing
+- Account settings
+
+### Activation
+
+Includes `@proton/activation` for:
+
+- Account activation flows
+- Onboarding
+- Migration tools
+
+### Calendar Integration
+
+Surprisingly includes `@proton/calendar`:
+
+- Shared components
+- Date/time utilities
+- Event scheduling (for maintenance windows?)
+
+## Build Configuration
+
+### Standalone Mode
+
+Unique among Proton apps, VPN settings builds in standalone mode:
+
+```bash
+proton-pack build --appMode=standalone
+```
+
+This means:
+- Independent authentication
+- Self-contained application
+- No SSO integration required
+
+## Development Notes
+
+<Note>
+  VPN settings is a web-only application. Native VPN clients are separate codebases.
+</Note>
+
+### No Tests Yet
+
+The application currently has no test suite:
+
+```json
+{
+  "scripts": {
+    "test": "echo No test yet",
+    "test:ci": "echo No test yet"
+  }
+}
+```
+
+### Local Development
+
+1. Start dev server: `yarn start`
+2. Access at `http://localhost:8080`
+3. Requires Proton account
+4. Settings sync with VPN clients
+
+## Related Applications
+
+VPN ecosystem:
+
+- **ProtonVPN Desktop** - Native desktop client (separate repo)
+- **ProtonVPN Mobile** - iOS/Android apps (separate repos)
+- **proton-account** - Account management
+
+## VPN Clients
+
+This web app manages settings for:
+
+- **Windows Client** - Native Windows VPN client
+- **macOS Client** - Native macOS VPN client
+- **Linux Client** - Native Linux VPN client
+- **iOS App** - iOS VPN app
+- **Android App** - Android VPN app
+- **Browser Extension** - Browser VPN extension
+
+## Server Infrastructure
+
+Manages connection to:
+
+- 1700+ VPN servers
+- 60+ countries
+- Secure Core servers
+- Specialized servers (P2P, Streaming, Tor)
+
+## Protocols Supported
+
+- **OpenVPN** - Open-source VPN protocol
+- **WireGuard** - Modern, fast VPN protocol
+- **IKEv2** - Internet Key Exchange version 2
+
+## Performance
+
+- **Lightweight** - Minimal dependencies
+- **Fast Loading** - Quick initial load
+- **Responsive** - React-based UI
+
+## Security
+
+<Warning>
+  All VPN configuration is stored securely and synced encrypted.
+</Warning>
+
+- Encrypted settings storage
+- Secure API communication
+- No logging of connection details
+- Zero-access architecture
+
+## Future Development
+
+<Note>
+  Test suite implementation needed. Consider adding:
+  - Unit tests with Jest
+  - Component tests with React Testing Library
+  - E2E tests for critical flows
+</Note>

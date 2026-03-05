@@ -1,0 +1,544 @@
+---
+title: '@proton/icons'
+description: 'React icon components for Proton design system'
+---
+
+## Overview
+
+The `@proton/icons` package provides a comprehensive set of React icon components for the Proton design system. Icons are available as optimized SVG sprites with React wrappers for easy integration.
+
+## Installation
+
+<CodeGroup>
+```bash npm
+npm install @proton/icons
+```
+
+```bash yarn
+yarn add @proton/icons
+```
+
+```bash pnpm
+pnpm add @proton/icons
+```
+</CodeGroup>
+
+## Key Features
+
+- 400+ optimized SVG icons
+- Type-safe icon names
+- Customizable sizes
+- SVG sprite loading
+- File type icons
+- Brand icons (Proton services, payment providers, browsers)
+- Automatic tree-shaking
+
+## Basic Usage
+
+### Icon Component
+
+The main `Icon` component from individual icon files:
+
+```tsx
+import { IconCheckmark } from '@proton/icons/icons/IconCheckmark';
+import { IconEnvelope } from '@proton/icons/icons/IconEnvelope';
+import { IconCross } from '@proton/icons/icons/IconCross';
+
+function MyComponent() {
+  return (
+    <div>
+      <IconCheckmark size={4} /> {/* 16px */}
+      <IconEnvelope size={5} />  {/* 20px */}
+      <IconCross size={6} />     {/* 24px */}
+    </div>
+  );
+}
+```
+
+### Icons Container
+
+Load the SVG sprite for use with icons:
+
+```tsx
+import Icons from '@proton/icons/Icons';
+
+function App() {
+  return (
+    <div>
+      <Icons /> {/* Load icon sprites */}
+      {/* Your app components */}
+    </div>
+  );
+}
+```
+
+### Inline Icons
+
+For icons that don't require the sprite:
+
+```tsx
+import InlineIcons from '@proton/icons/InlineIcons';
+
+function Component() {
+  return <InlineIcons />;
+}
+```
+
+## Icon Sizes
+
+Icons support predefined sizes that map to pixel values:
+
+```tsx
+import type { IconSize } from '@proton/icons/types';
+import { IconBolt } from '@proton/icons/icons/IconBolt';
+
+function SizeExample() {
+  return (
+    <>
+      <IconBolt size={2.5} />  {/* 10px */}
+      <IconBolt size={3} />    {/* 12px */}
+      <IconBolt size={4} />    {/* 16px - default */}
+      <IconBolt size={5} />    {/* 20px */}
+      <IconBolt size={6} />    {/* 24px */}
+      <IconBolt size={8} />    {/* 32px */}
+      <IconBolt size={12} />   {/* 48px */}
+    </>
+  );
+}
+```
+
+### Available Sizes
+
+<Tabs>
+  <Tab title="Common Sizes">
+    - `3` - 12px (small text)
+    - `4` - 16px (default, body text)
+    - `5` - 20px (large text)
+    - `6` - 24px (headings)
+  </Tab>
+  <Tab title="All Sizes">
+    - `2.5` - 10px
+    - `2.75` - 11px
+    - `3` - 12px
+    - `3.5` - 14px
+    - `4` - 16px
+    - `4.5` - 18px
+    - `5` - 20px
+    - `5.5` - 22px
+    - `6` - 24px
+    - `7` - 28px
+    - `8` - 32px
+    - `9` - 36px
+    - `10` - 40px
+    - `11` - 44px
+    - `12` - 48px
+    - `13` - 52px
+    - `14` - 56px
+    - `15` - 60px
+  </Tab>
+</Tabs>
+
+## Icon Categories
+
+### Action Icons
+
+```tsx
+import { IconPlus } from '@proton/icons/icons/IconPlus';
+import { IconCross } from '@proton/icons/icons/IconCross';
+import { IconCheckmark } from '@proton/icons/icons/IconCheckmark';
+import { IconPencil } from '@proton/icons/icons/IconPencil';
+import { IconTrash } from '@proton/icons/icons/IconTrash';
+
+function Actions() {
+  return (
+    <div>
+      <button><IconPlus size={4} /> Add</button>
+      <button><IconPencil size={4} /> Edit</button>
+      <button><IconTrash size={4} /> Delete</button>
+    </div>
+  );
+}
+```
+
+### Communication Icons
+
+```tsx
+import { IconEnvelope } from '@proton/icons/icons/IconEnvelope';
+import { IconPaperPlane } from '@proton/icons/icons/IconPaperPlane';
+import { IconSpeechBubble } from '@proton/icons/icons/IconSpeechBubble';
+import { IconBell } from '@proton/icons/icons/IconBell';
+
+function Communication() {
+  return (
+    <>
+      <IconEnvelope size={5} />
+      <IconPaperPlane size={5} />
+      <IconSpeechBubble size={5} />
+      <IconBell size={5} />
+    </>
+  );
+}
+```
+
+### Brand Icons
+
+```tsx
+import { IconBrandProton } from '@proton/icons/icons/IconBrandProton';
+import { IconBrandProtonMail } from '@proton/icons/icons/IconBrandProtonMail';
+import { IconBrandProtonCalendar } from '@proton/icons/icons/IconBrandProtonCalendar';
+import { IconBrandProtonDrive } from '@proton/icons/icons/IconBrandProtonDrive';
+import { IconBrandProtonPass } from '@proton/icons/icons/IconBrandProtonPass';
+import { IconBrandProtonVpn } from '@proton/icons/icons/IconBrandProtonVpn';
+
+function ProtonBrands() {
+  return (
+    <div>
+      <IconBrandProton size={8} />
+      <IconBrandProtonMail size={8} />
+      <IconBrandProtonCalendar size={8} />
+      <IconBrandProtonDrive size={8} />
+      <IconBrandProtonPass size={8} />
+      <IconBrandProtonVpn size={8} />
+    </div>
+  );
+}
+```
+
+### File Icons
+
+```tsx
+import { IconFile } from '@proton/icons/icons/IconFile';
+import { IconFileImage } from '@proton/icons/icons/IconFileImage';
+import { IconFilePdf } from '@proton/icons/icons/IconFilePdf';
+import { IconFileLines } from '@proton/icons/icons/IconFileLines';
+
+function FileTypes() {
+  return (
+    <>
+      <IconFile size={6} />
+      <IconFileImage size={6} />
+      <IconFilePdf size={6} />
+      <IconFileLines size={6} />
+    </>
+  );
+}
+```
+
+### Navigation Icons
+
+```tsx
+import { IconChevronDown } from '@proton/icons/icons/IconChevronDown';
+import { IconChevronUp } from '@proton/icons/icons/IconChevronUp';
+import { IconChevronLeft } from '@proton/icons/icons/IconChevronLeft';
+import { IconChevronRight } from '@proton/icons/icons/IconChevronRight';
+import { IconArrowLeft } from '@proton/icons/icons/IconArrowLeft';
+import { IconArrowRight } from '@proton/icons/icons/IconArrowRight';
+
+function Navigation() {
+  return (
+    <>
+      <IconChevronLeft size={4} />
+      <IconChevronRight size={4} />
+      <IconArrowLeft size={4} />
+      <IconArrowRight size={4} />
+    </>
+  );
+}
+```
+
+### Status Icons
+
+```tsx
+import { IconCheckmarkCircle } from '@proton/icons/icons/IconCheckmarkCircle';
+import { IconExclamationCircle } from '@proton/icons/icons/IconExclamationCircle';
+import { IconInfoCircle } from '@proton/icons/icons/IconInfoCircle';
+import { IconCrossCircle } from '@proton/icons/icons/IconCrossCircle';
+
+function StatusIndicators() {
+  return (
+    <>
+      <IconCheckmarkCircle size={5} className="color-success" />
+      <IconExclamationCircle size={5} className="color-warning" />
+      <IconInfoCircle size={5} className="color-info" />
+      <IconCrossCircle size={5} className="color-danger" />
+    </>
+  );
+}
+```
+
+### Security Icons
+
+```tsx
+import { IconLock } from '@proton/icons/icons/IconLock';
+import { IconShield } from '@proton/icons/icons/IconShield';
+import { IconKey } from '@proton/icons/icons/IconKey';
+import { IconFingerprint } from '@proton/icons/icons/IconFingerprint';
+import { IconEye } from '@proton/icons/icons/IconEye';
+import { IconEyeSlash } from '@proton/icons/icons/IconEyeSlash';
+
+function Security() {
+  return (
+    <>
+      <IconLock size={5} />
+      <IconShield size={5} />
+      <IconKey size={5} />
+      <IconFingerprint size={5} />
+    </>
+  );
+}
+```
+
+## TypeScript Support
+
+Full TypeScript support with typed icon names and sizes.
+
+```typescript
+import type { IconName, IconSize } from '@proton/icons/types';
+
+// All available icon names
+const iconName: IconName = 'envelope';
+const size: IconSize = 4;
+
+// Type-safe icon component props
+interface IconButtonProps {
+  icon: IconName;
+  size?: IconSize;
+  label: string;
+}
+```
+
+### Available Icon Names
+
+The package exports a union type of all icon names:
+
+```typescript
+type IconName =
+  | 'envelope'
+  | 'paper-plane'
+  | 'checkmark'
+  | 'cross'
+  | 'plus'
+  | 'lock'
+  | 'shield'
+  // ... 400+ more icons
+```
+
+## Styling Icons
+
+Icons inherit the current text color and can be styled with CSS:
+
+```tsx
+import { IconHeart } from '@proton/icons/icons/IconHeart';
+
+function StyledIcons() {
+  return (
+    <>
+      {/* Color from CSS class */}
+      <IconHeart size={5} className="color-danger" />
+      
+      {/* Inline styles */}
+      <IconHeart size={5} style={{ color: '#FF6900' }} />
+      
+      {/* With CSS variables */}
+      <IconHeart size={5} style={{ color: 'var(--primary-color)' }} />
+    </>
+  );
+}
+```
+
+## Accessibility
+
+Provide accessible labels for icons:
+
+```tsx
+import { IconTrash } from '@proton/icons/icons/IconTrash';
+
+function AccessibleButton() {
+  return (
+    <button aria-label="Delete item">
+      <IconTrash size={4} aria-hidden="true" />
+    </button>
+  );
+}
+```
+
+## Common Patterns
+
+### Icon Button
+
+```tsx
+import { IconPlus } from '@proton/icons/icons/IconPlus';
+
+function IconButton({ icon: Icon, label, onClick }) {
+  return (
+    <button onClick={onClick} aria-label={label}>
+      <Icon size={4} />
+      <span className="sr-only">{label}</span>
+    </button>
+  );
+}
+
+// Usage
+<IconButton icon={IconPlus} label="Add item" onClick={handleAdd} />
+```
+
+### Icon with Text
+
+```tsx
+import { IconEnvelope } from '@proton/icons/icons/IconEnvelope';
+
+function IconWithText() {
+  return (
+    <div className="flex items-center gap-2">
+      <IconEnvelope size={4} />
+      <span>Messages</span>
+    </div>
+  );
+}
+```
+
+### Loading State
+
+```tsx
+import { IconLoader } from '@proton/icons/icons/IconLoader';
+
+function LoadingButton({ loading, children }) {
+  return (
+    <button disabled={loading}>
+      {loading ? (
+        <IconLoader size={4} className="animate-spin" />
+      ) : (
+        children
+      )}
+    </button>
+  );
+}
+```
+
+## SVG Sprites
+
+The package includes two SVG sprite files:
+
+<ResponseField name="sprite-icons.svg">
+  Main icon sprite containing all UI icons
+</ResponseField>
+
+<ResponseField name="file-icons.svg">
+  File type icons for different file formats
+</ResponseField>
+
+These are automatically loaded by the `<Icons />` component with subresource integrity checking.
+
+## Building Custom Icons
+
+To add custom icons to your project:
+
+```bash
+# Generate React icon components from SVG files
+yarn generate
+```
+
+Place SVG files in the appropriate directory and run the generator script.
+
+## Performance
+
+<Card title="Optimization" icon="gauge-high">
+  - Icons are tree-shakeable - only import what you use
+  - SVG sprites loaded once and cached
+  - Minimal runtime overhead
+  - No external dependencies besides React
+</Card>
+
+## Development
+
+```bash
+# Generate icon components from SVG sources
+yarn generate
+
+# Build the package
+yarn build
+
+# Type checking
+yarn check-types
+```
+
+## File Structure
+
+```
+@proton/icons/
+├── Icons.tsx              # Main sprite loader
+├── InlineIcons.tsx        # Inline icons loader
+├── types.ts               # TypeScript types
+├── assets/
+│   ├── sprite-icons.svg   # Icon sprite
+│   └── file-icons.svg     # File icons sprite
+└── icons/
+    ├── IconEnvelope.tsx   # Individual icon components
+    ├── IconCheckmark.tsx
+    └── ... (400+ icons)
+```
+
+## Most Common Icons
+
+Here are the most frequently used icons:
+
+<CardGroup cols={3}>
+  <Card title="Actions">
+    - `plus` - Add/Create
+    - `cross` - Close/Delete
+    - `checkmark` - Confirm
+    - `pencil` - Edit
+    - `trash` - Delete
+  </Card>
+  <Card title="Navigation">
+    - `chevron-down/up/left/right`
+    - `arrow-left/right`
+    - `hamburger` - Menu
+    - `three-dots-horizontal`
+    - `cog-wheel` - Settings
+  </Card>
+  <Card title="Communication">
+    - `envelope` - Email
+    - `paper-plane` - Send
+    - `speech-bubble` - Messages
+    - `bell` - Notifications
+    - `user` - Profile
+  </Card>
+</CardGroup>
+
+## Dependencies
+
+<AccordionGroup>
+  <Accordion title="Runtime Dependencies">
+    - `react` ^18.3.1
+    - `react-dom` ^18.3.1
+    - `@proton/utils` - Utility functions
+  </Accordion>
+  <Accordion title="Build Dependencies">
+    - `jsdom` - SVG manipulation
+    - `mustache` - Template generation
+    - `prettier` - Code formatting
+    - `tsx` - TypeScript execution
+  </Accordion>
+</AccordionGroup>
+
+## Browser Support
+
+Icons work in all modern browsers that support:
+- SVG
+- ES modules
+- React 18+
+
+## Related Packages
+
+<CardGroup cols={3}>
+  <Card title="@proton/components" icon="box" href="/packages/components">
+    UI components using icons
+  </Card>
+  <Card title="@proton/styles" icon="palette" href="/packages/styles">
+    Design system styles
+  </Card>
+  <Card title="@proton/atoms" icon="atom" href="/packages/atoms">
+    Atomic design components
+  </Card>
+</CardGroup>

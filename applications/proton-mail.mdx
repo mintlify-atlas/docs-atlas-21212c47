@@ -1,0 +1,296 @@
+---
+title: Proton Mail
+description: Secure email application with end-to-end encryption
+icon: envelope
+---
+
+## Overview
+
+Proton Mail is the flagship email application providing secure, encrypted email communication. It features a modern React-based interface with comprehensive email management capabilities.
+
+<Note>
+  Package name: `proton-mail` | License: GPL-3.0
+</Note>
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Encrypted Messaging" icon="lock">
+    End-to-end encrypted emails with PGP/MIME support
+  </Card>
+  <Card title="Conversations" icon="comments">
+    Threaded conversation view with message grouping
+  </Card>
+  <Card title="Composer" icon="pen">
+    Rich text editor with attachments and scheduling
+  </Card>
+  <Card title="Encrypted Search" icon="magnifying-glass">
+    Client-side encrypted search functionality
+  </Card>
+  <Card title="Labels & Folders" icon="tags">
+    Flexible organization with labels and folders
+  </Card>
+  <Card title="Snooze & Schedule" icon="clock">
+    Snooze messages and schedule send times
+  </Card>
+  <Card title="Encrypted Outside" icon="shield">
+    Password-protected emails to non-Proton users (EO)
+  </Card>
+  <Card title="AI Assistant" icon="robot">
+    Composer assistant with LLM integration
+  </Card>
+</CardGroup>
+
+## Architecture
+
+### Directory Structure
+
+```
+mail/src/app/
+├── components/      # UI components
+│   ├── actions/     # Action components (move, delete, etc.)
+│   ├── assistant/   # AI composer assistant
+│   └── list/        # Email list components
+├── containers/      # Container components
+├── hooks/           # Custom React hooks
+├── store/           # Redux store modules
+│   ├── messages/    # Message state management
+│   ├── conversations/ # Conversation state
+│   ├── composers/   # Draft composer state
+│   ├── attachments/ # Attachment handling
+│   └── contacts/    # Contact management
+├── helpers/         # Helper functions
+├── models/          # TypeScript types and interfaces
+└── router/          # Application routing
+```
+
+### State Management
+
+Proton Mail uses **Redux Toolkit** for state management with the following key slices:
+
+- **messages** - Individual message state
+- **conversations** - Conversation threads
+- **composers** - Draft composition state
+- **attachments** - File attachment handling
+- **contacts** - Contact information
+- **elements** - Generic list elements (messages/conversations)
+- **layout** - UI layout state
+- **snooze** - Snoozed message management
+
+## Key Dependencies
+
+```json
+{
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-redux": "^9.2.0",
+    "@reduxjs/toolkit": "^2.11.2",
+    "@proton/components": "workspace:^",
+    "@proton/encrypted-search": "workspace:^",
+    "@proton/mail": "workspace:^",
+    "@proton/llm": "workspace:^",
+    "dompurify": "^3.3.1",
+    "turndown": "^7.2.2",
+    "markdown-it": "^14.1.1",
+    "jszip": "^3.10.1",
+    "date-fns": "^2.30.0"
+  }
+}
+```
+
+## NPM Scripts
+
+### Development
+
+```bash
+# Start development server (standalone mode)
+yarn start
+
+# Start with SSO mode
+yarn build:web
+```
+
+### Testing
+
+```bash
+# Run tests
+yarn test
+
+# Run tests with coverage
+yarn test:coverage
+
+# Watch mode
+yarn test:watch
+
+# CI mode
+yarn test:ci
+```
+
+### Build & Deploy
+
+```bash
+# Production build
+yarn build:web
+
+# Analyze bundle size
+yarn analyze
+```
+
+### Code Quality
+
+```bash
+# Type checking
+yarn check-types
+
+# Linting
+yarn lint
+
+# Format code
+yarn pretty:fix
+```
+
+### Internationalization
+
+```bash
+# Extract translation strings
+yarn i18n:extract:web
+
+# Get latest translations
+yarn i18n:getlatest
+
+# Upload to Crowdin
+yarn i18n:upgrade
+
+# Validate translations
+yarn i18n:validate
+```
+
+## Constants
+
+Key constants defined in `constants.ts`:
+
+```typescript
+// Routing
+export const ROUTE_MAIN = '/';
+export const ROUTE_LABEL = '/:labelID?';
+export const ROUTE_ELEMENT = '/:labelID?/:elementID?';
+export const ROUTE_MESSAGE = '/:labelID?/:elementID?/:messageID?';
+
+// Limits
+export const ATTACHMENT_MAX_SIZE = 25000000; // 25MB
+export const SCHEDULED_MESSAGES_LIMIT = 100;
+export const SCHEDULED_MAX_DATE_DAYS = 90;
+export const EXPIRATION_TIME_MAX_DAYS = 730; // 2 years
+
+// Timing
+export const UNDO_SEND_DELAY = 5000;
+export const EXPIRATION_CHECK_FREQUENCY = 10000; // 10 seconds
+```
+
+## Special Features
+
+### Encrypted Outside (EO)
+
+Proton Mail supports sending encrypted emails to non-Proton users:
+
+- Password-protected message access
+- Reply capability (up to 5 replies)
+- Separate routing: `/eo/message` and `/eo/reply`
+- Secure token storage
+
+### AI Composer Assistant
+
+Integrated LLM-powered writing assistant:
+
+```
+components/assistant/
+├── AssistantIframe.tsx
+├── ComposerAssistant.tsx
+├── ComposerAssistantExpanded.tsx
+├── modals/
+│   ├── AssistantFeedbackModal.tsx
+│   └── AssistantUnsafeErrorFeedbackModal.tsx
+└── toolbar/
+    ├── ComposerAssistantQuickAction.tsx
+    └── ComposerAssistantCustomInput.tsx
+```
+
+### Encrypted Search
+
+Client-side encrypted search using `@proton/encrypted-search`:
+
+- Index messages locally
+- Search without server-side decryption
+- Privacy-preserving search functionality
+
+## Integration Points
+
+### Calendar Integration
+
+Mail integrates with Proton Calendar for:
+- Meeting invitations
+- Calendar event creation from emails
+- Event attachments
+
+### Pass Integration
+
+Integration with Proton Pass (`@proton/pass`):
+- Autofill credentials
+- Save passwords from emails
+
+### Account Integration
+
+Uses `@proton/account` for:
+- User authentication
+- Account settings
+- Session management
+
+## Error Codes
+
+```typescript
+enum SAVE_DRAFT_ERROR_CODES {
+  MESSAGE_ALREADY_SENT = 15034,
+  DRAFT_DOES_NOT_EXIST = 15033,
+}
+
+enum SEND_EMAIL_ERROR_CODES {
+  MESSAGE_ALREADY_SENT = 2500,
+}
+
+enum UPLOAD_ATTACHMENT_ERROR_CODES {
+  MESSAGE_ALREADY_SENT = 11114,
+  STORAGE_QUOTA_EXCEEDED = 11100,
+}
+```
+
+## Performance Optimizations
+
+- **Lazy Loading** - Code splitting for optimal bundle size
+- **Virtual Scrolling** - Efficient rendering of large message lists
+- **Message Caching** - Redux-based caching layer
+- **Retry Logic** - Automatic retry for failed operations (3 attempts, 3s delay)
+
+## Related Applications
+
+- **inbox-desktop** - Desktop version using Electron
+- **proton-calendar** - Integrated calendar functionality
+- **proton-account** - Account management
+
+## Development Notes
+
+<Warning>
+  The application requires `NODE_ENV=production` and `TS_NODE_PROJECT="../../tsconfig.webpack.json"` for builds.
+</Warning>
+
+### Local Development
+
+1. Start the dev server: `yarn start`
+2. Access at `http://localhost:8080`
+3. Uses standalone auth by default
+
+### Testing Strategy
+
+- Unit tests with Jest
+- Component tests with React Testing Library
+- Mock service worker (MSW) for API mocking
+- Coverage tracking with `--coverage` flag

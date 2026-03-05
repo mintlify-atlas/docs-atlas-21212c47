@@ -1,122 +1,169 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Proton WebClients",
+  "theme": "almond",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#554d85",
+    "light": "#aca4c4",
+    "dark": "#554d85"
   },
-  "favicon": "/favicon.svg",
+
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/ProtonMail/WebClients"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/ProtonMail/WebClients"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Getting Started",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "introduction",
+              "installation",
+              "project-structure"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Applications",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "applications/overview",
+              "applications/proton-mail",
+              "applications/proton-calendar",
+              "applications/proton-drive",
+              "applications/proton-pass",
+              "applications/proton-vpn",
+              "applications/proton-wallet"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Development",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "development/workspace-management",
+              "development/building-apps",
+              "development/running-tests",
+              "development/internationalization"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Contributing",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "contributing/guidelines",
+              "contributing/code-style",
+              "contributing/pull-requests"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "Components",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
-              "api-reference/introduction"
+              "components/introduction",
+              "components/getting-started"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Core Components",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "components/buttons",
+              "components/inputs",
+              "components/modals",
+              "components/dropdowns",
+              "components/tables",
+              "components/forms"
+            ]
+          },
+          {
+            "group": "Layout",
+            "pages": [
+              "components/layout/header",
+              "components/layout/sidebar",
+              "components/layout/container"
+            ]
+          },
+          {
+            "group": "Specialized",
+            "pages": [
+              "components/specialized/calendar",
+              "components/specialized/mail",
+              "components/specialized/editor"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Packages",
+        "groups": [
+          {
+            "group": "Core Packages",
+            "pages": [
+              "packages/overview",
+              "packages/shared",
+              "packages/components",
+              "packages/hooks",
+              "packages/atoms"
+            ]
+          },
+          {
+            "group": "Application Packages",
+            "pages": [
+              "packages/mail",
+              "packages/calendar",
+              "packages/drive",
+              "packages/pass"
+            ]
+          },
+          {
+            "group": "Utilities",
+            "pages": [
+              "packages/crypto",
+              "packages/icons",
+              "packages/i18n",
+              "packages/metrics"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Hooks",
+            "pages": [
+              "api/hooks/overview",
+              "api/hooks/state-management",
+              "api/hooks/data-fetching"
+            ]
+          },
+          {
+            "group": "Utilities",
+            "pages": [
+              "api/utilities/helpers",
+              "api/utilities/validators",
+              "api/utilities/formatters"
+            ]
+          },
+          {
+            "group": "Types",
+            "pages": [
+              "api/types/common",
+              "api/types/components",
+              "api/types/models"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

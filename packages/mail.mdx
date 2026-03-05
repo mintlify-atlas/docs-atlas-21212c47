@@ -1,0 +1,321 @@
+---
+title: '@proton/mail'
+description: 'Mail package providing Redux stores, hooks, and helpers for Proton Mail functionality'
+---
+
+## Overview
+
+The `@proton/mail` package provides Redux state management, hooks, and utility functions for implementing Proton Mail features in web applications. It handles contacts, conversations, messages, labels, filters, and mail settings through a Redux-based architecture.
+
+## Installation
+
+<CodeGroup>
+```bash npm
+npm install @proton/mail
+```
+
+```bash yarn
+yarn add @proton/mail
+```
+
+```bash pnpm
+pnpm add @proton/mail
+```
+</CodeGroup>
+
+## Key Features
+
+- Redux stores for mail data management
+- Contact and contact email management
+- Conversation and message counting
+- Label and filter management
+- Mail forwarding (incoming and outgoing)
+- Mail event loop for real-time updates
+- HTML parsing and sanitization utilities
+
+## Package Structure
+
+The package is organized into several key areas:
+
+<CardGroup cols={2}>
+  <Card title="Store" icon="database">
+    Redux slices for contacts, messages, labels, filters, and settings
+  </Card>
+  <Card title="Helpers" icon="wrench">
+    Utilities for DOM manipulation, parsing, and string processing
+  </Card>
+  <Card title="Hooks" icon="hook">
+    React hooks for accessing mail state and functionality
+  </Card>
+  <Card title="Features" icon="sparkles">
+    High-level features like categories view
+  </Card>
+</CardGroup>
+
+## Store Modules
+
+### Contacts Store
+
+Manage contacts and contact emails with Redux.
+
+```typescript
+import { useContacts } from '@proton/mail/store/contacts/hooks';
+import { useContactEmails } from '@proton/mail/store/contactEmails/hooks';
+
+function ContactList() {
+  const contacts = useContacts();
+  const contactEmails = useContactEmails();
+  
+  return (
+    <div>
+      {contacts.map(contact => (
+        <div key={contact.ID}>{contact.Name}</div>
+      ))}
+    </div>
+  );
+}
+```
+
+### Message Counts
+
+Track conversation and message counts across folders and labels.
+
+```typescript
+import { conversationCountsReducers } from '@proton/mail/store/counts/conversationCountsReducers';
+import { messageCountsReducers } from '@proton/mail/store/counts/messageCountsReducers';
+import { conversationCountsSlice } from '@proton/mail/store/counts/conversationCountsSlice';
+import { messageCountsSlice } from '@proton/mail/store/counts/messageCountsSlice';
+
+// Use in your Redux store configuration
+const store = configureStore({
+  reducer: {
+    conversationCounts: conversationCountsSlice.reducer,
+    messageCounts: messageCountsSlice.reducer,
+  },
+});
+```
+
+### Labels and Filters
+
+Manage mail labels and filters.
+
+```typescript
+import { useLabels } from '@proton/mail/store/labels/hooks';
+import { useFilters } from '@proton/mail/store/filters/hooks';
+
+function MailSidebar() {
+  const labels = useLabels();
+  const filters = useFilters();
+  
+  return (
+    <aside>
+      <h3>Labels</h3>
+      {labels.map(label => (
+        <div key={label.ID}>{label.Name}</div>
+      ))}
+    </aside>
+  );
+}
+```
+
+### Mail Forwarding
+
+Handle incoming and outgoing mail forwarding.
+
+```typescript
+import { useIncomingForwarding } from '@proton/mail/store/forwarding/hooks';
+import { incomingForwardingActions } from '@proton/mail/store/forwarding/incomingForwardingActions';
+import { outgoingForwardingActions } from '@proton/mail/store/forwarding/outgoingForwardingActions';
+
+function ForwardingSettings() {
+  const forwarding = useIncomingForwarding();
+  
+  // Configure forwarding settings
+}
+```
+
+## Event Loop Integration
+
+### Mail Event Loop
+
+Subscribe to real-time mail updates.
+
+```typescript
+import { mailEventLoop } from '@proton/mail/store/mailEventLoop';
+import type { MailEventLoopInterface } from '@proton/mail/store/mailEventLoop/interface';
+
+// Initialize the event loop
+const eventLoop = mailEventLoop.start({
+  onEvent: (event) => {
+    // Handle mail events
+    console.log('Mail event:', event);
+  },
+});
+```
+
+### Contact Event Loop
+
+```typescript
+import { contactEventLoop } from '@proton/mail/store/contactEventLoop';
+import type { ContactEventLoopInterface } from '@proton/mail/store/contactEventLoop/interface';
+
+// Handle contact updates in real-time
+```
+
+## Helper Functions
+
+### DOM Manipulation
+
+```typescript
+import { locateHead } from '@proton/mail/helpers/locateHead';
+import { parseDOMStringToBodyElement } from '@proton/mail/helpers/parseDOMStringToBodyElement';
+
+// Parse HTML email content
+const bodyElement = parseDOMStringToBodyElement(htmlString);
+```
+
+### HTML Parsing
+
+```typescript
+import { parserHtml } from '@proton/mail/helpers/parserHtml';
+
+// Parse and sanitize HTML email content
+const sanitized = parserHtml(htmlContent);
+```
+
+### Message Image Handling
+
+```typescript
+import { cleanProblematicImagesFromClipboardContent } from '@proton/mail/helpers/message/cleanProblematicImagesFromClipboardContent';
+import { getAnchor } from '@proton/mail/helpers/message/messageImages/getAnchor';
+
+// Clean clipboard content for safe pasting
+const cleanedContent = cleanProblematicImagesFromClipboardContent(clipboardData);
+```
+
+### String Utilities
+
+```typescript
+import { stringHelpers } from '@proton/mail/helpers/string';
+
+// Various string manipulation utilities
+```
+
+## Categories View
+
+Implement category-based mail views.
+
+```typescript
+import { useCategoriesData } from '@proton/mail/features/categoriesView/useCategoriesData';
+import { categoriesConstants } from '@proton/mail/features/categoriesView/categoriesConstants';
+import { categoriesHelpers } from '@proton/mail/features/categoriesView/categoriesHelpers';
+
+function CategoriesView() {
+  const categories = useCategoriesData();
+  
+  return (
+    <div>
+      {categories.map(category => (
+        <div key={category.id}>{category.name}</div>
+      ))}
+    </div>
+  );
+}
+```
+
+## Hooks
+
+### Base64 Cache
+
+```typescript
+import { useBase64Cache } from '@proton/mail/hooks/useBase64Cache';
+
+function ImageComponent({ imageUrl }: { imageUrl: string }) {
+  const base64 = useBase64Cache(imageUrl);
+  
+  return <img src={base64} alt="Email image" />;
+}
+```
+
+### Auto-Open Contacts
+
+```typescript
+import { useContactsDrawerFromURL } from '@proton/mail/hooks/autoOpenContacts/useContactsDrawerFromURL';
+
+function MailApp() {
+  // Automatically open contacts drawer based on URL
+  useContactsDrawerFromURL();
+  
+  return <div>Mail App</div>;
+}
+```
+
+## Mail Settings
+
+```typescript
+import { useMailSettings } from '@proton/mail/store/mailSettings/hooks';
+
+function MailPreferences() {
+  const mailSettings = useMailSettings();
+  
+  return (
+    <div>
+      <p>Show images: {mailSettings.ShowImages}</p>
+      <p>View mode: {mailSettings.ViewMode}</p>
+    </div>
+  );
+}
+```
+
+## Constants
+
+```typescript
+import { MAIL_CONSTANTS } from '@proton/mail/constants';
+
+// Access mail-related constants
+```
+
+## Dependencies
+
+<AccordionGroup>
+  <Accordion title="Core Dependencies">
+    - `@proton/account` - Account management
+    - `@proton/react-redux-store` - Redux store utilities
+    - `@proton/redux-shared-store-types` - Shared Redux types
+    - `@proton/styles` - Styling utilities
+    - `@reduxjs/toolkit` - Redux toolkit
+    - `react` and `react-redux` - React integration
+    - `turndown` - HTML to Markdown conversion
+  </Accordion>
+</AccordionGroup>
+
+## TypeScript Support
+
+The package is written in TypeScript and provides full type definitions. All exports are strongly typed.
+
+## Testing
+
+```bash
+# Run tests
+yarn test
+
+# Run tests in watch mode
+yarn test:watch
+
+# Run tests with coverage
+yarn test:coverage
+```
+
+## Related Packages
+
+<CardGroup cols={3}>
+  <Card title="@proton/shared" icon="share-nodes" href="/packages/shared">
+    Shared utilities and helpers
+  </Card>
+  <Card title="@proton/components" icon="box" href="/packages/components">
+    React components
+  </Card>
+  <Card title="@proton/crypto" icon="lock" href="/packages/crypto">
+    Cryptography utilities
+  </Card>
+</CardGroup>

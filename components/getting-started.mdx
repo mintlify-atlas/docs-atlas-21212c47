@@ -1,0 +1,321 @@
+---
+title: Getting Started
+description: Learn how to use Proton WebClients components in your application
+---
+
+# Getting Started
+
+This guide will help you understand how to use components from the Proton WebClients component library.
+
+## Import Patterns
+
+There are several ways to import components:
+
+### From Package Index
+
+Many components are exported from the main package index:
+
+```tsx
+import { Button, Input, Modal } from '@proton/components';
+```
+
+### Direct Component Imports
+
+For specific components, import directly from their location:
+
+```tsx
+import Input from '@proton/components/components/input/Input';
+import Modal from '@proton/components/components/modalTwo/Modal';
+import Dropdown from '@proton/components/components/dropdown/Dropdown';
+```
+
+### From Atoms Package
+
+Basic components are available from `@proton/atoms`:
+
+```tsx
+import { Button } from '@proton/atoms/Button/Button';
+import { Tooltip } from '@proton/atoms/Tooltip/Tooltip';
+```
+
+## Basic Usage
+
+### Simple Component Example
+
+```tsx
+import { useState } from 'react';
+import { Button } from '@proton/atoms/Button/Button';
+import Input from '@proton/components/components/input/Input';
+
+const MyForm = () => {
+  const [value, setValue] = useState('');
+
+  return (
+    <div className="flex gap-2">
+      <Input
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Enter text"
+      />
+      <Button color="norm" onClick={() => console.log(value)}>
+        Submit
+      </Button>
+    </div>
+  );
+};
+```
+
+### Modal Example
+
+```tsx
+import { useState } from 'react';
+import { Button } from '@proton/atoms/Button/Button';
+import Modal from '@proton/components/components/modalTwo/Modal';
+import ModalHeader from '@proton/components/components/modalTwo/ModalHeader';
+import ModalContent from '@proton/components/components/modalTwo/ModalContent';
+import ModalFooter from '@proton/components/components/modalTwo/ModalFooter';
+
+const MyModalExample = () => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Open Modal</Button>
+      
+      <Modal open={open} onClose={() => setOpen(false)} size="small">
+        <ModalHeader title="My Modal" />
+        <ModalContent>
+          <p>Modal content goes here</p>
+        </ModalContent>
+        <ModalFooter>
+          <Button onClick={() => setOpen(false)}>Close</Button>
+        </ModalFooter>
+      </Modal>
+    </>
+  );
+};
+```
+
+### Dropdown Example
+
+```tsx
+import { useRef, useState } from 'react';
+import { Button } from '@proton/atoms/Button/Button';
+import Dropdown from '@proton/components/components/dropdown/Dropdown';
+import DropdownMenu from '@proton/components/components/dropdown/DropdownMenu';
+import DropdownMenuButton from '@proton/components/components/dropdown/DropdownMenuButton';
+
+const MyDropdownExample = () => {
+  const anchorRef = useRef<HTMLButtonElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <Button ref={anchorRef} onClick={() => setIsOpen(!isOpen)}>
+        Open Menu
+      </Button>
+      
+      <Dropdown
+        isOpen={isOpen}
+        anchorRef={anchorRef}
+        onClose={() => setIsOpen(false)}
+      >
+        <DropdownMenu>
+          <DropdownMenuButton onClick={() => console.log('Action 1')}>
+            Action 1
+          </DropdownMenuButton>
+          <DropdownMenuButton onClick={() => console.log('Action 2')}>
+            Action 2
+          </DropdownMenuButton>
+        </DropdownMenu>
+      </Dropdown>
+    </>
+  );
+};
+```
+
+## Styling Components
+
+### Using Utility Classes
+
+Proton uses Tailwind-style utility classes:
+
+```tsx
+<div className="flex gap-4 items-center justify-between p-4">
+  <Input className="flex-1" />
+  <Button className="shrink-0">Submit</Button>
+</div>
+```
+
+### Common Utility Classes
+
+- **Flexbox**: `flex`, `flex-column`, `flex-nowrap`, `items-center`, `justify-between`
+- **Spacing**: `p-4`, `m-2`, `gap-2`, `px-3`, `py-2`
+- **Sizing**: `w-full`, `h-full`, `flex-1`, `shrink-0`
+- **Colors**: `color-norm`, `color-weak`, `bg-norm`
+- **Text**: `text-bold`, `text-ellipsis`, `text-center`
+
+### Conditional Styling with clsx
+
+Use the `clsx` utility for conditional classes:
+
+```tsx
+import clsx from '@proton/utils/clsx';
+
+const MyComponent = ({ isActive, disabled }) => {
+  return (
+    <div className={clsx([
+      'base-class',
+      isActive && 'active-class',
+      disabled && 'disabled-class'
+    ])}>
+      Content
+    </div>
+  );
+};
+```
+
+## TypeScript Support
+
+### Using Component Props
+
+Components export their prop types:
+
+```tsx
+import type { Props as InputProps } from '@proton/components/components/input/Input';
+import type { DropdownProps } from '@proton/components/components/dropdown/Dropdown';
+
+const config: InputProps = {
+  type: 'text',
+  placeholder: 'Enter value',
+  fullWidth: true
+};
+```
+
+### Generic Components
+
+Some components are generic and support type parameters:
+
+```tsx
+import SelectTwo from '@proton/components/components/selectTwo/SelectTwo';
+import Option from '@proton/components/components/option/Option';
+
+interface MyValue {
+  id: string;
+  name: string;
+}
+
+const MySelect = () => {
+  const [value, setValue] = useState<MyValue | null>(null);
+
+  return (
+    <SelectTwo<MyValue>
+      value={value}
+      onChange={({ value }) => setValue(value)}
+    >
+      <Option value={{ id: '1', name: 'Option 1' }}>Option 1</Option>
+      <Option value={{ id: '2', name: 'Option 2' }}>Option 2</Option>
+    </SelectTwo>
+  );
+};
+```
+
+## Common Patterns
+
+### Form Handling
+
+```tsx
+import { useState } from 'react';
+import Form from '@proton/components/components/form/Form';
+import Input from '@proton/components/components/input/Input';
+import { Button } from '@proton/atoms/Button/Button';
+
+const MyForm = () => {
+  const [formData, setFormData] = useState({ email: '', password: '' });
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    console.log('Submit:', formData);
+  };
+
+  return (
+    <Form onSubmit={handleSubmit}>
+      <Input
+        type="email"
+        value={formData.email}
+        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        placeholder="Email"
+      />
+      <Input
+        type="password"
+        value={formData.password}
+        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+        placeholder="Password"
+      />
+      <Button type="submit" color="norm">Login</Button>
+    </Form>
+  );
+};
+```
+
+### Error Handling
+
+```tsx
+import Input from '@proton/components/components/input/Input';
+
+const MyInput = () => {
+  const [value, setValue] = useState('');
+  const [error, setError] = useState('');
+
+  const validate = (val: string) => {
+    if (!val) {
+      setError('This field is required');
+    } else {
+      setError('');
+    }
+  };
+
+  return (
+    <Input
+      value={value}
+      onChange={(e) => {
+        setValue(e.target.value);
+        validate(e.target.value);
+      }}
+      error={error}
+      required
+    />
+  );
+};
+```
+
+## Accessibility
+
+### ARIA Labels
+
+Provide proper labels for accessibility:
+
+```tsx
+<Input
+  id="email-input"
+  aria-label="Email address"
+  aria-describedby="email-help"
+  placeholder="Email"
+/>
+<span id="email-help" className="sr-only">
+  Enter your email address
+</span>
+```
+
+### Keyboard Navigation
+
+Components support keyboard navigation by default. Ensure you:
+- Don't override `tabIndex` unless necessary
+- Handle `Enter` and `Escape` keys appropriately
+- Provide focus indicators
+
+## Next Steps
+
+- [Buttons](/components/buttons) - Learn about button components
+- [Inputs](/components/inputs) - Explore input components
+- [Modals](/components/modals) - Work with modals and dialogs

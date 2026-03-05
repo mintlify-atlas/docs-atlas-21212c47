@@ -1,0 +1,360 @@
+---
+title: Building Applications
+description: Build and run Proton WebClients applications
+---
+
+## Overview
+
+Proton WebClients applications are built using webpack via the `@proton/pack` build system. Each application can be run in development mode or built for production.
+
+## Development Mode
+
+### Starting an Application
+
+Run an application in development mode with hot reload:
+
+<CodeGroup>
+```bash Mail
+yarn workspace proton-mail start
+```
+
+```bash Calendar
+yarn workspace proton-calendar start
+```
+
+```bash Drive
+yarn workspace proton-drive start
+```
+
+```bash Pass
+yarn workspace proton-pass start
+```
+</CodeGroup>
+
+<Note>
+Development servers run in standalone mode by default. The application will be available at `http://localhost:<port>`.
+</Note>
+
+### Development Server Options
+
+The `proton-pack dev-server` command supports various options:
+
+<ParamField path="--appMode" type="string" default="standalone">
+  Application mode: `standalone` or `sso`
+</ParamField>
+
+<ParamField path="--no-error-logs" type="boolean">
+  Suppress error logs in console
+</ParamField>
+
+<ParamField path="--noLogicalScss" type="boolean">
+  Disable logical CSS properties transformation
+</ParamField>
+
+### Example: Custom Development Configuration
+
+```bash
+cross-env TS_NODE_PROJECT="../../tsconfig.webpack.json" \
+  proton-pack dev-server \
+  --appMode=standalone \
+  --handleSupportAndErrors \
+  --optimizeAssets
+```
+
+## Production Builds
+
+### Building for Production
+
+Build an application for production deployment:
+
+<Tabs>
+  <Tab title="Mail">
+    ```bash
+    yarn workspace proton-mail build:web
+    ```
+    
+    This runs:
+    ```bash
+    cross-env NODE_ENV=production \
+      TS_NODE_PROJECT="../../tsconfig.webpack.json" \
+      proton-pack build --appMode=sso
+    ```
+  </Tab>
+  
+  <Tab title="Drive">
+    ```bash
+    yarn workspace proton-drive build:web
+    ```
+    
+    With additional optimizations:
+    ```bash
+    cross-env NODE_ENV=production \
+      TS_NODE_PROJECT="../../tsconfig.webpack.json" \
+      proton-pack build \
+      --appMode=sso \
+      --handleSupportAndErrors \
+      --optimizeAssets \
+      --noLogicalScss
+    ```
+  </Tab>
+  
+  <Tab title="Calendar">
+    ```bash
+    yarn workspace proton-calendar build:web
+    ```
+  </Tab>
+  
+  <Tab title="Pass">
+    ```bash
+    yarn workspace proton-pass build:web
+    ```
+  </Tab>
+</Tabs>
+
+### Build Output
+
+<Info>
+Production builds output to the `dist/` directory within each application workspace.
+</Info>
+
+Turbo configuration specifies build outputs:
+
+```json turbo.json
+{
+  "tasks": {
+    "build:web": {
+      "outputs": ["dist/**", "webapp-bundle.tar.gz"]
+    }
+  }
+}
+```
+
+## Build Analysis
+
+### Analyzing Bundle Size
+
+Generate a webpack bundle analyzer report:
+
+```bash
+yarn workspace proton-mail analyze
+```
+
+This runs the build with the `--analyze` flag:
+
+```bash
+yarn build:web --analyze
+```
+
+The analyzer will open a visual representation of bundle contents in your browser.
+
+## Type Checking
+
+### Check TypeScript Types
+
+Run TypeScript compiler in check mode (no output):
+
+<Tabs>
+  <Tab title="Single Application">
+    ```bash
+    yarn workspace proton-mail check-types
+    ```
+  </Tab>
+  
+  <Tab title="All Workspaces">
+    ```bash
+    yarn workspaces foreach run check-types
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+Type checking runs the `tsc` command defined in each workspace's scripts.
+</Note>
+
+## Application Scripts Reference
+
+### Common Scripts
+
+All applications share these common scripts:
+
+| Script | Description | Command |
+|--------|-------------|----------|
+| `start` | Start development server | `proton-pack dev-server` |
+| `build:web` | Production build | `proton-pack build` |
+| `check-types` | TypeScript type checking | `tsc` |
+| `lint` | Run ESLint | `eslint --quiet` |
+| `test` | Run tests | `jest` |
+| `test:ci` | CI test run | `jest --ci --coverage` |
+
+### Application-Specific Examples
+
+<AccordionGroup>
+  <Accordion title="Mail">
+    ```json package.json
+    {
+      "scripts": {
+        "start": "cross-env TS_NODE_PROJECT=\"../../tsconfig.webpack.json\" proton-pack dev-server --appMode=standalone",
+        "build:web": "cross-env NODE_ENV=production TS_NODE_PROJECT=\"../../tsconfig.webpack.json\" proton-pack build --appMode=sso",
+        "analyze": "yarn build:web --analyze",
+        "check-types": "tsc",
+        "test": "jest --logHeapUsage --forceExit",
+        "test:ci": "jest --coverage --runInBand --ci --forceExit",
+        "test:watch": "jest --watch --coverage=false"
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Drive">
+    ```json package.json
+    {
+      "scripts": {
+        "start": "cross-env TS_NODE_PROJECT=\"../../tsconfig.webpack.json\" proton-pack dev-server --appMode=standalone --handleSupportAndErrors --optimizeAssets --noLogicalScss",
+        "build:web": "cross-env NODE_ENV=production TS_NODE_PROJECT=\"../../tsconfig.webpack.json\" proton-pack build --appMode=sso --handleSupportAndErrors --optimizeAssets --noLogicalScss",
+        "analyze": "yarn build:web --analyze",
+        "check-types": "tsc",
+        "test": "jest",
+        "test:ci": "jest --coverage=false --runInBand --ci",
+        "test:watch": "jest --watch --coverage=false"
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Calendar">
+    ```json package.json
+    {
+      "scripts": {
+        "start": "cross-env TS_NODE_PROJECT=\"../../tsconfig.webpack.json\" proton-pack dev-server --appMode=standalone",
+        "build:web": "cross-env NODE_ENV=production TS_NODE_PROJECT=\"../../tsconfig.webpack.json\" proton-pack build --appMode=sso",
+        "check-types": "tsc",
+        "test": "cross-env TZ=UTC jest",
+        "test:ci": "yarn run test --ci --coverage --runInBand",
+        "test:watch": "yarn run test --coverage=false --watch"
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Pass">
+    ```json package.json
+    {
+      "scripts": {
+        "start": "cross-env TS_NODE_PROJECT=\"../../tsconfig.webpack.json\" proton-pack dev-server --appMode=standalone --no-error-logs --noLogicalScss",
+        "build:web": "cross-env NODE_ENV=production TS_NODE_PROJECT=\"../../tsconfig.webpack.json\" proton-pack build --appMode=sso --noLogicalScss",
+        "check-types": "tsc",
+        "test": "jest",
+        "test:ci": "jest --coverage --runInBand --ci",
+        "test:watch": "jest --watch"
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Build System (@proton/pack)
+
+The `@proton/pack` package provides the build tooling for all applications.
+
+### Key Features
+
+<CardGroup cols={2}>
+  <Card title="Webpack Configuration" icon="box">
+    Pre-configured webpack setup with optimized loaders and plugins
+  </Card>
+  
+  <Card title="TypeScript Support" icon="code">
+    Built-in TypeScript compilation with Babel
+  </Card>
+  
+  <Card title="Hot Reload" icon="arrows-rotate">
+    React Fast Refresh for instant feedback
+  </Card>
+  
+  <Card title="Asset Optimization" icon="image">
+    Automatic image and asset optimization
+  </Card>
+</CardGroup>
+
+### Proton Pack CLI
+
+The `proton-pack` command provides:
+
+- **`dev-server`** - Development server with hot reload
+- **`build`** - Production build with optimizations
+
+## Environment Variables
+
+### Common Environment Variables
+
+<ParamField path="NODE_ENV" type="string" default="development">
+  Node environment: `development` or `production`
+</ParamField>
+
+<ParamField path="TS_NODE_PROJECT" type="string">
+  Path to TypeScript configuration for webpack
+</ParamField>
+
+<ParamField path="WEBPACK_PARALLELISM" type="number">
+  Number of parallel webpack processes
+</ParamField>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Build fails with memory error">
+    Increase Node.js memory limit:
+    ```bash
+    export NODE_OPTIONS="--max-old-space-size=4096"
+    yarn workspace proton-mail build:web
+    ```
+  </Accordion>
+  
+  <Accordion title="Development server port conflict">
+    The dev server uses `portfinder` to automatically find an available port. Check console output for the actual port.
+  </Accordion>
+  
+  <Accordion title="TypeScript errors in build">
+    Run type checking separately to see detailed errors:
+    ```bash
+    yarn workspace proton-mail check-types
+    ```
+  </Accordion>
+  
+  <Accordion title="Stale build cache">
+    Clear webpack cache:
+    ```bash
+    rm -rf applications/mail/node_modules/.cache
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Performance Tips
+
+<Steps>
+  <Step title="Use Turbo Caching">
+    Turbo caches build outputs. Unchanged applications won't rebuild.
+  </Step>
+  
+  <Step title="Parallel Builds">
+    Use `yarn workspaces foreach` with `-p` for parallel execution:
+    ```bash
+    yarn workspaces foreach -p run build:web
+    ```
+  </Step>
+  
+  <Step title="Incremental Type Checking">
+    Enable TypeScript incremental compilation in `tsconfig.json`:
+    ```json
+    {
+      "compilerOptions": {
+        "incremental": true
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+Always run builds from the monorepo root directory to ensure proper workspace resolution.
+</Warning>

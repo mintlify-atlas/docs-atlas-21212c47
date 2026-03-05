@@ -1,0 +1,536 @@
+---
+title: '@proton/metrics'
+description: 'Metrics library for tracking and reporting application telemetry'
+---
+
+## Overview
+
+The `@proton/metrics` package provides a comprehensive metrics and telemetry system for Proton applications. It handles automatic batching, retry logic, and privacy-respecting analytics to help monitor application health and usage.
+
+## Installation
+
+<CodeGroup>
+```bash npm
+npm install @proton/metrics
+```
+
+```bash yarn
+yarn add @proton/metrics
+```
+
+```bash pnpm
+pnpm add @proton/metrics
+```
+</CodeGroup>
+
+## Key Features
+
+- Automatic metric batching
+- Retry logic with exponential backoff
+- Privacy-respecting telemetry
+- Type-safe metric schemas
+- Request timeout handling
+- Automatic error tracking
+- Low-priority network requests
+
+## Quick Start
+
+### Basic Usage
+
+```typescript
+import metrics from '@proton/metrics';
+
+// Track a simple event
+metrics.core_performance_pageLoad({
+  duration: 1250,
+});
+
+// Track with dimensions
+metrics.mail_messageAction({
+  action: 'send',
+  status: 'success',
+});
+```
+
+### Initialization
+
+The metrics singleton is automatically configured with sensible defaults:
+
+```typescript
+import metrics from '@proton/metrics';
+import { MetricsApi } from '@proton/metrics';
+
+// Default configuration
+// - Batch size: 10 metrics
+// - Frequency: 30 seconds
+// - Request timeout: 10 seconds
+// - Max retry attempts: 3
+
+// Metrics are automatically batched and sent
+```
+
+## Configuration
+
+### Custom Metrics Instance
+
+Create a custom metrics instance with specific configuration:
+
+```typescript
+import Metrics from '@proton/metrics/Metrics';
+import MetricsApi from '@proton/metrics/lib/MetricsApi';
+import MetricsRequestService from '@proton/metrics/lib/MetricsRequestService';
+import { SECOND } from '@proton/shared/lib/constants';
+
+const metricsApi = new MetricsApi({
+  uid: 'user-id',
+  clientID: 'proton-mail',
+  appVersion: '5.0.0',
+});
+
+const metricsService = new MetricsRequestService(metricsApi, {
+  reportMetrics: true,
+  batch: {
+    frequency: 60 * SECOND, // 60 seconds
+    size: 20, // Batch 20 metrics
+  },
+});
+
+const metrics = new Metrics(metricsService);
+```
+
+### MetricsApi Configuration
+
+```typescript
+import MetricsApi from '@proton/metrics/lib/MetricsApi';
+
+const api = new MetricsApi({
+  uid: 'user-id',           // User ID for authenticated requests
+  clientID: 'proton-mail',  // Application identifier
+  appVersion: '5.0.0',      // Application version
+});
+
+// Update headers dynamically
+api.setAuthHeaders('new-uid', 'access-token');
+api.setVersionHeaders('proton-drive', '4.2.0');
+```
+
+## Tracking Metrics
+
+### Performance Metrics
+
+```typescript
+import metrics from '@proton/metrics';
+
+// Page load performance
+metrics.core_performance_pageLoad({
+  duration: performance.now(),
+  route: '/inbox',
+});
+
+// API call performance
+metrics.core_performance_apiCall({
+  endpoint: '/api/messages',
+  duration: 450,
+  status: 200,
+});
+
+// Resource loading
+metrics.core_performance_resourceLoad({
+  resource: 'main.bundle.js',
+  size: 245000,
+  duration: 320,
+});
+```
+
+### User Actions
+
+```typescript
+// Button clicks
+metrics.core_interaction_click({
+  element: 'compose-button',
+  screen: 'inbox',
+});
+
+// Feature usage
+metrics.core_feature_used({
+  feature: 'search',
+  context: 'mail',
+});
+
+// User flow completion
+metrics.core_flow_completed({
+  flow: 'onboarding',
+  duration: 125000,
+  success: true,
+});
+```
+
+### Error Tracking
+
+```typescript
+// Track application errors
+metrics.core_error_occurred({
+  type: 'api_error',
+  message: 'Failed to load messages',
+  code: 'NETWORK_ERROR',
+  stack: error.stack,
+});
+
+// Track handled exceptions
+try {
+  await riskyOperation();
+} catch (error) {
+  metrics.core_exception_caught({
+    operation: 'riskyOperation',
+    error: error.message,
+  });
+}
+```
+
+## Observing API Errors
+
+Automatic API error observation:
+
+```typescript
+import { observeApiError } from '@proton/metrics';
+
+// Automatically track API errors
+const response = await fetch('/api/endpoint')
+  .catch(observeApiError);
+
+// With custom error handling
+try {
+  const response = await fetch('/api/endpoint');
+  if (!response.ok) {
+    observeApiError(new Error(`HTTP ${response.status}`));
+  }
+} catch (error) {
+  observeApiError(error);
+}
+```
+
+## Metric Schemas
+
+The package includes generated TypeScript types from JSON schemas:
+
+```typescript
+import type {
+  CorePerformancePageLoadMetric,
+  MailMessageActionMetric,
+  CalendarEventCreatedMetric,
+} from '@proton/metrics/types';
+
+// Type-safe metric tracking
+const metric: CorePerformancePageLoadMetric = {
+  Name: 'core_performance_page_load',
+  Version: 1,
+  Timestamp: Date.now(),
+  Data: {
+    duration: 1250,
+    route: '/inbox',
+  },
+};
+
+metrics.push(metric);
+```
+
+## Batching and Sending
+
+### Automatic Batching
+
+Metrics are automatically batched and sent based on configuration:
+
+```typescript
+// Metrics are queued and sent in batches
+metrics.track('event1', { data: 1 });
+metrics.track('event2', { data: 2 });
+metrics.track('event3', { data: 3 });
+
+// After batch size (10) or frequency (30s) is reached,
+// all queued metrics are sent in a single request
+```
+
+### Manual Flush
+
+Force sending of queued metrics:
+
+```typescript
+import metrics from '@proton/metrics';
+
+// Send all queued metrics immediately
+await metrics.flush();
+
+// Useful before page unload
+window.addEventListener('beforeunload', () => {
+  metrics.flush();
+});
+```
+
+## Request Handling
+
+### Retry Logic
+
+Automatic retry with exponential backoff:
+
+- Retries on network failures
+- Respects `Retry-After` headers
+- Maximum 3 attempts by default
+- 5-second default retry delay
+
+```typescript
+// Automatically handled by MetricsApi
+// No manual retry logic needed
+metrics.track('event', { data: 'value' });
+```
+
+### Request Timeout
+
+Requests timeout after 10 seconds by default:
+
+```typescript
+import { METRICS_REQUEST_TIMEOUT_SECONDS } from '@proton/metrics/constants';
+
+console.log(METRICS_REQUEST_TIMEOUT_SECONDS); // 10
+```
+
+### Rate Limiting
+
+Handles HTTP 429 (Too Many Requests) automatically:
+
+```typescript
+// Automatically retries with delay from Retry-After header
+// Falls back to default retry delay if header is missing
+```
+
+## Constants
+
+```typescript
+import {
+  METRICS_BATCH_SIZE,
+  METRICS_REQUEST_FREQUENCY_SECONDS,
+  METRICS_REQUEST_TIMEOUT_SECONDS,
+  METRICS_MAX_ATTEMPTS,
+  METRICS_DEFAULT_RETRY_SECONDS,
+} from '@proton/metrics/constants';
+
+// Default values
+console.log(METRICS_BATCH_SIZE);                      // 10
+console.log(METRICS_REQUEST_FREQUENCY_SECONDS);       // 30
+console.log(METRICS_REQUEST_TIMEOUT_SECONDS);         // 10
+console.log(METRICS_MAX_ATTEMPTS);                    // 3
+console.log(METRICS_DEFAULT_RETRY_SECONDS);           // 5
+```
+
+## Privacy Considerations
+
+<Info>
+  The metrics library is designed with privacy in mind:
+  - No personally identifiable information (PII) is tracked
+  - User IDs are hashed
+  - IP addresses are not logged
+  - All metrics are aggregated
+</Info>
+
+### What is NOT tracked:
+
+- Email content
+- Email addresses
+- Personal data
+- Precise location data
+- Identifying information
+
+### What IS tracked:
+
+- Performance metrics
+- Feature usage (aggregated)
+- Error rates
+- Application health
+- Anonymous usage patterns
+
+## Development
+
+### Generating Metrics
+
+Generate metric types from JSON schemas:
+
+```bash
+# Generate TypeScript types from schemas
+yarn generate-schema-types
+
+# Generate metric tracking functions
+yarn generate-metrics
+
+# Update metrics from registry
+yarn update-metrics
+```
+
+### Metrics Registry
+
+Metrics are defined in a centralized schema registry:
+
+```bash
+# Clone the schema repository
+git clone $SCHEMA_REPOSITORY
+
+# Generate types and metrics
+yarn generate-schema-types
+yarn generate-metrics
+```
+
+## Testing
+
+```bash
+# Run tests
+yarn test
+
+# Run tests with coverage
+yarn test:ci
+
+# Watch mode
+yarn test:watch
+```
+
+### Mocking in Tests
+
+```typescript
+import metrics from '@proton/metrics';
+
+// Mock the metrics singleton
+jest.mock('@proton/metrics', () => ({
+  __esModule: true,
+  default: {
+    track: jest.fn(),
+    flush: jest.fn(),
+  },
+}));
+
+// In your test
+it('tracks metrics', () => {
+  myFunction();
+  expect(metrics.track).toHaveBeenCalledWith('event', { data: 'value' });
+});
+```
+
+## Production Usage
+
+### Disable Metrics
+
+```typescript
+import MetricsRequestService from '@proton/metrics/lib/MetricsRequestService';
+
+const service = new MetricsRequestService(api, {
+  reportMetrics: false, // Disable metric reporting
+  batch: { frequency: 30000, size: 10 },
+});
+```
+
+### Environment-Based Configuration
+
+```typescript
+const isProduction = process.env.NODE_ENV === 'production';
+
+const metricsService = new MetricsRequestService(api, {
+  reportMetrics: isProduction,
+  batch: {
+    frequency: isProduction ? 30000 : 5000,
+    size: isProduction ? 10 : 1,
+  },
+});
+```
+
+## Network Priority
+
+Metrics requests use low network priority to avoid impacting user experience:
+
+```typescript
+// Requests are sent with priority: u=6 (lowest)
+fetch(url, {
+  headers: {
+    priority: 'u=6',
+  },
+});
+```
+
+## Error Handling
+
+```typescript
+import metrics from '@proton/metrics';
+
+try {
+  await metrics.flush();
+} catch (error) {
+  // Metrics errors are non-blocking
+  // Failed metrics are dropped
+  console.warn('Failed to send metrics:', error);
+}
+```
+
+## TypeScript Support
+
+Full TypeScript support with generated types:
+
+```typescript
+import type {
+  MetricSchema,
+  MetricRecord,
+  MetricBatch,
+} from '@proton/metrics/types';
+
+// Custom metric type
+interface CustomMetric extends MetricSchema {
+  Name: 'custom_event';
+  Version: 1;
+  Data: {
+    property: string;
+    count: number;
+  };
+}
+```
+
+## Dependencies
+
+<AccordionGroup>
+  <Accordion title="Runtime Dependencies">
+    - `@proton/shared` - Shared utilities and constants
+  </Accordion>
+  <Accordion title="Build Dependencies">
+    - `json-schema-to-typescript` - Type generation
+    - `typescript` - TypeScript compiler
+    - `prettier` - Code formatting
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Card title="Metrics Best Practices" icon="chart-line">
+  1. **Don't over-track**: Only track what you need
+  2. **Batch efficiently**: Use default batching settings
+  3. **Handle failures gracefully**: Metrics should never break your app
+  4. **Respect privacy**: Never track PII
+  5. **Use type-safe metrics**: Leverage TypeScript types
+  6. **Test metrics tracking**: Mock metrics in tests
+</Card>
+
+## Performance Impact
+
+The metrics library is designed for minimal performance impact:
+
+- Metrics are queued in memory (minimal overhead)
+- Network requests are batched
+- Requests use low priority
+- Non-blocking operations
+- Automatic retry without UI impact
+
+## Related Packages
+
+<CardGroup cols={3}>
+  <Card title="@proton/shared" icon="share-nodes" href="/packages/shared">
+    Shared utilities and constants
+  </Card>
+  <Card title="@proton/drive" icon="hard-drive" href="/packages/drive">
+    Drive SDK with metrics integration
+  </Card>
+  <Card title="@proton/components" icon="box" href="/packages/components">
+    Components with built-in metrics
+  </Card>
+</CardGroup>

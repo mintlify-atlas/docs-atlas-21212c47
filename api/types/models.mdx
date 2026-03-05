@@ -1,0 +1,573 @@
+---
+title: Data Model Types
+description: TypeScript interfaces for data models in Proton WebClients
+---
+
+## User Types
+
+### User
+
+Main user interface representing a Proton account.
+
+```typescript
+interface User {
+  ID: string;
+  Name: string;
+  UsedSpace: number;
+  UsedBaseSpace: number;
+  UsedDriveSpace: number;
+  Currency: Currency;
+  Credit: number;
+  MaxSpace: number;
+  MaxBaseSpace: number;
+  MaxDriveSpace: number;
+  MaxUpload: number;
+  Role: USER_ROLES;
+  Private: number;
+  Type: UserType;
+  Subscribed: number;
+  Services: number;
+  Delinquent: UNPAID_STATE;
+  Email: string;
+  DisplayName: string;
+  Keys: Key[];
+  CreateTime: number;
+  Flags: UserFlags;
+  LockedFlags?: number;
+  ProductUsedSpace: {
+    Calendar: number;
+    Contact: number;
+    Drive: number;
+    Mail: number;
+    Pass: number;
+  };
+}
+```
+
+<ResponseField name="ID" type="string">
+  Unique user identifier
+</ResponseField>
+
+<ResponseField name="Name" type="string">
+  Username
+</ResponseField>
+
+<ResponseField name="Email" type="string">
+  User's primary email address
+</ResponseField>
+
+<ResponseField name="DisplayName" type="string">
+  Display name for the user
+</ResponseField>
+
+<ResponseField name="UsedSpace" type="number">
+  Total space used in bytes
+</ResponseField>
+
+<ResponseField name="MaxSpace" type="number">
+  Maximum available space in bytes
+</ResponseField>
+
+<ResponseField name="Keys" type="Key[]">
+  User's encryption keys
+</ResponseField>
+
+<ResponseField name="ProductUsedSpace" type="object">
+  Space used by each product
+</ResponseField>
+
+<CodeGroup>
+```tsx Access User Data
+import type { User } from '@proton/shared/lib/interfaces';
+
+function UserProfile({ user }: { user: User }) {
+  const usedPercentage = (user.UsedSpace / user.MaxSpace) * 100;
+
+  return (
+    <div>
+      <h1>{user.DisplayName}</h1>
+      <p>Email: {user.Email}</p>
+      <p>Storage: {usedPercentage.toFixed(1)}% used</p>
+    </div>
+  );
+}
+```
+
+```tsx Check User Type
+function isExternalUser(user: User): boolean {
+  return user.Type === UserType.EXTERNAL;
+}
+
+function isPaidUser(user: User): boolean {
+  return user.Subscribed > 0;
+}
+```
+</CodeGroup>
+
+---
+
+### UserType
+
+Enum for user account types.
+
+```typescript
+enum UserType {
+  PROTON = 1,   // Regular Proton user
+  MANAGED = 2,  // Managed by organization
+  EXTERNAL = 3  // External user (non-Proton)
+}
+```
+
+```tsx
+import { UserType } from '@proton/shared/lib/interfaces';
+
+function getUserTypeName(type: UserType): string {
+  switch (type) {
+    case UserType.PROTON:
+      return 'Proton User';
+    case UserType.MANAGED:
+      return 'Managed User';
+    case UserType.EXTERNAL:
+      return 'External User';
+    default:
+      return 'Unknown';
+  }
+}
+```
+
+---
+
+### UserInfo
+
+Derived user information with computed flags.
+
+```typescript
+interface UserInfo {
+  isAdmin: boolean;
+  isMember: boolean;
+  isFree: boolean;
+  isPaid: boolean;
+  isPrivate: boolean;
+  isSelf: boolean;
+  isDelinquent: boolean;
+  hasPaidMail: boolean;
+  hasPaidVpn: boolean;
+  hasPaidDrive: boolean;
+  hasPaidPass: boolean;
+  hasPaidMeet: boolean;
+  canPay: boolean;
+}
+```
+
+<CodeGroup>
+```tsx Use User Info
+import type { UserInfo } from '@proton/shared/lib/interfaces';
+
+function UpgradePrompt({ userInfo }: { userInfo: UserInfo }) {
+  if (userInfo.isPaid) {
+    return null; // No prompt for paid users
+  }
+
+  return (
+    <div className="upgrade-prompt">
+      <h3>Upgrade to Premium</h3>
+      <p>Get more storage and features</p>
+    </div>
+  );
+}
+```
+
+```tsx Feature Access
+function canAccessFeature(
+  userInfo: UserInfo,
+  feature: 'vpn' | 'drive' | 'pass'
+): boolean {
+  switch (feature) {
+    case 'vpn':
+      return userInfo.hasPaidVpn;
+    case 'drive':
+      return userInfo.hasPaidDrive;
+    case 'pass':
+      return userInfo.hasPaidPass;
+    default:
+      return false;
+  }
+}
+```
+</CodeGroup>
+
+---
+
+## Address Types
+
+### Address
+
+Email address associated with a user account.
+
+```typescript
+interface Address {
+  ID: string;
+  Email: string;
+  DisplayName: string;
+  Signature: string;
+  Type: ADDRESS_TYPE;
+  Status: ADDRESS_STATUS;
+  Receive: ADDRESS_RECEIVE;
+  Send: ADDRESS_SEND;
+  Order: number;
+  Priority: number;
+  Keys: AddressKey[];
+  CatchAll: boolean;
+  ProtonMX: boolean;
+  DomainID: string;
+  HasKeys: number;
+  Flags?: ADDRESS_FLAGS;
+  ConfirmationState: AddressConfirmationState;
+}
+```
+
+<ResponseField name="ID" type="string">
+  Unique address identifier
+</ResponseField>
+
+<ResponseField name="Email" type="string">
+  Email address
+</ResponseField>
+
+<ResponseField name="DisplayName" type="string">
+  Display name for this address
+</ResponseField>
+
+<ResponseField name="Signature" type="string">
+  Email signature
+</ResponseField>
+
+<ResponseField name="Status" type="ADDRESS_STATUS">
+  Address status (enabled/disabled)
+</ResponseField>
+
+<ResponseField name="Keys" type="AddressKey[]">
+  Encryption keys for this address
+</ResponseField>
+
+<CodeGroup>
+```tsx Address List
+import type { Address } from '@proton/shared/lib/interfaces';
+
+function AddressList({ addresses }: { addresses: Address[] }) {
+  return (
+    <ul>
+      {addresses.map((address) => (
+        <li key={address.ID}>
+          <strong>{address.DisplayName}</strong>
+          <span>{address.Email}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+```
+
+```tsx Primary Address
+function getPrimaryAddress(addresses: Address[]): Address | undefined {
+  return addresses.find((addr) => addr.Order === 1);
+}
+```
+</CodeGroup>
+
+---
+
+### Recipient
+
+Recipient information for emails.
+
+```typescript
+interface Recipient {
+  Name: string;
+  Address: string;
+  ContactID?: string;
+  Group?: string;
+  BimiSelector?: string | null;
+  DisplaySenderImage?: number;
+  IsProton?: number;
+  IsSimpleLogin?: number;
+}
+```
+
+<ResponseField name="Name" type="string">
+  Display name
+</ResponseField>
+
+<ResponseField name="Address" type="string">
+  Email address
+</ResponseField>
+
+<ResponseField name="IsProton" type="number">
+  Whether recipient is a Proton user
+</ResponseField>
+
+```tsx
+import type { Recipient } from '@proton/shared/lib/interfaces';
+
+function RecipientChip({ recipient }: { recipient: Recipient }) {
+  return (
+    <div className="recipient">
+      {recipient.Name || recipient.Address}
+      {recipient.IsProton === 1 && <ProtonBadge />}
+    </div>
+  );
+}
+```
+
+---
+
+## Key Types
+
+### Key
+
+Encryption key interface.
+
+```typescript
+interface Key {
+  ID: string;
+  Primary: number;
+  Active: number;
+  Version: number;
+  Flags: number;
+  PrivateKey: string;
+  Fingerprint: string;
+  Activation?: string | null;
+}
+```
+
+<ResponseField name="ID" type="string">
+  Unique key identifier
+</ResponseField>
+
+<ResponseField name="Primary" type="number">
+  Whether this is the primary key (1 = yes, 0 = no)
+</ResponseField>
+
+<ResponseField name="Active" type="number">
+  Whether the key is active
+</ResponseField>
+
+<ResponseField name="PrivateKey" type="string">
+  Encrypted private key
+</ResponseField>
+
+<ResponseField name="Fingerprint" type="string">
+  Key fingerprint
+</ResponseField>
+
+```tsx
+import type { Key } from '@proton/shared/lib/interfaces';
+
+function KeyList({ keys }: { keys: Key[] }) {
+  const primaryKey = keys.find((key) => key.Primary === 1);
+  const activeKeys = keys.filter((key) => key.Active === 1);
+
+  return (
+    <div>
+      <h3>Primary Key</h3>
+      <KeyCard key={primaryKey} />
+      
+      <h3>Active Keys ({activeKeys.length})</h3>
+      {activeKeys.map((key) => (
+        <KeyCard key={key.ID} key={key} />
+      ))}
+    </div>
+  );
+}
+```
+
+---
+
+## Enums
+
+### UNPAID_STATE
+
+User payment status.
+
+```typescript
+enum UNPAID_STATE {
+  NOT_UNPAID = 0,
+  AVAILABLE = 1,
+  OVERDUE = 2
+}
+```
+
+```tsx
+import { UNPAID_STATE } from '@proton/shared/lib/interfaces';
+
+function PaymentStatus({ state }: { state: UNPAID_STATE }) {
+  switch (state) {
+    case UNPAID_STATE.NOT_UNPAID:
+      return <span className="status-good">Paid</span>;
+    case UNPAID_STATE.AVAILABLE:
+      return <span className="status-warning">Payment Due</span>;
+    case UNPAID_STATE.OVERDUE:
+      return <span className="status-error">Overdue</span>;
+  }
+}
+```
+
+---
+
+### MNEMONIC_STATUS
+
+Recovery phrase status.
+
+```typescript
+enum MNEMONIC_STATUS {
+  DISABLED = 0,
+  ENABLED = 1,
+  OUTDATED = 2,
+  SET = 3,
+  PROMPT = 4
+}
+```
+
+```tsx
+import { MNEMONIC_STATUS } from '@proton/shared/lib/interfaces';
+
+function RecoveryStatus({ status }: { status: MNEMONIC_STATUS }) {
+  if (status === MNEMONIC_STATUS.DISABLED) {
+    return <Alert>Recovery phrase is disabled</Alert>;
+  }
+  
+  if (status === MNEMONIC_STATUS.OUTDATED) {
+    return <Alert>Please update your recovery phrase</Alert>;
+  }
+
+  if (status === MNEMONIC_STATUS.PROMPT) {
+    return <Alert>Set up your recovery phrase</Alert>;
+  }
+
+  return <div>Recovery phrase is set</div>;
+}
+```
+
+---
+
+## Helper Functions
+
+### Type Guards
+
+```typescript
+import type { User } from '@proton/shared/lib/interfaces';
+import { isBilledUser } from '@proton/shared/lib/interfaces';
+
+function isBilledUser(user: User | undefined): boolean {
+  if (!user) {
+    return false;
+  }
+  return !!user.Billed;
+}
+```
+
+<CodeGroup>
+```tsx Usage Example
+function BillingSection({ user }: { user: User }) {
+  if (!isBilledUser(user)) {
+    return <div>Not a billed user</div>;
+  }
+
+  return <div>View billing information</div>;
+}
+```
+
+```tsx Custom Type Guards
+function hasActiveSubscription(user: User): boolean {
+  return user.Subscribed > 0 && user.Delinquent === UNPAID_STATE.NOT_UNPAID;
+}
+
+function canUpgrade(user: User): boolean {
+  return !user.LockedFlags && user.Delinquent === UNPAID_STATE.NOT_UNPAID;
+}
+```
+</CodeGroup>
+
+---
+
+## Usage Patterns
+
+### Type-Safe Data Fetching
+
+```tsx
+import type { User } from '@proton/shared/lib/interfaces';
+import { useApi } from '@proton/components';
+
+interface GetUserResponse {
+  Code: number;
+  User: User;
+}
+
+function useUser() {
+  const api = useApi();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const response = await api<GetUserResponse>({
+        url: '/core/v4/users',
+        method: 'get'
+      });
+      setUser(response.User);
+    };
+    fetchUser();
+  }, [api]);
+
+  return user;
+}
+```
+
+### Derived State
+
+```tsx
+import type { User, Address } from '@proton/shared/lib/interfaces';
+
+interface UserWithAddresses {
+  user: User;
+  addresses: Address[];
+  primaryAddress: Address | undefined;
+  totalAddresses: number;
+}
+
+function useUserProfile(): UserWithAddresses | null {
+  const user = useUser();
+  const addresses = useAddresses();
+
+  if (!user || !addresses) {
+    return null;
+  }
+
+  return {
+    user,
+    addresses,
+    primaryAddress: addresses.find((a) => a.Order === 1),
+    totalAddresses: addresses.length
+  };
+}
+```
+
+### Filtering and Sorting
+
+```tsx
+import type { Address } from '@proton/shared/lib/interfaces';
+
+function getActiveAddresses(addresses: Address[]): Address[] {
+  return addresses
+    .filter((addr) => addr.Status === 1)
+    .sort((a, b) => a.Order - b.Order);
+}
+
+function getAddressByEmail(
+  addresses: Address[],
+  email: string
+): Address | undefined {
+  return addresses.find(
+    (addr) => addr.Email.toLowerCase() === email.toLowerCase()
+  );
+}
+```

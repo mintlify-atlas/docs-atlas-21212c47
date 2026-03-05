@@ -1,0 +1,558 @@
+---
+title: Common Types
+description: Common TypeScript types and interfaces used across Proton WebClients
+---
+
+## Utility Types
+
+### SimpleMap
+
+A simple key-value map with optional values.
+
+```typescript
+type SimpleMap<T> = { [key: string]: T | undefined }
+```
+
+<ParamField path="T" type="type">
+  Type of values in the map
+</ParamField>
+
+<CodeGroup>
+```tsx Basic Usage
+import type { SimpleMap } from '@proton/shared/lib/interfaces';
+
+const userMap: SimpleMap<User> = {
+  '1': { id: '1', name: 'John' },
+  '2': { id: '2', name: 'Jane' },
+  '3': undefined // Optional values allowed
+};
+```
+
+```tsx With Loading States
+const loadingMap: SimpleMap<boolean> = {
+  save: true,
+  delete: false,
+  update: undefined
+};
+```
+</CodeGroup>
+
+---
+
+### LoadingMap
+
+Specialized map for tracking loading states.
+
+```typescript
+type LoadingMap = SimpleMap<boolean>
+```
+
+```tsx
+import type { LoadingMap } from '@proton/shared/lib/interfaces';
+
+const loading: LoadingMap = {
+  fetchUsers: true,
+  saveSettings: false,
+  deleteItem: true
+};
+```
+
+---
+
+### MaybeArray
+
+Represents a value that can be either a single item or an array.
+
+```typescript
+type MaybeArray<T> = T[] | T
+```
+
+<CodeGroup>
+```tsx Function Parameter
+function process(ids: MaybeArray<string>) {
+  const idArray = Array.isArray(ids) ? ids : [ids];
+  // Process array
+}
+
+process('123'); // Single value
+process(['123', '456']); // Array
+```
+
+```tsx Type Guard
+function isSingle<T>(value: MaybeArray<T>): value is T {
+  return !Array.isArray(value);
+}
+```
+</CodeGroup>
+
+---
+
+### Nullable
+
+Makes a type nullable.
+
+```typescript
+type Nullable<T> = T | null
+```
+
+```tsx
+import type { Nullable } from '@proton/shared/lib/interfaces';
+
+interface User {
+  id: string;
+  name: string;
+  avatar: Nullable<string>; // Can be string or null
+}
+
+const user: User = {
+  id: '1',
+  name: 'John',
+  avatar: null // Valid
+};
+```
+
+---
+
+### Optional
+
+Make specific properties optional in an interface.
+
+```typescript
+type Optional<T extends object, K extends keyof T = keyof T> =
+  Omit<T, K> & Partial<Pick<T, K>>
+```
+
+<ParamField path="T" type="object">
+  Base interface type
+</ParamField>
+
+<ParamField path="K" type="keyof T">
+  Keys to make optional
+</ParamField>
+
+<CodeGroup>
+```tsx Make Specific Fields Optional
+import type { Optional } from '@proton/shared/lib/interfaces';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+}
+
+// Make avatar and email optional
+type UserInput = Optional<User, 'avatar' | 'email'>;
+
+const input: UserInput = {
+  id: '1',
+  name: 'John'
+  // email and avatar are optional
+};
+```
+
+```tsx In Function Parameters
+function createUser(data: Optional<User, 'id' | 'avatar'>) {
+  // id and avatar are optional, name and email are required
+}
+```
+</CodeGroup>
+
+---
+
+### RequireOnly
+
+Make entire type partial except for specified required keys.
+
+```typescript
+type RequireOnly<T, Keys extends keyof T> =
+  Partial<T> & Required<Pick<T, Keys>>
+```
+
+```tsx
+import type { RequireOnly } from '@proton/shared/lib/interfaces';
+
+interface Config {
+  apiUrl: string;
+  timeout: number;
+  retries: number;
+  debug: boolean;
+}
+
+// Only apiUrl is required, rest are optional
+type MinimalConfig = RequireOnly<Config, 'apiUrl'>;
+
+const config: MinimalConfig = {
+  apiUrl: 'https://api.example.com'
+  // timeout, retries, debug are optional
+};
+```
+
+---
+
+### RequireSome
+
+Make specific properties required while keeping others as-is.
+
+```typescript
+type RequireSome<T, Keys extends keyof T> =
+  T & Required<Pick<T, Keys>>
+```
+
+```tsx
+import type { RequireSome } from '@proton/shared/lib/interfaces';
+
+interface User {
+  id?: string;
+  name?: string;
+  email?: string;
+}
+
+// Require id and email
+type ValidUser = RequireSome<User, 'id' | 'email'>;
+
+const user: ValidUser = {
+  id: '1',      // Required
+  email: 'john@example.com', // Required
+  name: 'John'  // Optional (was optional before)
+};
+```
+
+---
+
+### DeepPartial
+
+Recursively make all properties optional, including nested objects and arrays.
+
+```typescript
+type DeepPartial<T> = T extends (infer E)[]
+  ? DeepPartial<E>[]
+  : T extends object
+    ? { [K in keyof T]?: DeepPartial<T[K]> }
+    : T | undefined
+```
+
+<CodeGroup>
+```tsx Nested Objects
+import type { DeepPartial } from '@proton/shared/lib/interfaces';
+
+interface Config {
+  api: {
+    url: string;
+    timeout: number;
+    retry: {
+      attempts: number;
+      delay: number;
+    };
+  };
+  features: string[];
+}
+
+type PartialConfig = DeepPartial<Config>;
+
+const config: PartialConfig = {
+  api: {
+    retry: {
+      attempts: 3
+      // delay is optional
+    }
+    // url and timeout are optional
+  }
+  // features is optional
+};
+```
+
+```tsx Use Case: Patch Updates
+function updateConfig(updates: DeepPartial<Config>) {
+  // Merge partial updates with existing config
+}
+
+updateConfig({
+  api: { timeout: 5000 } // Only update timeout
+});
+```
+</CodeGroup>
+
+---
+
+### StrictRequired
+
+Make all properties required and non-nullable.
+
+```typescript
+type StrictRequired<T> = {
+  [P in keyof T]-?: NonNullable<T[P]>
+}
+```
+
+```tsx
+import type { StrictRequired } from '@proton/shared/lib/interfaces';
+
+interface User {
+  id?: string | null;
+  name?: string | null;
+  email?: string | null;
+}
+
+type ValidatedUser = StrictRequired<User>;
+
+const user: ValidatedUser = {
+  id: '1',              // Required, can't be null
+  name: 'John',         // Required, can't be null
+  email: 'john@example.com' // Required, can't be null
+};
+```
+
+---
+
+### Unwrap
+
+Extract the resolved type from Promises or function return types.
+
+```typescript
+type Unwrap<T> =
+  T extends Promise<infer U> ? U
+  : T extends (...args: any) => Promise<infer U> ? U
+  : T extends (...args: any) => infer U ? U
+  : T
+```
+
+<CodeGroup>
+```tsx Unwrap Promise
+import type { Unwrap } from '@proton/shared/lib/interfaces';
+
+type UserPromise = Promise<{ id: string; name: string }>;
+type User = Unwrap<UserPromise>;
+// User = { id: string; name: string }
+```
+
+```tsx Unwrap Function Return
+function getUser() {
+  return Promise.resolve({ id: '1', name: 'John' });
+}
+
+type User = Unwrap<typeof getUser>;
+// User = { id: string; name: string }
+```
+
+```tsx Practical Example
+async function fetchData() {
+  return { users: [], total: 0 };
+}
+
+// Extract return type without calling function
+type FetchResult = Unwrap<typeof fetchData>;
+```
+</CodeGroup>
+
+---
+
+### EitherOr
+
+Create mutually exclusive properties.
+
+```typescript
+type EitherOr<T, K extends keyof T> = {
+  [P in K]: {
+    [Q in P]: Required<Pick<T, P>>[P];
+  } & {
+    [Q in Exclude<K, P>]?: never;
+  } & Omit<T, K>;
+}[K]
+```
+
+<ParamField path="T" type="type">
+  Base type with all properties
+</ParamField>
+
+<ParamField path="K" type="keyof T">
+  Keys that should be mutually exclusive
+</ParamField>
+
+<CodeGroup>
+```tsx Mutually Exclusive Props
+import type { EitherOr } from '@proton/shared/lib/interfaces';
+
+interface Payment {
+  amount: number;
+  planIDs: string[];
+  planName: string;
+  currency: string;
+}
+
+// Can have either planIDs or planName, but not both
+type PaymentInput = EitherOr<Payment, 'planIDs' | 'planName'>;
+
+// Valid
+const payment1: PaymentInput = {
+  amount: 100,
+  planIDs: ['plan1', 'plan2'],
+  currency: 'USD'
+};
+
+// Valid
+const payment2: PaymentInput = {
+  amount: 100,
+  planName: 'premium',
+  currency: 'USD'
+};
+
+// Invalid - can't have both
+// const payment3: PaymentInput = {
+//   amount: 100,
+//   planIDs: ['plan1'],
+//   planName: 'premium',
+//   currency: 'USD'
+// };
+```
+
+```tsx ID vs Slug
+interface Resource {
+  name: string;
+  id: string;
+  slug: string;
+}
+
+// Must provide either id or slug
+type ResourceQuery = EitherOr<Resource, 'id' | 'slug'>;
+
+function fetchResource(query: ResourceQuery) {
+  // Can check which property was provided
+  if ('id' in query) {
+    // Use ID
+  } else {
+    // Use slug
+  }
+}
+```
+</CodeGroup>
+
+---
+
+## API Types
+
+### Api
+
+Generic API function type.
+
+```typescript
+type Api = <T = any>(arg: object) => Promise<T>
+```
+
+<ParamField path="T" type="type">
+  Expected response type
+</ParamField>
+
+<ParamField path="arg" type="object">
+  API request configuration
+</ParamField>
+
+```tsx
+import type { Api } from '@proton/shared/lib/interfaces';
+
+const api: Api = (config) => {
+  return fetch(config.url, config).then(r => r.json());
+};
+
+// Type-safe usage
+interface User { id: string; name: string; }
+const user = await api<User>({ url: '/users/1' });
+// user is typed as User
+```
+
+---
+
+### ApiResponse
+
+Base response structure from Proton API.
+
+```typescript
+interface ApiResponse {
+  Code: number;
+}
+```
+
+<ResponseField name="Code" type="number">
+  HTTP status code (e.g., 1000 for success)
+</ResponseField>
+
+```tsx
+import type { ApiResponse } from '@proton/shared/lib/interfaces';
+
+interface UserResponse extends ApiResponse {
+  User: {
+    ID: string;
+    Name: string;
+    Email: string;
+  };
+}
+
+const response: UserResponse = await api('/users/me');
+if (response.Code === 1000) {
+  console.log('Success', response.User);
+}
+```
+
+---
+
+## Best Practices
+
+### Use Utility Types for Flexibility
+
+```tsx
+// Instead of creating multiple interfaces
+interface UserCreate {
+  name: string;
+  email: string;
+}
+
+interface UserUpdate {
+  id: string;
+  name?: string;
+  email?: string;
+}
+
+// Use utility types
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+type UserCreate = Omit<User, 'id'>;
+type UserUpdate = RequireOnly<User, 'id'>;
+```
+
+### Combine Utility Types
+
+```tsx
+// Combine multiple utility types for complex scenarios
+type PartialUser = Optional<User, 'avatar' | 'bio'>;
+type RequiredEmail = RequireSome<PartialUser, 'email'>;
+
+// Or chain them
+type UserInput = RequireSome<
+  Optional<User, 'id' | 'createdAt'>,
+  'email'
+>;
+```
+
+### Type-Safe API Calls
+
+```tsx
+import type { Api } from '@proton/shared/lib/interfaces';
+
+interface GetUserResponse {
+  Code: number;
+  User: User;
+}
+
+const fetchUser = async (api: Api, userId: string) => {
+  const response = await api<GetUserResponse>({
+    url: `/users/${userId}`,
+    method: 'get'
+  });
+  
+  return response.User; // Fully typed
+};
+```

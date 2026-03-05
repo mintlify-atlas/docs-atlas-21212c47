@@ -1,0 +1,501 @@
+---
+title: Form Components
+description: Form components and form management
+---
+
+# Form Components
+
+Proton provides form components for building accessible, well-structured forms with validation support.
+
+## Form
+
+The main form wrapper component that handles form submission.
+
+**Location**: `components/form/Form.tsx`
+
+### Basic Usage
+
+```tsx
+import { useState } from 'react';
+import Form from '@proton/components/components/form/Form';
+import Input from '@proton/components/components/input/Input';
+import { Button } from '@proton/atoms/Button/Button';
+
+const MyForm = () => {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    console.log('Form submitted:', formData);
+  };
+
+  return (
+    <Form onSubmit={handleSubmit}>
+      <Input
+        type="email"
+        value={formData.email}
+        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        placeholder="Email"
+        required
+      />
+      <Input
+        type="password"
+        value={formData.password}
+        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+        placeholder="Password"
+        required
+      />
+      <Button type="submit" color="norm">
+        Submit
+      </Button>
+    </Form>
+  );
+};
+```
+
+### Props
+
+Extends `ComponentPropsWithoutRef<'form'>`
+
+<ParamField path="onSubmit" type="FormEventHandler" required>
+  Form submission handler (automatically prevents default)
+</ParamField>
+
+<ParamField path="dense" type="boolean">
+  Use dense spacing for form fields. Default: `false`
+</ParamField>
+
+<ParamField path="method" type="string">
+  HTTP method. Default: `post`
+</ParamField>
+
+### Examples
+
+<Tabs>
+  <Tab title="Basic Form">
+    ```tsx
+    <Form onSubmit={handleSubmit}>
+      <Input label="Username" value={username} onChange={setUsername} />
+      <Input label="Email" type="email" value={email} onChange={setEmail} />
+      <Button type="submit">Submit</Button>
+    </Form>
+    ```
+  </Tab>
+  
+  <Tab title="Dense Form">
+    ```tsx
+    <Form onSubmit={handleSubmit} dense>
+      <Input label="First Name" value={firstName} onChange={setFirstName} />
+      <Input label="Last Name" value={lastName} onChange={setLastName} />
+      <Input label="Email" value={email} onChange={setEmail} />
+      <Button type="submit">Save</Button>
+    </Form>
+    ```
+  </Tab>
+  
+  <Tab title="With Validation">
+    ```tsx
+    const [errors, setErrors] = useState({});
+
+    const validate = () => {
+      const newErrors = {};
+      if (!email) newErrors.email = 'Email is required';
+      if (!password) newErrors.password = 'Password is required';
+      if (password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters';
+      }
+      return newErrors;
+    };
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      const validationErrors = validate();
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        return;
+      }
+      // Submit form
+    };
+
+    <Form onSubmit={handleSubmit}>
+      <Input
+        label="Email"
+        type="email"
+        value={email}
+        onChange={setEmail}
+        error={errors.email}
+      />
+      <Input
+        label="Password"
+        type="password"
+        value={password}
+        onChange={setPassword}
+        error={errors.password}
+      />
+      <Button type="submit">Submit</Button>
+    </Form>
+    ```
+  </Tab>
+</Tabs>
+
+## Container Components
+
+### Row
+
+Form row container for grouping related fields.
+
+**Location**: `components/container/Row.tsx`
+
+### Usage
+
+```tsx
+import Row from '@proton/components/components/container/Row';
+
+<Row>
+  <Input label="First Name" />
+  <Input label="Last Name" />
+</Row>
+```
+
+### Field
+
+Individual form field container.
+
+**Location**: `components/container/Field.tsx`
+
+### Usage
+
+```tsx
+import Field from '@proton/components/components/container/Field';
+
+<Field>
+  <label>Email</label>
+  <Input type="email" />
+</Field>
+```
+
+## Label
+
+Form label component.
+
+**Location**: `components/label/Label.tsx`
+
+### Usage
+
+```tsx
+import Label from '@proton/components/components/label/Label';
+import Input from '@proton/components/components/input/Input';
+
+const MyFormField = () => {
+  return (
+    <div>
+      <Label htmlFor="username">Username</Label>
+      <Input id="username" />
+    </div>
+  );
+};
+```
+
+## Best Practices
+
+### Form State Management
+
+Use a single state object for all form fields:
+
+```tsx
+const [formData, setFormData] = useState({
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+});
+
+const updateField = (field: string, value: any) => {
+  setFormData(prev => ({ ...prev, [field]: value }));
+};
+
+<Form onSubmit={handleSubmit}>
+  <Input
+    value={formData.firstName}
+    onChange={(e) => updateField('firstName', e.target.value)}
+  />
+  <Input
+    value={formData.lastName}
+    onChange={(e) => updateField('lastName', e.target.value)}
+  />
+</Form>
+```
+
+### Validation
+
+Implement validation before submission:
+
+```tsx
+const [errors, setErrors] = useState<Record<string, string>>({});
+
+const validateForm = (data: FormData): Record<string, string> => {
+  const newErrors: Record<string, string> = {};
+  
+  if (!data.email) {
+    newErrors.email = 'Email is required';
+  } else if (!/\S+@\S+\.\S+/.test(data.email)) {
+    newErrors.email = 'Email is invalid';
+  }
+  
+  if (!data.password) {
+    newErrors.password = 'Password is required';
+  } else if (data.password.length < 8) {
+    newErrors.password = 'Password must be at least 8 characters';
+  }
+  
+  return newErrors;
+};
+
+const handleSubmit = async (e: FormEvent) => {
+  e.preventDefault();
+  
+  const validationErrors = validateForm(formData);
+  setErrors(validationErrors);
+  
+  if (Object.keys(validationErrors).length === 0) {
+    // Submit form
+    await submitData(formData);
+  }
+};
+```
+
+### Loading States
+
+```tsx
+const [loading, setLoading] = useState(false);
+
+const handleSubmit = async (e: FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  
+  try {
+    await submitData(formData);
+    // Success
+  } catch (error) {
+    // Handle error
+  } finally {
+    setLoading(false);
+  }
+};
+
+<Form onSubmit={handleSubmit}>
+  {/* Form fields */}
+  <Button type="submit" loading={loading} disabled={loading}>
+    {loading ? 'Submitting...' : 'Submit'}
+  </Button>
+</Form>
+```
+
+### Accessibility
+
+```tsx
+// Associate labels with inputs
+<label htmlFor="email">Email Address</label>
+<Input
+  id="email"
+  type="email"
+  aria-describedby="email-help"
+  aria-invalid={!!errors.email}
+/>
+<span id="email-help" className="text-sm">
+  We'll never share your email
+</span>
+{errors.email && (
+  <span className="text-sm color-danger">{errors.email}</span>
+)}
+
+// Mark required fields
+<label htmlFor="password">
+  Password <span aria-label="required">*</span>
+</label>
+<Input
+  id="password"
+  type="password"
+  required
+  aria-required="true"
+/>
+```
+
+## Common Patterns
+
+### Multi-Step Form
+
+```tsx
+const MultiStepForm = () => {
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({
+    // Step 1
+    firstName: '',
+    lastName: '',
+    // Step 2
+    email: '',
+    phone: '',
+    // Step 3
+    address: '',
+    city: '',
+  });
+
+  const nextStep = () => setStep(step + 1);
+  const prevStep = () => setStep(step - 1);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (step < 3) {
+      nextStep();
+    } else {
+      await submitData(formData);
+    }
+  };
+
+  return (
+    <Form onSubmit={handleSubmit}>
+      <h2>Step {step} of 3</h2>
+      
+      {step === 1 && (
+        <>
+          <Input label="First Name" value={formData.firstName} />
+          <Input label="Last Name" value={formData.lastName} />
+        </>
+      )}
+      
+      {step === 2 && (
+        <>
+          <Input label="Email" type="email" value={formData.email} />
+          <Input label="Phone" type="tel" value={formData.phone} />
+        </>
+      )}
+      
+      {step === 3 && (
+        <>
+          <Input label="Address" value={formData.address} />
+          <Input label="City" value={formData.city} />
+        </>
+      )}
+      
+      <div className="flex gap-2">
+        {step > 1 && (
+          <Button type="button" onClick={prevStep}>Back</Button>
+        )}
+        <Button type="submit" color="norm">
+          {step === 3 ? 'Submit' : 'Next'}
+        </Button>
+      </div>
+    </Form>
+  );
+};
+```
+
+### Form with File Upload
+
+```tsx
+const FileUploadForm = () => {
+  const [files, setFiles] = useState<File[]>([]);
+  const [description, setDescription] = useState('');
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFiles(Array.from(e.target.files));
+    }
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData();
+    files.forEach(file => formData.append('files', file));
+    formData.append('description', description);
+    await uploadFiles(formData);
+  };
+
+  return (
+    <Form onSubmit={handleSubmit}>
+      <FileInput
+        onChange={handleFileChange}
+        accept="image/*"
+        multiple
+      >
+        Choose files
+      </FileInput>
+      
+      {files.length > 0 && (
+        <ul>
+          {files.map((file, i) => (
+            <li key={i}>{file.name}</li>
+          ))}
+        </ul>
+      )}
+      
+      <TextArea
+        label="Description"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
+      
+      <Button type="submit" disabled={files.length === 0}>
+        Upload
+      </Button>
+    </Form>
+  );
+};
+```
+
+### Search Form
+
+```tsx
+const SearchForm = ({ onSearch }) => {
+  const [query, setQuery] = useState('');
+  const [filters, setFilters] = useState({
+    category: '',
+    sortBy: 'name',
+  });
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    onSearch({ query, ...filters });
+  };
+
+  return (
+    <Form onSubmit={handleSubmit}>
+      <SearchInput
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search..."
+      />
+      
+      <SelectTwo
+        value={filters.category}
+        onChange={({ value }) => setFilters({ ...filters, category: value })}
+      >
+        <Option value="">All Categories</Option>
+        <Option value="books">Books</Option>
+        <Option value="music">Music</Option>
+      </SelectTwo>
+      
+      <SelectTwo
+        value={filters.sortBy}
+        onChange={({ value }) => setFilters({ ...filters, sortBy: value })}
+      >
+        <Option value="name">Name</Option>
+        <Option value="date">Date</Option>
+        <Option value="price">Price</Option>
+      </SelectTwo>
+      
+      <Button type="submit" color="norm">Search</Button>
+    </Form>
+  );
+};
+```
+
+## Source Code
+
+View source:
+- Form: `packages/components/components/form/Form.tsx:1`
+- Row: `packages/components/components/container/Row.tsx:1`
+- Field: `packages/components/components/container/Field.tsx:1`

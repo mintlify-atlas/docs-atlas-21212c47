@@ -1,0 +1,521 @@
+---
+title: Dropdown Components
+description: Dropdown menus and select components
+---
+
+# Dropdown Components
+
+Proton provides dropdown components for menus, actions, and select inputs with full keyboard navigation and accessibility support.
+
+## Dropdown
+
+The main dropdown component with popper positioning.
+
+**Location**: `components/dropdown/Dropdown.tsx`
+
+### Basic Usage
+
+```tsx
+import { useRef, useState } from 'react';
+import { Button } from '@proton/atoms/Button/Button';
+import Dropdown from '@proton/components/components/dropdown/Dropdown';
+import DropdownMenu from '@proton/components/components/dropdown/DropdownMenu';
+import DropdownMenuButton from '@proton/components/components/dropdown/DropdownMenuButton';
+
+const MyDropdown = () => {
+  const anchorRef = useRef<HTMLButtonElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <Button ref={anchorRef} onClick={() => setIsOpen(!isOpen)}>
+        Actions
+      </Button>
+      
+      <Dropdown
+        isOpen={isOpen}
+        anchorRef={anchorRef}
+        onClose={() => setIsOpen(false)}
+      >
+        <DropdownMenu>
+          <DropdownMenuButton onClick={() => console.log('Edit')}>
+            Edit
+          </DropdownMenuButton>
+          <DropdownMenuButton onClick={() => console.log('Delete')}>
+            Delete
+          </DropdownMenuButton>
+        </DropdownMenu>
+      </Dropdown>
+    </>
+  );
+};
+```
+
+### Props
+
+<ParamField path="anchorRef" type="RefObject<HTMLElement>" required>
+  Reference to the element that triggers the dropdown
+</ParamField>
+
+<ParamField path="isOpen" type="boolean">
+  Whether the dropdown is open. Default: `false`
+</ParamField>
+
+<ParamField path="onClose" type="(event?) => void">
+  Callback when dropdown should close
+</ParamField>
+
+<ParamField path="onClosed" type="() => void">
+  Callback when dropdown animation completes
+</ParamField>
+
+<ParamField path="originalPlacement" type="PopperPlacement">
+  Initial placement of dropdown. Default: `bottom`
+</ParamField>
+
+<ParamField path="availablePlacements" type="PopperPlacement[]">
+  Array of allowed placements for auto-positioning
+</ParamField>
+
+<ParamField path="size" type="DropdownSize">
+  Dropdown dimensions configuration
+</ParamField>
+
+<ParamField path="offset" type="number">
+  Distance from anchor element in pixels. Default: `8`
+</ParamField>
+
+<ParamField path="noCaret" type="boolean">
+  Hide the caret/arrow pointing to anchor. Default: `false`
+</ParamField>
+
+<ParamField path="autoClose" type="boolean">
+  Auto close on item click. Default: `true`
+</ParamField>
+
+<ParamField path="autoCloseOutside" type="boolean">
+  Auto close when clicking outside. Default: `true`
+</ParamField>
+
+<ParamField path="autoCloseOutsideAnchor" type="boolean">
+  Auto close when clicking outside anchor. Default: `true`
+</ParamField>
+
+<ParamField path="disableFocusTrap" type="boolean">
+  Disable focus trap. Default: `false`
+</ParamField>
+
+<ParamField path="disableDefaultArrowNavigation" type="boolean">
+  Disable arrow key navigation. Default: `false`
+</ParamField>
+
+<ParamField path="adaptiveForTouchScreens" type="boolean">
+  Adapt UI for touch screens. Default: `true`
+</ParamField>
+
+<ParamField path="borderRadius" type="DropdownBorderRadius">
+  Border radius size: `xl`, `lg`, `md`, `sm`. Default: `md`
+</ParamField>
+
+<ParamField path="contentProps" type="ContentProps">
+  Props passed to content container
+</ParamField>
+
+### Examples
+
+<Tabs>
+  <Tab title="Basic Menu">
+    ```tsx
+    <Dropdown isOpen={isOpen} anchorRef={anchorRef} onClose={onClose}>
+      <DropdownMenu>
+        <DropdownMenuButton onClick={handleEdit}>Edit</DropdownMenuButton>
+        <DropdownMenuButton onClick={handleDuplicate}>Duplicate</DropdownMenuButton>
+        <DropdownMenuButton onClick={handleDelete}>Delete</DropdownMenuButton>
+      </DropdownMenu>
+    </Dropdown>
+    ```
+  </Tab>
+  
+  <Tab title="Custom Size">
+    ```tsx
+    <Dropdown
+      isOpen={isOpen}
+      anchorRef={anchorRef}
+      onClose={onClose}
+      size={{ width: '300px', maxHeight: '400px' }}
+    >
+      <DropdownMenu>
+        {/* Menu items */}
+      </DropdownMenu>
+    </Dropdown>
+    ```
+  </Tab>
+  
+  <Tab title="Custom Placement">
+    ```tsx
+    <Dropdown
+      isOpen={isOpen}
+      anchorRef={anchorRef}
+      onClose={onClose}
+      originalPlacement="top"
+      availablePlacements={['top', 'bottom']}
+    >
+      <DropdownMenu>
+        {/* Menu items */}
+      </DropdownMenu>
+    </Dropdown>
+    ```
+  </Tab>
+  
+  <Tab title="No Auto-Close">
+    ```tsx
+    <Dropdown
+      isOpen={isOpen}
+      anchorRef={anchorRef}
+      onClose={onClose}
+      autoClose={false}
+    >
+      <DropdownMenu>
+        <div className="p-4">
+          <Checkbox>Option 1</Checkbox>
+          <Checkbox>Option 2</Checkbox>
+          <Button onClick={onClose}>Apply</Button>
+        </div>
+      </DropdownMenu>
+    </Dropdown>
+    ```
+  </Tab>
+</Tabs>
+
+## DropdownMenu
+
+Wrapper for dropdown menu items.
+
+**Location**: `components/dropdown/DropdownMenu.tsx`
+
+### Usage
+
+```tsx
+import DropdownMenu from '@proton/components/components/dropdown/DropdownMenu';
+
+<DropdownMenu>
+  {/* Menu items here */}
+</DropdownMenu>
+```
+
+## DropdownMenuButton
+
+Clickable menu item button.
+
+**Location**: `components/dropdown/DropdownMenuButton.tsx`
+
+### Usage
+
+```tsx
+import DropdownMenuButton from '@proton/components/components/dropdown/DropdownMenuButton';
+
+<DropdownMenuButton onClick={handleAction}>
+  Action Label
+</DropdownMenuButton>
+```
+
+### Props
+
+<ParamField path="onClick" type="() => void">
+  Click handler
+</ParamField>
+
+<ParamField path="disabled" type="boolean">
+  Disable the button
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes
+</ParamField>
+
+## DropdownMenuLink
+
+Link menu item for navigation.
+
+**Location**: `components/dropdown/DropdownMenuLink.tsx`
+
+### Usage
+
+```tsx
+import DropdownMenuLink from '@proton/components/components/dropdown/DropdownMenuLink';
+
+<DropdownMenuLink href="/settings">
+  Settings
+</DropdownMenuLink>
+```
+
+## SimpleDropdown
+
+Simplified dropdown with built-in button.
+
+**Location**: `components/dropdown/SimpleDropdown.tsx`
+
+### Usage
+
+```tsx
+import SimpleDropdown from '@proton/components/components/dropdown/SimpleDropdown';
+import DropdownMenu from '@proton/components/components/dropdown/DropdownMenu';
+import DropdownMenuButton from '@proton/components/components/dropdown/DropdownMenuButton';
+
+const MySimpleDropdown = () => {
+  return (
+    <SimpleDropdown content="More Actions">
+      <DropdownMenu>
+        <DropdownMenuButton onClick={handleEdit}>Edit</DropdownMenuButton>
+        <DropdownMenuButton onClick={handleDelete}>Delete</DropdownMenuButton>
+      </DropdownMenu>
+    </SimpleDropdown>
+  );
+};
+```
+
+## SelectTwo
+
+Advanced select component with search and keyboard navigation.
+
+**Location**: `components/selectTwo/SelectTwo.tsx`
+
+### Basic Usage
+
+```tsx
+import { useState } from 'react';
+import SelectTwo from '@proton/components/components/selectTwo/SelectTwo';
+import Option from '@proton/components/components/option/Option';
+
+const MySelect = () => {
+  const [value, setValue] = useState('option1');
+
+  return (
+    <SelectTwo
+      value={value}
+      onChange={({ value }) => setValue(value)}
+    >
+      <Option value="option1" title="Option 1">Option 1</Option>
+      <Option value="option2" title="Option 2">Option 2</Option>
+      <Option value="option3" title="Option 3">Option 3</Option>
+    </SelectTwo>
+  );
+};
+```
+
+### Props
+
+<ParamField path="value" type="V" required>
+  Currently selected value
+</ParamField>
+
+<ParamField path="onChange" type="({ value, selectedIndex }) => void">
+  Called when selection changes
+</ParamField>
+
+<ParamField path="onValue" type="(value: V) => void">
+  Alternative change handler receiving only value
+</ParamField>
+
+<ParamField path="multiple" type="boolean">
+  Enable multiple selection. Default: `false`
+</ParamField>
+
+<ParamField path="placeholder" type="string">
+  Placeholder text when no selection
+</ParamField>
+
+<ParamField path="unstyled" type="boolean">
+  Remove border styling. Default: `false`
+</ParamField>
+
+<ParamField path="disabled" type="boolean">
+  Disable the select
+</ParamField>
+
+<ParamField path="fullWidth" type="boolean">
+  Take full width of container
+</ParamField>
+
+<ParamField path="noDropdownCaret" type="boolean">
+  Hide the dropdown caret icon
+</ParamField>
+
+<ParamField path="clearSearchAfter" type="number">
+  Milliseconds to clear search input. Default: `500`
+</ParamField>
+
+<ParamField path="getSearchableValue" type="(value: V) => string">
+  Function to extract searchable string from complex values
+</ParamField>
+
+<ParamField path="renderSelected" type="(value: V) => ReactNode">
+  Custom render function for selected value
+</ParamField>
+
+<ParamField path="size" type="DropdownSize">
+  Dropdown size configuration
+</ParamField>
+
+<ParamField path="originalPlacement" type="PopperPlacement">
+  Dropdown placement
+</ParamField>
+
+<ParamField path="dropdownHeading" type="ReactNode">
+  Optional heading above options
+</ParamField>
+
+### Examples
+
+<Tabs>
+  <Tab title="Basic Select">
+    ```tsx
+    <SelectTwo value={value} onChange={({ value }) => setValue(value)}>
+      <Option value="1">Option 1</Option>
+      <Option value="2">Option 2</Option>
+      <Option value="3">Option 3</Option>
+    </SelectTwo>
+    ```
+  </Tab>
+  
+  <Tab title="Multiple Selection">
+    ```tsx
+    <SelectTwo
+      multiple
+      value={values}
+      onChange={({ value }) => setValues(value)}
+    >
+      <Option value="1">Option 1</Option>
+      <Option value="2">Option 2</Option>
+      <Option value="3">Option 3</Option>
+    </SelectTwo>
+    ```
+  </Tab>
+  
+  <Tab title="Complex Values">
+    ```tsx
+    interface User {
+      id: string;
+      name: string;
+    }
+
+    <SelectTwo<User>
+      value={selectedUser}
+      onChange={({ value }) => setSelectedUser(value)}
+      getSearchableValue={(user) => user.name}
+    >
+      <Option value={{ id: '1', name: 'Alice' }} title="Alice">
+        Alice
+      </Option>
+      <Option value={{ id: '2', name: 'Bob' }} title="Bob">
+        Bob
+      </Option>
+    </SelectTwo>
+    ```
+  </Tab>
+  
+  <Tab title="Custom Rendering">
+    ```tsx
+    <SelectTwo
+      value={value}
+      onChange={onChange}
+      renderSelected={(val) => (
+        <div className="flex items-center gap-2">
+          <Icon name={val.icon} />
+          <span>{val.label}</span>
+        </div>
+      )}
+    >
+      {options.map(opt => (
+        <Option key={opt.id} value={opt}>
+          <Icon name={opt.icon} /> {opt.label}
+        </Option>
+      ))}
+    </SelectTwo>
+    ```
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+### Managing Dropdown State
+
+```tsx
+const [isOpen, setIsOpen] = useState(false);
+const anchorRef = useRef<HTMLButtonElement>(null);
+
+const handleToggle = () => setIsOpen(!isOpen);
+const handleClose = () => setIsOpen(false);
+
+return (
+  <>
+    <Button ref={anchorRef} onClick={handleToggle}>
+      Menu
+    </Button>
+    <Dropdown
+      isOpen={isOpen}
+      anchorRef={anchorRef}
+      onClose={handleClose}
+    >
+      {/* Content */}
+    </Dropdown>
+  </>
+);
+```
+
+### Keyboard Navigation
+
+Dropdowns support:
+- Arrow keys to navigate items
+- Enter/Space to select
+- Escape to close
+- Type to search (when enabled)
+
+### Accessibility
+
+```tsx
+<Button
+  ref={anchorRef}
+  onClick={handleToggle}
+  aria-expanded={isOpen}
+  aria-haspopup="true"
+>
+  Actions
+</Button>
+
+<Dropdown
+  isOpen={isOpen}
+  anchorRef={anchorRef}
+  onClose={handleClose}
+  role="menu"
+>
+  <DropdownMenuButton role="menuitem">
+    Action
+  </DropdownMenuButton>
+</Dropdown>
+```
+
+### Positioning
+
+Control dropdown placement:
+
+```tsx
+// Open above the anchor
+<Dropdown originalPlacement="top" />
+
+// Open to the right
+<Dropdown originalPlacement="right" />
+
+// Auto-adjust with fallbacks
+<Dropdown
+  originalPlacement="bottom"
+  availablePlacements={['bottom', 'top', 'left', 'right']}
+/>
+```
+
+## Source Code
+
+View source:
+- Dropdown: `packages/components/components/dropdown/Dropdown.tsx:1`
+- SelectTwo: `packages/components/components/selectTwo/SelectTwo.tsx:1`
+- SimpleDropdown: `packages/components/components/dropdown/SimpleDropdown.tsx:1`

@@ -1,0 +1,408 @@
+---
+title: Proton Drive
+description: Secure cloud storage with end-to-end encryption and file sharing
+icon: folder
+---
+
+## Overview
+
+Proton Drive is a secure cloud storage application providing end-to-end encrypted file storage, sharing, and collaboration. It features advanced file management, photos backup, and real-time sync capabilities.
+
+<Note>
+  Package name: `proton-drive` | Version: 5.2.0 | License: GPL-3.0
+</Note>
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Encrypted Storage" icon="lock">
+    End-to-end encrypted file and folder storage
+  </Card>
+  <Card title="File Sharing" icon="share">
+    Secure link sharing with password protection
+  </Card>
+  <Card title="Photos Backup" icon="images">
+    Automatic photo backup and organization
+  </Card>
+  <Card title="Document Preview" icon="file-pdf">
+    In-browser preview for various file types
+  </Card>
+  <Card title="Version History" icon="clock-rotate-left">
+    File revision tracking and restoration
+  </Card>
+  <Card title="Offline Access" icon="download">
+    Download manager with offline capabilities
+  </Card>
+  <Card title="Encrypted Search" icon="magnifying-glass">
+    Client-side encrypted file search
+  </Card>
+  <Card title="Web Streams" icon="water">
+    Streaming upload/download for large files
+  </Card>
+</CardGroup>
+
+## Architecture
+
+### Directory Structure
+
+```
+drive/src/app/
+├── components/          # Reusable UI components
+├── containers/          # Container components
+├── modals/              # Modal dialogs (25+ modals)
+├── sections/            # Major app sections (15 sections)
+├── store/               # Redux store modules (24 modules)
+│   ├── _links/          # Share link management
+│   ├── _shares/         # Shared drive management
+│   ├── _volumes/        # Volume management
+│   ├── _photos/         # Photos functionality
+│   ├── _documents/      # Document handling
+│   ├── _downloads/      # Download manager
+│   ├── _uploads/        # Upload manager
+│   ├── _search/         # Search functionality
+│   └── _crypto/         # Cryptographic operations
+├── zustand/             # Zustand state stores
+├── utils/               # Utility functions (10+ modules)
+├── photos/              # Photos app specific code
+└── managers/            # File operation managers
+```
+
+### State Management
+
+Proton Drive uses a hybrid state management approach:
+
+- **Redux Toolkit** (`@reduxjs/toolkit`) for global app state
+- **Zustand v4** for local component state
+- **IndexedDB** (via `idb` and `idb-keyval`) for offline storage
+
+## Key Dependencies
+
+```json
+{
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-router-dom": "^5.3.4",
+    "react-router-dom-v5-compat": "^6.30.3",
+    "@reduxjs/toolkit": "^2.11.2",
+    "@proton/components": "workspace:^",
+    "@proton/drive": "workspace:^",
+    "@proton/crypto": "workspace:^",
+    "@openpgp/web-stream-tools": "^0.1.0",
+    "web-streams-polyfill": "^4.2.0",
+    "client-zip": "^2.5.0",
+    "idb": "^8.0.3",
+    "idb-keyval": "^6.2.2",
+    "exifreader": "^4.36.1",
+    "heic-to": "^1.4.2",
+    "comlink": "^4.4.2",
+    "@tanstack/react-virtual": "^3.13.18",
+    "zustand": "^4.5.7",
+    "uuid": "^13.0.0"
+  }
+}
+```
+
+### Notable Libraries
+
+- **web-streams-polyfill** - Web Streams API for browsers
+- **@openpgp/web-stream-tools** - Streaming encryption/decryption
+- **client-zip** - Client-side ZIP creation
+- **idb** - IndexedDB wrapper for offline storage
+- **exifreader** - EXIF metadata extraction from photos
+- **heic-to** - HEIC/HEIF image conversion
+- **comlink** - Web Worker communication
+- **@tanstack/react-virtual** - Virtual scrolling for large lists
+
+## NPM Scripts
+
+### Development
+
+```bash
+# Start development server
+yarn start
+
+# Full command
+proton-pack dev-server --appMode=standalone \
+  --handleSupportAndErrors \
+  --optimizeAssets \
+  --noLogicalScss
+```
+
+### Build
+
+```bash
+# Production build
+yarn build:web
+
+# Analyze bundle size
+yarn analyze
+```
+
+<Note>
+  Build flags: `--handleSupportAndErrors --optimizeAssets --noLogicalScss`
+</Note>
+
+### Testing
+
+```bash
+# Run tests
+yarn test
+
+# Run tests in CI mode
+yarn test:ci
+
+# Watch mode
+yarn test:watch
+```
+
+### Code Quality
+
+```bash
+# Type checking
+yarn check-types
+
+# Linting
+yarn lint
+
+# Format code
+yarn pretty
+```
+
+### Internationalization
+
+```bash
+# Extract translations locally (requires build)
+yarn i18n:extract:local
+
+# Extract for web
+yarn i18n:extract:web
+
+# Get latest translations
+yarn i18n:getlatest
+
+# Upload to Crowdin
+yarn i18n:upgrade
+
+# Validate translations
+yarn i18n:validate
+```
+
+## Store Modules
+
+Proton Drive has 24 Redux store modules (prefixed with `_`):
+
+| Module | Purpose |
+|--------|--------|
+| `_actions` | Action creators |
+| `_links` | Share link management |
+| `_shares` | Shared drive spaces |
+| `_volumes` | Storage volumes |
+| `_photos` | Photo library management |
+| `_documents` | Document handling |
+| `_downloads` | Download queue and manager |
+| `_uploads` | Upload queue and manager |
+| `_search` | Encrypted search |
+| `_crypto` | Encryption/decryption |
+| `_revisions` | File version history |
+| `_devices` | Device management |
+| `_bookmarks` | Bookmarked files/folders |
+| `_invitations` | Share invitations |
+| `_events` | Event sourcing |
+| `_settings` | User preferences |
+| `_user` | User state |
+| `_views` | View configurations |
+| `_transfer` | Transfer management |
+| `_sanitization` | Content sanitization |
+
+## Special Features
+
+### Streaming Upload/Download
+
+Drive uses Web Streams API for efficient file transfers:
+
+```typescript
+import { ReadableStream } from 'web-streams-polyfill';
+import { createReadableStream } from '@openpgp/web-stream-tools';
+import { pipeTo } from '@mattiasbuelens/web-streams-adapter';
+```
+
+- Stream encryption/decryption on-the-fly
+- Memory-efficient for large files
+- Progress tracking
+- Pause/resume capability
+
+### Photos App
+
+Dedicated photos functionality:
+
+```
+photos/
+├── PhotosView.tsx
+├── PhotoGrid.tsx
+├── PhotoViewer.tsx
+└── components/
+```
+
+- EXIF metadata extraction
+- Automatic photo organization
+- HEIC/HEIF support
+- Thumbnail generation
+
+### File Preview
+
+In-browser file preview:
+
+- PDF rendering
+- Image preview
+- Video playback
+- Document preview (via `preview-sandbox`)
+
+### Version Control
+
+File revision management via `_revisions` store:
+
+- Track file changes
+- Restore previous versions
+- Version comparison
+- History timeline
+
+### Offline Support
+
+IndexedDB-based offline storage:
+
+```typescript
+import { set, get } from 'idb-keyval';
+```
+
+- Cache file metadata
+- Offline file access
+- Sync on reconnection
+
+## Advanced Features
+
+### Web Workers
+
+Uses **Comlink** for Web Worker communication:
+
+```typescript
+import { wrap } from 'comlink';
+
+// Offload crypto operations to workers
+// Background file processing
+```
+
+### Virtual Scrolling
+
+Efficient rendering of large file lists:
+
+```typescript
+import { useVirtualizer } from '@tanstack/react-virtual';
+
+// Render only visible rows
+// Smooth scrolling with thousands of items
+```
+
+### Client-Side ZIP
+
+Create ZIP files in-browser:
+
+```typescript
+import { downloadZip } from 'client-zip';
+
+// Bundle multiple files
+// Stream ZIP creation
+// No server-side processing
+```
+
+## Modals
+
+Drive has 25+ modal dialogs:
+
+- File/folder creation
+- Sharing modals
+- Preview modals
+- Settings dialogs
+- Confirmation modals
+
+## Sections
+
+Major application sections (15 total):
+
+- File browser
+- Photos view
+- Shared with me
+- Trash
+- Settings
+- Device management
+- etc.
+
+## Zustand Stores
+
+Local state management with Zustand:
+
+```
+zustand/
+├── useFileUpload.ts
+├── useDownloadQueue.ts
+├── usePhotoView.ts
+└── README.md
+```
+
+<Note>
+  See `zustand/README.md` for store documentation
+</Note>
+
+## URLs App
+
+Separate entry point for shared links:
+
+```typescript
+// urls.tsx - Public share link viewer
+import UrlsApp from './UrlsApp';
+```
+
+## Performance Optimizations
+
+- **Code Splitting** - Dynamic imports for modals and sections
+- **Virtual Scrolling** - Only render visible file list items
+- **Web Workers** - Offload crypto and processing
+- **Streaming** - Memory-efficient large file handling
+- **IndexedDB Caching** - Offline-first architecture
+- **Asset Optimization** - `--optimizeAssets` flag
+
+## Build Flags
+
+Special build configuration:
+
+```bash
+--appMode=sso              # SSO integration
+--handleSupportAndErrors   # Error handling
+--optimizeAssets          # Asset optimization
+--noLogicalScss           # Disable logical CSS
+```
+
+## Related Applications
+
+- **docs** - Proton Docs integration
+- **docs-editor** - Document editing
+- **preview-sandbox** - Sandboxed file preview
+
+## Development Notes
+
+<Warning>
+  Drive requires `--noLogicalScss` flag due to custom CSS handling.
+</Warning>
+
+<Tip>
+  Use `yarn analyze` to inspect bundle size and optimize imports.
+</Tip>
+
+### Local Development
+
+1. Start dev server: `yarn start`
+2. Access at `http://localhost:8080`
+3. File operations are encrypted client-side
+
+### Architecture Documentation
+
+See `store/architecture.md` for detailed store architecture documentation.

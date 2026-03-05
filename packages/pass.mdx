@@ -1,0 +1,612 @@
+---
+title: '@proton/pass'
+description: 'Proton Pass shared codebase for password management and secure credential storage'
+---
+
+## Overview
+
+The `@proton/pass` package is the shared codebase for Proton Pass, providing password management, secure credential storage, and vault functionality. It includes Redux state management, cryptographic operations, import/export capabilities, and browser extension support.
+
+## Installation
+
+<CodeGroup>
+```bash npm
+npm install @proton/pass
+```
+
+```bash yarn
+yarn add @proton/pass
+```
+
+```bash pnpm
+pnpm add @proton/pass
+```
+</CodeGroup>
+
+## Key Features
+
+- Secure password and credential storage
+- Multi-vault support
+- Password generation
+- Passkeys support
+- 2FA/OTP code generation
+- Import/export functionality
+- Browser extension integration
+- Secure notes and credit cards
+- Password health monitoring
+- Breach monitoring
+- Alias management
+
+## Package Structure
+
+<CardGroup cols={2}>
+  <Card title="Items" icon="key">
+    Password, note, credit card, and alias management
+  </Card>
+  <Card title="Vaults" icon="vault">
+    Vault creation and management
+  </Card>
+  <Card title="Crypto" icon="lock">
+    End-to-end encryption using Proton's crypto
+  </Card>
+  <Card title="Extension" icon="puzzle-piece">
+    Browser extension utilities and rules
+  </Card>
+</CardGroup>
+
+## Core Modules
+
+### Items Management
+
+Manage passwords, notes, credit cards, and other secure items.
+
+```typescript
+import { itemsStore } from '@proton/pass/lib/items';
+import type { Item, LoginItem, NoteItem, CreditCardItem } from '@proton/pass/types';
+
+// Create a login item
+const loginItem: LoginItem = {
+  type: 'login',
+  name: 'GitHub Account',
+  username: 'user@example.com',
+  password: 'secure-password',
+  urls: ['https://github.com'],
+  notes: 'Main development account',
+};
+
+// Store the item
+await itemsStore.createItem({
+  vaultId: 'vault-123',
+  item: loginItem,
+});
+```
+
+### Vault Management
+
+Create and manage vaults for organizing credentials.
+
+```typescript
+import { vaultsStore } from '@proton/pass/lib/vaults';
+
+// Create a new vault
+const vault = await vaultsStore.createVault({
+  name: 'Personal',
+  description: 'Personal accounts and passwords',
+  color: '#FF6900',
+  icon: 'pass-home',
+});
+
+// List all vaults
+const vaults = await vaultsStore.getVaults();
+
+// Get items in a vault
+const items = await vaultsStore.getVaultItems(vault.id);
+```
+
+### Password Generation
+
+```typescript
+import { passwordGenerator } from '@proton/pass/lib/password';
+
+// Generate a strong password
+const password = passwordGenerator.generate({
+  length: 16,
+  useUppercase: true,
+  useLowercase: true,
+  useNumbers: true,
+  useSymbols: true,
+});
+
+console.log('Generated password:', password);
+
+// Generate a memorable password
+const memorable = passwordGenerator.generateMemorablePassword({
+  words: 4,
+  separator: '-',
+  capitalize: true,
+});
+```
+
+## Authentication
+
+### Login and Session Management
+
+```typescript
+import { authStore } from '@proton/pass/lib/auth';
+import { srpAuth } from '@proton/pass/lib/auth/srp';
+
+// Login
+await authStore.login({
+  username: 'user@proton.me',
+  password: 'user-password',
+});
+
+// Check session
+const isAuthenticated = authStore.isAuthenticated();
+
+// Logout
+await authStore.logout();
+```
+
+### Two-Factor Authentication
+
+```typescript
+import { totpGenerator } from '@proton/pass/lib/otp';
+
+// Generate TOTP code
+const totpCode = totpGenerator.generate({
+  secret: 'JBSWY3DPEHPK3PXP',
+  algorithm: 'SHA1',
+  digits: 6,
+  period: 30,
+});
+
+console.log('2FA code:', totpCode);
+
+// Verify TOTP code
+const isValid = totpGenerator.verify({
+  secret: 'JBSWY3DPEHPK3PXP',
+  token: '123456',
+});
+```
+
+## Passkeys
+
+Support for WebAuthn passkeys.
+
+```typescript
+import { passkeyManager } from '@proton/pass/lib/passkeys';
+
+// Create passkey
+const passkey = await passkeyManager.create({
+  domain: 'example.com',
+  username: 'user@example.com',
+});
+
+// Store passkey item
+await itemsStore.createItem({
+  vaultId: 'vault-123',
+  item: {
+    type: 'passkey',
+    name: 'Example.com Passkey',
+    domain: 'example.com',
+    username: 'user@example.com',
+    credentialId: passkey.credentialId,
+    publicKey: passkey.publicKey,
+  },
+});
+
+// Use passkey for authentication
+const assertion = await passkeyManager.authenticate({
+  domain: 'example.com',
+  challenge: 'server-challenge',
+});
+```
+
+## Aliases
+
+Email alias management for privacy.
+
+```typescript
+import { aliasManager } from '@proton/pass/lib/alias';
+
+// Create alias
+const alias = await aliasManager.createAlias({
+  prefix: 'shopping',
+  domain: '@proton.me',
+  mailboxIds: ['mailbox-123'],
+});
+
+console.log('Alias created:', alias.email); // shopping@proton.me
+
+// List aliases
+const aliases = await aliasManager.getAliases();
+
+// Update alias
+await aliasManager.updateAlias({
+  aliasId: alias.id,
+  enabled: true,
+});
+```
+
+## Import/Export
+
+### Importing Passwords
+
+```typescript
+import { importService } from '@proton/pass/lib/import';
+
+// Import from CSV
+const result = await importService.importFromCSV({
+  file: csvFile,
+  vaultId: 'vault-123',
+  format: '1password', // or 'lastpass', 'bitwarden', etc.
+});
+
+console.log(`Imported ${result.success} items`);
+if (result.failed.length > 0) {
+  console.warn('Failed items:', result.failed);
+}
+
+// Import from JSON
+const jsonResult = await importService.importFromJSON({
+  data: jsonData,
+  vaultId: 'vault-123',
+});
+```
+
+### Exporting Passwords
+
+```typescript
+import { exportService } from '@proton/pass/lib/export';
+
+// Export vault to JSON
+const exportData = await exportService.exportVault({
+  vaultId: 'vault-123',
+  format: 'json',
+  includeTrash: false,
+});
+
+// Export to CSV
+const csvData = await exportService.exportVault({
+  vaultId: 'vault-123',
+  format: 'csv',
+});
+
+// Download export
+const blob = new Blob([csvData], { type: 'text/csv' });
+const url = URL.createObjectURL(blob);
+```
+
+## Search
+
+Full-text search across items.
+
+```typescript
+import { searchService } from '@proton/pass/lib/search';
+
+// Search items
+const results = await searchService.search({
+  query: 'github',
+  vaultIds: ['vault-123', 'vault-456'],
+  types: ['login', 'note'],
+});
+
+results.forEach(item => {
+  console.log(`Found: ${item.name} in ${item.vaultName}`);
+});
+```
+
+## Security Monitoring
+
+### Password Health
+
+```typescript
+import { securityMonitor } from '@proton/pass/lib/monitor';
+
+// Check password health
+const health = await securityMonitor.getPasswordHealth();
+
+console.log('Weak passwords:', health.weak);
+console.log('Reused passwords:', health.reused);
+console.log('Old passwords:', health.old);
+
+// Get specific password strength
+const strength = securityMonitor.checkPasswordStrength('password123');
+console.log('Strength score:', strength.score); // 0-4
+```
+
+### Breach Monitoring
+
+```typescript
+import { breachMonitor } from '@proton/pass/lib/monitor';
+
+// Check for breached passwords
+const breaches = await breachMonitor.checkBreaches();
+
+breaches.forEach(breach => {
+  console.log(`${breach.itemName}: Found in ${breach.breachName}`);
+  console.log(`Breach date: ${breach.date}`);
+});
+
+// Enable monitoring
+await breachMonitor.enableMonitoring({
+  email: 'user@example.com',
+});
+```
+
+## Browser Extension
+
+### Autofill
+
+```typescript
+import { autofillService } from '@proton/pass/lib/extension';
+import type { AutofillContext } from '@proton/pass/types';
+
+// Get autofill suggestions
+const suggestions = await autofillService.getSuggestions({
+  url: 'https://github.com/login',
+  formData: {
+    usernameField: 'login',
+    passwordField: 'password',
+  },
+});
+
+// Perform autofill
+await autofillService.autofill({
+  itemId: 'item-123',
+  tabId: tab.id,
+});
+```
+
+### Content Script Rules
+
+```typescript
+import { ruleEngine } from '@proton/pass/lib/extension/rules';
+
+// Check if autofill is allowed
+const isAllowed = ruleEngine.shouldAutofill({
+  url: 'https://example.com',
+  context: 'login-form',
+});
+
+// Add custom rule
+await ruleEngine.addRule({
+  domain: 'internal.company.com',
+  action: 'block',
+  reason: 'Company policy',
+});
+```
+
+## Sharing
+
+Securely share items with other Proton Pass users.
+
+```typescript
+import { sharingService } from '@proton/pass/lib/shares';
+
+// Share vault
+await sharingService.shareVault({
+  vaultId: 'vault-123',
+  email: 'colleague@proton.me',
+  permission: 'read', // or 'write', 'admin'
+});
+
+// Create secure link
+const link = await sharingService.createSecureLink({
+  itemId: 'item-123',
+  expiresIn: 3600, // 1 hour
+  maxViews: 1,
+});
+
+console.log('Share link:', link.url);
+```
+
+## Cryptography
+
+Proton Pass uses end-to-end encryption powered by `@proton/crypto`.
+
+```typescript
+import { itemCrypto } from '@proton/pass/lib/crypto';
+
+// All operations are automatically encrypted
+// Items are encrypted before storage and decrypted on retrieval
+
+// Manual encryption (advanced)
+const encrypted = await itemCrypto.encryptItem({
+  item: loginItem,
+  vaultKey: vaultKey,
+});
+
+// Manual decryption (advanced)
+const decrypted = await itemCrypto.decryptItem({
+  encryptedData: encrypted,
+  vaultKey: vaultKey,
+});
+```
+
+## Organization Features
+
+### B2B Management
+
+```typescript
+import { organizationManager } from '@proton/pass/lib/organization';
+
+// Get organization info
+const org = await organizationManager.getOrganization();
+
+// List organization members
+const members = await organizationManager.getMembers();
+
+// Invite member
+await organizationManager.inviteMember({
+  email: 'employee@company.com',
+  role: 'member',
+});
+```
+
+### Groups
+
+```typescript
+import { groupsManager } from '@proton/pass/lib/groups';
+
+// Create group
+const group = await groupsManager.createGroup({
+  name: 'Engineering Team',
+  members: ['user1@company.com', 'user2@company.com'],
+});
+
+// Share vault with group
+await sharingService.shareVaultWithGroup({
+  vaultId: 'vault-123',
+  groupId: group.id,
+  permission: 'write',
+});
+```
+
+## Offline Support
+
+Proton Pass supports offline access with IndexedDB caching.
+
+```typescript
+import { cacheService } from '@proton/pass/lib/cache';
+
+// Cache is automatically managed
+// Access items offline
+const cachedItems = await cacheService.getCachedItems({
+  vaultId: 'vault-123',
+});
+
+// Force sync when back online
+await cacheService.sync();
+```
+
+## Settings
+
+```typescript
+import { settingsManager } from '@proton/pass/lib/settings';
+
+// Get user settings
+const settings = await settingsManager.getSettings();
+
+// Update settings
+await settingsManager.updateSettings({
+  autofillEnabled: true,
+  biometricUnlock: true,
+  vaultTimeout: 15, // minutes
+});
+```
+
+## TypeScript Types
+
+```typescript
+import type {
+  Item,
+  LoginItem,
+  NoteItem,
+  CreditCardItem,
+  PasskeyItem,
+  AliasItem,
+  Vault,
+  ItemType,
+  VaultColor,
+  SharePermission,
+  PasswordHealth,
+  SearchResult,
+} from '@proton/pass/types';
+```
+
+## Events and Telemetry
+
+```typescript
+import { telemetry } from '@proton/pass/lib/telemetry';
+
+// Track events (privacy-respecting)
+telemetry.track('item_created', {
+  type: 'login',
+  vaultId: 'vault-123',
+});
+
+// Disable telemetry
+await telemetry.disable();
+```
+
+## Testing
+
+```bash
+# Run all tests
+yarn test
+
+# Run tests with coverage
+yarn test:ci
+
+# Run timezone tests
+yarn test:tz
+
+# Watch mode
+yarn test:watch
+```
+
+## Development Scripts
+
+```bash
+# Type checking
+yarn check-types
+
+# Linting
+yarn lint
+
+# Generate API types
+yarn generate:api-types
+
+# Generate protobuf types
+yarn generate:proto
+
+# i18n validation
+yarn i18n:validate
+```
+
+## Dependencies
+
+<AccordionGroup>
+  <Accordion title="Core Dependencies">
+    - `@protontech/pass-rust-core` - Rust core for cryptographic operations
+    - `@proton/crypto` - End-to-end encryption
+    - `@proton/srp` - SRP authentication
+    - `@proton/shared` - Shared utilities
+    - `@reduxjs/toolkit` - State management
+    - `otpauth` - OTP/2FA generation
+    - `formik` - Form management
+    - `idb` - IndexedDB wrapper for offline storage
+  </Accordion>
+  <Accordion title="Import/Export Dependencies">
+    - `papaparse` - CSV parsing
+    - `client-zip` - ZIP file creation
+    - `@zip.js/zip.js` - ZIP file handling
+    - `x2js` - XML to JSON conversion
+  </Accordion>
+</AccordionGroup>
+
+## Browser Extension Support
+
+Built for Chrome, Firefox, Edge, Brave, and other Chromium-based browsers.
+
+```typescript
+import { webextensionPolyfill } from 'webextension-polyfill';
+
+// Cross-browser extension API
+```
+
+## Related Packages
+
+<CardGroup cols={3}>
+  <Card title="@proton/crypto" icon="lock" href="/packages/crypto">
+    Cryptography utilities
+  </Card>
+  <Card title="@proton/srp" icon="key" href="/packages/srp">
+    SRP authentication
+  </Card>
+  <Card title="@proton/shared" icon="share-nodes" href="/packages/shared">
+    Shared utilities
+  </Card>
+</CardGroup>

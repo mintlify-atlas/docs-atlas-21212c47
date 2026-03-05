@@ -1,0 +1,465 @@
+---
+title: "Project Structure"
+description: "Understanding the Proton WebClients monorepo organization, workspaces, and architecture"
+---
+
+## Overview
+
+The Proton WebClients repository is a **Yarn 4 monorepo** that hosts all Proton web applications, shared packages, utilities, and development tooling. It uses Yarn Workspaces for dependency management and Turbo for build orchestration.
+
+<Note>
+  The monorepo uses **unified versioning** - all packages inside share the same version number.
+</Note>
+
+## Root Directory Structure
+
+```
+WebClients/
+├── applications/          # Web applications
+├── packages/             # Shared packages and libraries
+├── utilities/            # Development utilities and scripts
+├── vendor/               # Third-party vendored dependencies
+├── tests/                # Test utilities and configurations
+├── .yarn/                # Yarn 4 installation and plugins
+├── package.json          # Root package configuration
+├── turbo.json           # Turbo build configuration
+├── tsconfig.base.json   # Base TypeScript configuration
+└── yarn.lock            # Dependency lock file
+```
+
+## Applications
+
+The `applications/` directory contains all user-facing Proton web applications. Each application is a separate workspace with its own dependencies and build configuration.
+
+### Available Applications
+
+<CardGroup cols={2}>
+  <Card title="Proton Mail" icon="envelope">
+    **Path**: `applications/mail`
+    
+    Full-featured email client with end-to-end encryption
+    
+    **Package**: `proton-mail`
+  </Card>
+
+  <Card title="Proton Calendar" icon="calendar">
+    **Path**: `applications/calendar`
+    
+    Encrypted calendar application
+    
+    **Package**: `proton-calendar`
+  </Card>
+
+  <Card title="Proton Drive" icon="folder">
+    **Path**: `applications/drive`
+    
+    Encrypted cloud storage solution
+    
+    **Package**: `proton-drive`
+  </Card>
+
+  <Card title="Proton Account" icon="user">
+    **Path**: `applications/account`
+    
+    Account management and settings
+    
+    **Package**: `proton-account`
+  </Card>
+
+  <Card title="Proton VPN" icon="shield">
+    **Path**: `applications/vpn-settings`
+    
+    VPN configuration and management
+    
+    **Package**: `proton-vpn-settings`
+  </Card>
+
+  <Card title="Proton Pass" icon="key">
+    **Path**: `applications/pass`
+    
+    Password manager application
+    
+    **Package**: `proton-pass`
+  </Card>
+
+  <Card title="Proton Wallet" icon="wallet">
+    **Path**: `applications/wallet`
+    
+    Cryptocurrency wallet
+    
+    **Package**: `proton-wallet`
+  </Card>
+
+  <Card title="Proton Lumo" icon="lightbulb">
+    **Path**: `applications/lumo`
+    
+    AI-powered assistant
+    
+    **Package**: `proton-lumo`
+  </Card>
+</CardGroup>
+
+### Desktop Applications
+
+<CardGroup cols={3}>
+  <Card title="Pass Desktop" icon="desktop">
+    `applications/pass-desktop`
+  </Card>
+  <Card title="Inbox Desktop" icon="desktop">
+    `applications/inbox-desktop`
+  </Card>
+  <Card title="Meet Desktop" icon="desktop">
+    `applications/meet-desktop`
+  </Card>
+</CardGroup>
+
+### Other Applications
+
+- **Pass Extension**: `applications/pass-extension` - Browser extension for Proton Pass
+- **Meet**: `applications/meet` - Video conferencing
+- **Docs**: `applications/docs` - Document editor
+- **Docs Editor**: `applications/docs-editor` - Document editing engine
+- **Authenticator**: `applications/authenticator` - 2FA authenticator
+- **Verify**: `applications/verify` - Email verification tool
+- **Storybook**: `applications/storybook` - Component documentation
+
+## Packages
+
+The `packages/` directory contains **55+ shared packages** that provide reusable functionality across applications. These packages are organized by domain and functionality.
+
+### Core Packages
+
+<Tabs>
+  <Tab title="UI Components">
+    - **@proton/components** - Reusable React components
+    - **@proton/atoms** - Atomic design system components
+    - **@proton/icons** - Icon library
+    - **@proton/colors** - Color system and themes
+    - **@proton/styles** - Shared styles and CSS utilities
+  </Tab>
+
+  <Tab title="State Management">
+    - **@proton/shared** - Shared business logic and utilities
+    - **@proton/redux-shared-store** - Redux store configuration
+    - **@proton/react-redux-store** - React Redux integration
+    - **@proton/redux-utilities** - Redux helper utilities
+    - **@proton/redux-shared-store-types** - TypeScript types for Redux
+  </Tab>
+
+  <Tab title="Cryptography">
+    - **@proton/crypto** - Cryptographic utilities
+    - **@proton/srp** - Secure Remote Password protocol
+    - **@proton/key-transparency** - Key transparency implementation
+    - **@proton/encrypted-search** - Client-side encrypted search
+  </Tab>
+
+  <Tab title="Domain Logic">
+    - **@proton/account** - Account management logic
+    - **@proton/mail** - Email-specific logic
+    - **@proton/calendar** - Calendar functionality
+    - **@proton/drive** - Drive file management
+    - **@proton/drive-store** - Drive state management
+    - **@proton/pass** - Password manager logic
+    - **@proton/wallet** - Wallet functionality
+    - **@proton/vpn** - VPN utilities
+  </Tab>
+
+  <Tab title="Utilities">
+    - **@proton/utils** - General utility functions
+    - **@proton/hooks** - React hooks
+    - **@proton/i18n** - Internationalization
+    - **@proton/polyfill** - Browser polyfills
+    - **@proton/metrics** - Analytics and metrics
+    - **@proton/testing** - Testing utilities
+  </Tab>
+
+  <Tab title="Development Tools">
+    - **@proton/pack** - Build tooling and webpack configuration
+    - **@proton/eslint-config-proton** - ESLint configuration
+    - **@proton/prettier-config-proton** - Prettier configuration
+    - **@proton/stylelint-config-proton** - Stylelint configuration
+    - **@proton/jest-env** - Jest test environment
+    - **@proton/types** - TypeScript type definitions
+  </Tab>
+</Tabs>
+
+### Additional Packages
+
+- **@proton/ai-assistant** - AI assistant integration
+- **@proton/llm** - Large language model utilities
+- **@proton/activation** - Account activation flows
+- **@proton/chargebee** - Payment processing
+- **@proton/payments** - Payment management
+- **@proton/features** - Feature flags
+- **@proton/unleash** - Feature toggle integration
+- **@proton/cross-storage** - Cross-domain storage
+- **@proton/recovery-kit** - Account recovery
+- **@proton/docs-core** - Document core functionality
+- **@proton/docs-proto** - Document protocol
+- **@proton/docs-shared** - Shared document utilities
+- **@proton/mail-renderer** - Email rendering engine
+- **@proton/sieve** - Email filtering
+- **@proton/wasm** - WebAssembly modules
+
+## Workspace Configuration
+
+The monorepo uses Yarn Workspaces, configured in the root `package.json`:
+
+```json
+{
+  "workspaces": [
+    "applications/*",
+    "applications/pass-desktop/native",
+    "packages/*",
+    "packages/wasm/*",
+    "tests",
+    "tests/mail-renderer",
+    "tests/packages/*",
+    "utilities/*",
+    "vendor/*/*"
+  ]
+}
+```
+
+<Tip>
+  This configuration allows any package to reference another using the `workspace:` protocol in dependencies.
+</Tip>
+
+### Example: Application Dependencies
+
+Here's how `proton-mail` references shared packages:
+
+```json
+{
+  "name": "proton-mail",
+  "dependencies": {
+    "@proton/account": "workspace:^",
+    "@proton/components": "workspace:^",
+    "@proton/crypto": "workspace:^",
+    "@proton/hooks": "workspace:^",
+    "@proton/icons": "workspace:^",
+    "@proton/shared": "workspace:^",
+    "@proton/styles": "workspace:^",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}
+```
+
+## TypeScript Configuration
+
+The monorepo uses a centralized TypeScript configuration in `tsconfig.base.json` with path mappings for all packages:
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@proton/icons/icons/*": ["./packages/icons/icons/*"],
+      "@proton/atoms/*": ["./packages/atoms/src/*"],
+      "@proton/components/*": ["./packages/components/*"],
+      "@proton/shared": ["./packages/shared/*"],
+      "@proton/crypto/*": ["./packages/crypto/*"]
+      // ... 40+ more mappings
+    }
+  }
+}
+```
+
+<Note>
+  Each application and package extends `tsconfig.base.json` and can override settings as needed.
+</Note>
+
+## Build System (Turbo)
+
+The monorepo uses [Turbo](https://turbo.build/) for efficient builds and caching. Configuration is in `turbo.json`:
+
+### Key Build Tasks
+
+<CodeGroup>
+  ```json build:web
+  {
+    "build:web": {
+      "outputs": ["dist/**", "webapp-bundle.tar.gz"]
+    }
+  }
+  ```
+
+  ```json test:ci
+  {
+    "test:ci": {
+      "dependsOn": ["transit"]
+    }
+  }
+  ```
+
+  ```json check-types
+  {
+    "check-types": {
+      "dependsOn": ["transit"]
+    }
+  }
+  ```
+
+  ```json dev
+  {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+  ```
+</CodeGroup>
+
+### Running Turbo Tasks
+
+```bash
+# Run a task across all workspaces
+yarn turbo run build:web
+
+# Run multiple tasks in parallel
+yarn turbo run lint check-types test
+
+# Run with filtered workspaces
+yarn turbo run build:web --filter=proton-mail
+```
+
+## Utilities
+
+The `utilities/` directory contains development scripts and tools:
+
+- **local-sso** - Local single sign-on for development
+- **app-versions** - Version management scripts
+- Additional build and deployment utilities
+
+### Running Utilities
+
+```bash
+# Check application versions
+yarn app-versions
+
+# Start local SSO environment
+yarn start-all
+
+# Create an atom component
+yarn create-atom
+```
+
+## Yarn 4 Configuration
+
+The monorepo uses Yarn 4 with specific configurations in `.yarnrc.yml`:
+
+```yaml
+nodeLinker: node-modules
+yarnPath: .yarn/releases/yarn-4.12.0.cjs
+
+npmPublishRegistry: https://nexus.protontech.ch/repository/web-npm/
+
+npmScopes:
+  proton:
+    npmRegistryServer: 'https://nexus.protontech.ch/repository/foundation-npm/'
+
+compressionLevel: mixed
+```
+
+<Warning>
+  The monorepo uses private npm registries for some scoped packages. External contributors should be aware that some internal packages may not be accessible.
+</Warning>
+
+## Development Workflow
+
+### Working with a Single Application
+
+```bash
+# Navigate to root (not required, but recommended)
+cd WebClients
+
+# Run development server
+yarn workspace proton-mail start
+
+# Run tests
+yarn workspace proton-mail test
+
+# Build for production
+yarn workspace proton-mail build:web
+```
+
+### Working Across Multiple Packages
+
+```bash
+# Run type checking across all packages
+yarn turbo run check-types
+
+# Lint all packages
+yarn turbo run lint
+
+# Build all applications
+yarn turbo run build:web
+```
+
+### Adding Dependencies
+
+<CodeGroup>
+  ```bash To Root
+  yarn add -W package-name
+  ```
+
+  ```bash To Workspace
+  yarn workspace proton-mail add package-name
+  ```
+
+  ```bash Workspace Dependency
+  yarn workspace proton-mail add @proton/utils@workspace:*
+  ```
+</CodeGroup>
+
+## File Organization Patterns
+
+Typical application structure:
+
+```
+applications/mail/
+├── src/
+│   ├── app/                 # Main application code
+│   │   ├── components/      # React components
+│   │   ├── containers/      # Container components
+│   │   ├── hooks/           # Custom hooks
+│   │   ├── logic/           # Business logic
+│   │   └── store/           # Redux store
+│   ├── app.tsx              # App entry point
+│   └── index.tsx            # Main entry point
+├── package.json             # Package configuration
+├── tsconfig.json            # TypeScript config
+└── webpack.config.js        # Build configuration
+```
+
+Typical package structure:
+
+```
+packages/components/
+├── components/              # Component implementations
+│   ├── button/
+│   ├── input/
+│   └── modal/
+├── hooks/                   # Shared hooks
+├── index.ts                # Main export file
+├── package.json            # Package configuration
+└── tsconfig.json           # TypeScript config
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation Guide" icon="download" href="/installation">
+    Set up the development environment
+  </Card>
+  <Card title="Development Workflow" icon="code" href="/development-workflow">
+    Learn the development process
+  </Card>
+  <Card title="Package Development" icon="box" href="/package-development">
+    Create and maintain packages
+  </Card>
+  <Card title="Build System" icon="gear" href="/build-system">
+    Understanding Turbo and builds
+  </Card>
+</CardGroup>

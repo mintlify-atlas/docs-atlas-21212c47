@@ -1,0 +1,537 @@
+---
+title: Component Types
+description: TypeScript types and interfaces for React components in Proton WebClients
+---
+
+## Common Component Props
+
+### WithLoading Types
+
+Types for loading state management in components.
+
+```typescript
+type WithLoading = <T>(
+  promise: undefined | Promise<T | void> | (() => Promise<T | void>)
+) => Promise<T | void>
+
+type WithLoadingByKey = <T>(
+  key: string,
+  promise: undefined | Promise<T | void> | (() => Promise<T | void>)
+) => Promise<T | void>
+
+type LoadingByKey = { [key: string]: boolean }
+```
+
+<CodeGroup>
+```tsx Component with Loading
+import type { WithLoading } from '@proton/hooks';
+import { useLoading } from '@proton/hooks';
+
+interface ButtonProps {
+  onClick: () => Promise<void>;
+  children: React.ReactNode;
+}
+
+function AsyncButton({ onClick, children }: ButtonProps) {
+  const [loading, withLoading] = useLoading();
+
+  const handleClick = () => withLoading(onClick());
+
+  return (
+    <button onClick={handleClick} disabled={loading}>
+      {loading ? 'Loading...' : children}
+    </button>
+  );
+}
+```
+
+```tsx Multiple Loading States
+interface FormProps {
+  onSave: () => Promise<void>;
+  onDelete: () => Promise<void>;
+}
+
+function Form({ onSave, onDelete }: FormProps) {
+  const [loading, withLoading] = useLoadingByKey();
+
+  return (
+    <>
+      <button
+        onClick={() => withLoading('save', onSave())}
+        disabled={loading.save}
+      >
+        Save
+      </button>
+      <button
+        onClick={() => withLoading('delete', onDelete())}
+        disabled={loading.delete}
+      >
+        Delete
+      </button>
+    </>
+  );
+}
+```
+</CodeGroup>
+
+---
+
+## Ref Types
+
+### Combined Refs
+
+Types for combining multiple React refs.
+
+```typescript
+import type { Ref } from 'react';
+
+type CombinedRef<T> = Ref<T>
+```
+
+<CodeGroup>
+```tsx Forward Ref Component
+import { forwardRef, useRef } from 'react';
+import useCombinedRefs from '@proton/hooks/useCombinedRefs';
+
+interface InputProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const Input = forwardRef<HTMLInputElement, InputProps>(
+  ({ value, onChange }, ref) => {
+    const internalRef = useRef<HTMLInputElement>(null);
+    const combinedRef = useCombinedRefs(ref, internalRef);
+
+    return (
+      <input
+        ref={combinedRef}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    );
+  }
+);
+```
+
+```tsx Multiple External Refs
+interface MultiRefProps {
+  ref1?: Ref<HTMLDivElement>;
+  ref2?: Ref<HTMLDivElement>;
+}
+
+function MultiRefComponent({ ref1, ref2 }: MultiRefProps) {
+  const internalRef = useRef<HTMLDivElement>(null);
+  const combinedRef = useCombinedRefs(ref1, ref2, internalRef);
+
+  return <div ref={combinedRef}>Content</div>;
+}
+```
+</CodeGroup>
+
+---
+
+## Controlled Component Types
+
+### Controlled Props Pattern
+
+Types for controlled/uncontrolled component patterns.
+
+```typescript
+interface ControlledProps<T> {
+  value?: T;
+  defaultValue?: T;
+  onChange?: (value: T) => void;
+}
+```
+
+<CodeGroup>
+```tsx Controlled Input
+import useControlled from '@proton/hooks/useControlled';
+
+interface TextInputProps extends ControlledProps<string> {
+  placeholder?: string;
+  disabled?: boolean;
+}
+
+function TextInput({
+  value,
+  defaultValue = '',
+  onChange,
+  placeholder,
+  disabled
+}: TextInputProps) {
+  const [internalValue, setInternalValue] = useControlled(
+    value,
+    defaultValue
+  );
+
+  const handleChange = (newValue: string) => {
+    setInternalValue(newValue);
+    onChange?.(newValue);
+  };
+
+  return (
+    <input
+      value={internalValue}
+      onChange={(e) => handleChange(e.target.value)}
+      placeholder={placeholder}
+      disabled={disabled}
+    />
+  );
+}
+```
+
+```tsx Controlled Toggle
+interface ToggleProps extends ControlledProps<boolean> {
+  label: string;
+}
+
+function Toggle({
+  value,
+  defaultValue = false,
+  onChange,
+  label
+}: ToggleProps) {
+  const [checked, setChecked] = useControlled(value, defaultValue);
+
+  const handleToggle = () => {
+    const newValue = !checked;
+    setChecked(newValue);
+    onChange?.(newValue);
+  };
+
+  return (
+    <label>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={handleToggle}
+      />
+      {label}
+    </label>
+  );
+}
+```
+</CodeGroup>
+
+---
+
+## API Component Types
+
+### Query Function Type
+
+Type for API query functions used with useApiResult.
+
+```typescript
+type QueryFunction = (...args: any[]) => {
+  method: string;
+  url: string;
+  data?: any;
+  params?: any;
+}
+```
+
+<CodeGroup>
+```tsx Query Function Definition
+import type { QueryFunction } from '@proton/components';
+
+const queryUser: QueryFunction = (userId: string) => ({
+  method: 'get',
+  url: `/users/${userId}`
+});
+
+const updateUser: QueryFunction = (userId: string, data: any) => ({
+  method: 'put',
+  url: `/users/${userId}`,
+  data
+});
+```
+
+```tsx Using with useApiResult
+import { useApiResult } from '@proton/components';
+
+function UserProfile({ userId }: { userId: string }) {
+  const { result: user, loading, error } = useApiResult<User>(
+    () => queryUser(userId),
+    [userId]
+  );
+
+  if (loading) return <Spinner />;
+  if (error) return <Error error={error} />;
+
+  return <div>{user?.Name}</div>;
+}
+```
+</CodeGroup>
+
+---
+
+### API Result Type
+
+Return type from useApiResult hook.
+
+```typescript
+interface Result<R, U extends any[]> {
+  result: R | undefined;
+  error: Error;
+  loading: boolean;
+  request: (...args: U) => Promise<R>;
+}
+```
+
+<ResponseField name="result" type="R | undefined">
+  The fetched data (undefined while loading or on error)
+</ResponseField>
+
+<ResponseField name="error" type="Error">
+  Error object if request failed
+</ResponseField>
+
+<ResponseField name="loading" type="boolean">
+  Whether the request is in progress
+</ResponseField>
+
+<ResponseField name="request" type="(...args: U) => Promise<R>">
+  Function to manually trigger the request
+</ResponseField>
+
+```tsx
+import type { Result } from '@proton/components';
+import { useApiResult } from '@proton/components';
+
+function DataComponent() {
+  const apiResult: Result<User[], []> = useApiResult(
+    queryUsers,
+    []
+  );
+
+  const { result: users, loading, error, request } = apiResult;
+
+  return (
+    <div>
+      {loading && <Spinner />}
+      {error && <ErrorMessage error={error} />}
+      {users?.map(user => <UserCard key={user.ID} user={user} />)}
+      <button onClick={() => request()}>Refresh</button>
+    </div>
+  );
+}
+```
+
+---
+
+## Cache Types
+
+### Cache Interface
+
+Interface for the application cache.
+
+```typescript
+interface Cache<K = string, V = any> {
+  get(key: K): V | undefined;
+  set(key: K, value: V): void;
+  has(key: K): boolean;
+  delete(key: K): boolean;
+  clear(): void;
+  subscribe(callback: (key: K, value: V) => void): () => void;
+}
+```
+
+<CodeGroup>
+```tsx Cache Usage
+import { useCache } from '@proton/components';
+import type { Cache } from '@proton/shared/lib/helpers/cache';
+
+interface User {
+  id: string;
+  name: string;
+}
+
+function UserManager() {
+  const cache: Cache<string, User> = useCache();
+
+  const saveUser = (user: User) => {
+    cache.set(`user-${user.id}`, user);
+  };
+
+  const getUser = (id: string): User | undefined => {
+    return cache.get(`user-${id}`);
+  };
+
+  return <div>...</div>;
+}
+```
+
+```tsx Cache Subscription
+function CacheListener() {
+  const cache = useCache();
+
+  useEffect(() => {
+    const unsubscribe = cache.subscribe((key, value) => {
+      console.log(`Cache updated: ${key}`, value);
+    });
+
+    return unsubscribe;
+  }, [cache]);
+
+  return <div>Listening to cache changes...</div>;
+}
+```
+</CodeGroup>
+
+---
+
+## Event Handler Types
+
+### Common Event Handlers
+
+Typescript types for common React event handlers.
+
+```typescript
+import type { MouseEvent, ChangeEvent, FormEvent } from 'react';
+
+type ClickHandler = (event: MouseEvent<HTMLElement>) => void;
+type ChangeHandler = (event: ChangeEvent<HTMLInputElement>) => void;
+type SubmitHandler = (event: FormEvent<HTMLFormElement>) => void;
+```
+
+<CodeGroup>
+```tsx Button with Handler
+interface ButtonProps {
+  onClick: ClickHandler;
+  children: React.ReactNode;
+}
+
+function Button({ onClick, children }: ButtonProps) {
+  return <button onClick={onClick}>{children}</button>;
+}
+```
+
+```tsx Form Component
+interface FormProps {
+  onSubmit: (data: FormData) => void;
+}
+
+function Form({ onSubmit }: FormProps) {
+  const handleSubmit: SubmitHandler = (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    onSubmit(formData);
+  };
+
+  return <form onSubmit={handleSubmit}>...</form>;
+}
+```
+</CodeGroup>
+
+---
+
+## Polymorphic Component Types
+
+Types for components that can render as different HTML elements.
+
+```typescript
+import type { ComponentPropsWithoutRef, ElementType } from 'react';
+
+type PolymorphicProps<E extends ElementType> = {
+  as?: E;
+} & ComponentPropsWithoutRef<E>;
+```
+
+<CodeGroup>
+```tsx Polymorphic Component
+import type { ElementType } from 'react';
+
+interface BoxProps<E extends ElementType = 'div'> {
+  as?: E;
+  children: React.ReactNode;
+}
+
+function Box<E extends ElementType = 'div'>({
+  as,
+  children,
+  ...props
+}: BoxProps<E> & Omit<ComponentPropsWithoutRef<E>, keyof BoxProps<E>>) {
+  const Component = as || 'div';
+  return <Component {...props}>{children}</Component>;
+}
+
+// Usage
+<Box as="section">Content</Box>
+<Box as="article">Article</Box>
+<Box>Div by default</Box>
+```
+
+```tsx Button Component
+interface ButtonProps<E extends ElementType = 'button'> {
+  as?: E;
+  variant?: 'primary' | 'secondary';
+}
+
+function Button<E extends ElementType = 'button'>({
+  as,
+  variant = 'primary',
+  ...props
+}: ButtonProps<E> & ComponentPropsWithoutRef<E>) {
+  const Component = as || 'button';
+  return <Component className={variant} {...props} />;
+}
+
+// Usage
+<Button>Click me</Button>
+<Button as="a" href="/link">Link button</Button>
+```
+</CodeGroup>
+
+---
+
+## Best Practices
+
+### Use Generic Types
+
+```tsx
+// Good - reusable with any type
+function DataList<T>({ items }: { items: T[] }) {
+  return <ul>{items.map((item, i) => <li key={i}>{item}</li>)}</ul>;
+}
+
+// Usage
+<DataList<User> items={users} />
+<DataList<Product> items={products} />
+```
+
+### Type Props Explicitly
+
+```tsx
+// Good
+interface UserCardProps {
+  user: User;
+  onEdit: (user: User) => void;
+  loading?: boolean;
+}
+
+function UserCard({ user, onEdit, loading = false }: UserCardProps) {
+  // ...
+}
+
+// Avoid
+function UserCard(props: any) {
+  // ...
+}
+```
+
+### Use Discriminated Unions for Variants
+
+```tsx
+type ButtonProps =
+  | { variant: 'link'; href: string; onClick?: never }
+  | { variant: 'button'; onClick: () => void; href?: never };
+
+function Button(props: ButtonProps) {
+  if (props.variant === 'link') {
+    return <a href={props.href}>Link</a>;
+  }
+  return <button onClick={props.onClick}>Button</button>;
+}
+```

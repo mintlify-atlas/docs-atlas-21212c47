@@ -1,0 +1,467 @@
+---
+title: Sidebar Component
+description: Sidebar navigation layout component
+---
+
+# Sidebar Component
+
+The Sidebar component provides a comprehensive navigation sidebar with storage meter, user dropdown, and collapsible functionality.
+
+**Location**: `components/sidebar/Sidebar.tsx`
+
+## Basic Usage
+
+```tsx
+import Sidebar from '@proton/components/components/sidebar/Sidebar';
+import SidebarNav from '@proton/components/components/sidebar/SidebarNav';
+import SidebarList from '@proton/components/components/sidebar/SidebarList';
+import SidebarListItem from '@proton/components/components/sidebar/SidebarListItem';
+import { APPS } from '@proton/shared/lib/constants';
+
+const MySidebar = () => {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <Sidebar
+      app={APPS.PROTONMAIL}
+      logo={<Logo />}
+      expanded={expanded}
+      onToggleExpand={() => setExpanded(!expanded)}
+      appsDropdown={<AppsDropdown />}
+    >
+      <SidebarNav>
+        <SidebarList>
+          <SidebarListItem>
+            <a href="/inbox">Inbox</a>
+          </SidebarListItem>
+          <SidebarListItem>
+            <a href="/sent">Sent</a>
+          </SidebarListItem>
+        </SidebarList>
+      </SidebarNav>
+    </Sidebar>
+  );
+};
+```
+
+## Props
+
+Extends `ComponentPropsWithoutRef<'div'>`
+
+<ParamField path="app" type="APP_NAMES" required>
+  Application identifier (e.g., APPS.PROTONMAIL)
+</ParamField>
+
+<ParamField path="logo" type="ReactNode">
+  Logo component to display
+</ParamField>
+
+<ParamField path="expanded" type="boolean">
+  Whether sidebar is expanded (mobile only). Default: `false`
+</ParamField>
+
+<ParamField path="onToggleExpand" type="() => void">
+  Callback when sidebar expand/collapse is toggled
+</ParamField>
+
+<ParamField path="primary" type="ReactNode">
+  Primary action button (e.g., "Compose" button)
+</ParamField>
+
+<ParamField path="children" type="ReactNode">
+  Sidebar navigation content
+</ParamField>
+
+<ParamField path="version" type="ReactNode">
+  Version information to display
+</ParamField>
+
+<ParamField path="hasAppLinks" type="boolean">
+  Whether to show app links. Default: `true`
+</ParamField>
+
+<ParamField path="appsDropdown" type="ReactNode | null" required>
+  Apps dropdown component
+</ParamField>
+
+<ParamField path="preFooter" type="ReactNode">
+  Content rendered before storage meter
+</ParamField>
+
+<ParamField path="postFooter" type="ReactNode">
+  Content rendered after storage meter
+</ParamField>
+
+<ParamField path="growContent" type="boolean">
+  Whether content grows to fill available space. Default: `true`
+</ParamField>
+
+<ParamField path="showStorage" type="boolean">
+  Whether to show storage meter. Default: `true`
+</ParamField>
+
+<ParamField path="collapsed" type="boolean">
+  Whether sidebar is collapsed. Default: `false`
+</ParamField>
+
+<ParamField path="navigationRef" type="Ref<HTMLDivElement>">
+  Ref for navigation container
+</ParamField>
+
+<ParamField path="wavyMeter" type="boolean">
+  Use wavy style for storage meter. Default: `false`
+</ParamField>
+
+<ParamField path="hasComposerInFocus" type="boolean">
+  Used on Mail Desktop App for draggable areas. Default: `false`
+</ParamField>
+
+## Examples
+
+<Tabs>
+  <Tab title="Basic Sidebar">
+    ```tsx
+    <Sidebar
+      app={APPS.PROTONMAIL}
+      logo={<ProtonLogo />}
+      appsDropdown={<AppsDropdown />}
+    >
+      <SidebarNav>
+        <SidebarList>
+          <SidebarListItemLink to="/inbox" icon="inbox">
+            Inbox
+          </SidebarListItemLink>
+          <SidebarListItemLink to="/sent" icon="paper-plane">
+            Sent
+          </SidebarListItemLink>
+          <SidebarListItemLink to="/trash" icon="trash">
+            Trash
+          </SidebarListItemLink>
+        </SidebarList>
+      </SidebarNav>
+    </Sidebar>
+    ```
+  </Tab>
+  
+  <Tab title="With Primary Button">
+    ```tsx
+    <Sidebar
+      app={APPS.PROTONMAIL}
+      logo={<Logo />}
+      appsDropdown={<AppsDropdown />}
+      primary={
+        <Button fullWidth color="norm" onClick={handleCompose}>
+          Compose
+        </Button>
+      }
+    >
+      {/* Navigation */}
+    </Sidebar>
+    ```
+  </Tab>
+  
+  <Tab title="Collapsed Sidebar">
+    ```tsx
+    const [collapsed, setCollapsed] = useState(false);
+
+    <Sidebar
+      app={APPS.PROTONMAIL}
+      logo={<Logo />}
+      appsDropdown={<AppsDropdown />}
+      collapsed={collapsed}
+    >
+      <SidebarNav>
+        <SidebarList>
+          <SidebarListItemLink to="/inbox" icon="inbox">
+            {!collapsed && 'Inbox'}
+          </SidebarListItemLink>
+        </SidebarList>
+      </SidebarNav>
+    </Sidebar>
+    ```
+  </Tab>
+  
+  <Tab title="Mobile Expandable">
+    ```tsx
+    const [expanded, setExpanded] = useState(false);
+
+    <Sidebar
+      app={APPS.PROTONMAIL}
+      logo={<Logo />}
+      appsDropdown={<AppsDropdown />}
+      expanded={expanded}
+      onToggleExpand={() => setExpanded(!expanded)}
+    >
+      {/* Navigation */}
+    </Sidebar>
+    ```
+  </Tab>
+</Tabs>
+
+## Sidebar Sub-Components
+
+### SidebarNav
+
+Navigation container.
+
+```tsx
+import SidebarNav from '@proton/components/components/sidebar/SidebarNav';
+
+<SidebarNav>
+  <SidebarList>{/* Items */}</SidebarList>
+</SidebarNav>
+```
+
+### SidebarList
+
+List container for sidebar items.
+
+```tsx
+import SidebarList from '@proton/components/components/sidebar/SidebarList';
+
+<SidebarList>
+  {/* List items */}
+</SidebarList>
+```
+
+### SidebarListItem
+
+Individual sidebar list item.
+
+```tsx
+import SidebarListItem from '@proton/components/components/sidebar/SidebarListItem';
+
+<SidebarListItem>
+  <a href="/inbox">Inbox</a>
+</SidebarListItem>
+```
+
+### SidebarListItemLink
+
+Sidebar link with icon support.
+
+```tsx
+import SidebarListItemLink from '@proton/components/components/sidebar/SidebarListItemLink';
+
+<SidebarListItemLink to="/inbox" icon="inbox">
+  Inbox
+</SidebarListItemLink>
+```
+
+### SidebarListItemButton
+
+Clickable sidebar item.
+
+```tsx
+import SidebarListItemButton from '@proton/components/components/sidebar/SidebarListItemButton';
+
+<SidebarListItemButton onClick={handleClick}>
+  Action
+</SidebarListItemButton>
+```
+
+### SidebarPrimaryButton
+
+Primary action button for sidebar.
+
+```tsx
+import SidebarPrimaryButton from '@proton/components/components/sidebar/SidebarPrimaryButton';
+
+<SidebarPrimaryButton onClick={handleCompose}>
+  Compose
+</SidebarPrimaryButton>
+```
+
+### SidebarLogo
+
+Logo component for sidebar header.
+
+```tsx
+import SidebarLogo from '@proton/components/components/sidebar/SidebarLogo';
+
+<SidebarLogo app={APPS.PROTONMAIL} />
+```
+
+## Storage Meter
+
+The sidebar automatically displays a storage meter showing used/available space. This can be controlled with the `showStorage` prop.
+
+```tsx
+<Sidebar
+  app={APPS.PROTONMAIL}
+  showStorage={true}
+  wavyMeter={false}
+  // ... other props
+>
+  {/* Content */}
+</Sidebar>
+```
+
+## Best Practices
+
+### Mobile Responsiveness
+
+```tsx
+const [expanded, setExpanded] = useState(false);
+
+return (
+  <>
+    {/* Mobile hamburger button */}
+    <Button
+      className="md:hidden"
+      onClick={() => setExpanded(true)}
+    >
+      <Icon name="hamburger" />
+    </Button>
+
+    <Sidebar
+      app={APPS.PROTONMAIL}
+      expanded={expanded}
+      onToggleExpand={() => setExpanded(false)}
+      // ... other props
+    >
+      {/* Navigation */}
+    </Sidebar>
+  </>
+);
+```
+
+### Collapsible Sidebar
+
+```tsx
+const [collapsed, setCollapsed] = useState(false);
+
+return (
+  <div className="flex">
+    <Sidebar
+      app={APPS.PROTONMAIL}
+      collapsed={collapsed}
+      logo={collapsed ? <IconLogo /> : <FullLogo />}
+      primary={
+        collapsed ? (
+          <Button icon onClick={handleCompose}>
+            <Icon name="pen" />
+          </Button>
+        ) : (
+          <Button fullWidth onClick={handleCompose}>
+            Compose
+          </Button>
+        )
+      }
+    >
+      <SidebarNav>
+        <SidebarList>
+          <SidebarListItemLink to="/inbox" icon="inbox">
+            {!collapsed && 'Inbox'}
+          </SidebarListItemLink>
+        </SidebarList>
+      </SidebarNav>
+    </Sidebar>
+
+    <Button
+      className="sidebar-toggle"
+      onClick={() => setCollapsed(!collapsed)}
+    >
+      <Icon name={collapsed ? 'chevron-right' : 'chevron-left'} />
+    </Button>
+  </div>
+);
+```
+
+### Navigation Structure
+
+```tsx
+<Sidebar app={APPS.PROTONMAIL} /* ... */>
+  <SidebarNav>
+    {/* Main navigation */}
+    <SidebarList>
+      <SidebarListItemLink to="/inbox" icon="inbox">
+        Inbox <span className="ml-auto">5</span>
+      </SidebarListItemLink>
+      <SidebarListItemLink to="/sent" icon="paper-plane">
+        Sent
+      </SidebarListItemLink>
+    </SidebarList>
+
+    {/* Folders section */}
+    <SidebarList>
+      <h3 className="text-sm color-weak px-4">Folders</h3>
+      <SidebarListItemLink to="/folder/work" icon="folder">
+        Work
+      </SidebarListItemLink>
+      <SidebarListItemLink to="/folder/personal" icon="folder">
+        Personal
+      </SidebarListItemLink>
+    </SidebarList>
+
+    {/* Labels section */}
+    <SidebarList>
+      <h3 className="text-sm color-weak px-4">Labels</h3>
+      <SidebarListItemLink to="/label/important">
+        <span className="color-danger">•</span> Important
+      </SidebarListItemLink>
+    </SidebarList>
+  </SidebarNav>
+</Sidebar>
+```
+
+### Accessibility
+
+```tsx
+<Sidebar
+  app={APPS.PROTONMAIL}
+  role="navigation"
+  aria-label="Main navigation"
+  /* ... */
+>
+  <SidebarNav>
+    <SidebarList role="list">
+      <SidebarListItemLink
+        to="/inbox"
+        aria-current={currentPath === '/inbox' ? 'page' : undefined}
+      >
+        Inbox
+      </SidebarListItemLink>
+    </SidebarList>
+  </SidebarNav>
+</Sidebar>
+```
+
+## Layout Integration
+
+```tsx
+const AppLayout = () => {
+  return (
+    <div className="flex h-full">
+      <Sidebar
+        app={APPS.PROTONMAIL}
+        logo={<Logo />}
+        appsDropdown={<AppsDropdown />}
+        primary={
+          <Button fullWidth color="norm">
+            Compose
+          </Button>
+        }
+      >
+        <SidebarNav>
+          {/* Navigation items */}
+        </SidebarNav>
+      </Sidebar>
+
+      <main className="flex-1 flex flex-column">
+        <Header>{/* Header content */}</Header>
+        <div className="flex-1 overflow-auto">
+          {/* Main content */}
+        </div>
+      </main>
+    </div>
+  );
+};
+```
+
+## Source Code
+
+View source:
+- Sidebar: `packages/components/components/sidebar/Sidebar.tsx:1`
+- SidebarNav: `packages/components/components/sidebar/SidebarNav.tsx:1`
+- SidebarListItem: `packages/components/components/sidebar/SidebarListItem.tsx:1`

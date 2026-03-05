@@ -1,0 +1,409 @@
+---
+title: '@proton/shared'
+description: Core utilities, constants, and API clients for Proton applications
+---
+
+The `@proton/shared` package is the foundational library containing shared utilities, constants, API clients, authentication logic, and business logic used across all Proton applications.
+
+## Installation
+
+```bash
+yarn add @proton/shared
+```
+
+<Info>
+This package is typically already included as a peer dependency in `@proton/components`.
+</Info>
+
+## Package Information
+
+<CodeGroup>
+```json package.json
+{
+  "name": "@proton/shared",
+  "description": "Proton shared",
+  "license": "GPL-3.0",
+  "sideEffects": false
+}
+```
+</CodeGroup>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="API Clients" icon="plug">
+    Type-safe API client functions for all Proton services
+  </Card>
+  
+  <Card title="Constants" icon="hashtag">
+    Application constants, brand names, and configuration
+  </Card>
+  
+  <Card title="Authentication" icon="lock">
+    Login, 2FA, SRP protocol, and session management
+  </Card>
+  
+  <Card title="Utilities" icon="wrench">
+    Helper functions for dates, strings, URLs, and more
+  </Card>
+</CardGroup>
+
+## Core Modules
+
+### API Clients
+
+The package provides typed API client functions for all endpoints:
+
+```typescript
+import { auth, auth2FA, revoke } from '@proton/shared/lib/api/auth';
+import { queryAddresses } from '@proton/shared/lib/api/addresses';
+import { getEvents } from '@proton/shared/lib/api/events';
+
+// API client functions return request configuration objects
+const authRequest = auth(
+  { Username: 'user@proton.me' },
+  true // persistent
+);
+
+// Use with your API handler
+const response = await api(authRequest);
+```
+
+<Tip>
+API functions return request configuration objects that can be passed to the API handler. They don't make requests directly.
+</Tip>
+
+### Constants
+
+Comprehensive application constants and configurations:
+
+```typescript
+import {
+  BRAND_NAME,
+  MAIL_APP_NAME,
+  CALENDAR_APP_NAME,
+  DRIVE_APP_NAME,
+  APPS,
+  APPS_CONFIGURATION,
+  DEFAULT_TIMEOUT,
+  SECOND,
+  MINUTE,
+  HOUR,
+  DAY,
+} from '@proton/shared/lib/constants';
+
+console.log(BRAND_NAME); // "Proton"
+console.log(MAIL_APP_NAME); // "Proton Mail"
+console.log(APPS.PROTONMAIL); // "proton-mail"
+console.log(DEFAULT_TIMEOUT); // 30000
+```
+
+### Time Constants
+
+```typescript
+import {
+  SECOND,
+  MINUTE,
+  HOUR,
+  DAY,
+  WEEK,
+  MONTH,
+  YEAR,
+} from '@proton/shared/lib/constants';
+
+// All values in milliseconds
+setTimeout(callback, 5 * MINUTE); // 5 minutes
+const cacheTime = 24 * HOUR; // 24 hours
+```
+
+### Authentication
+
+<Tabs>
+  <Tab title="SRP Protocol">
+    ```typescript
+    import { computeKeyPassword, generateKeySalt } from '@proton/shared/lib/keys';
+    import { srpAuth } from '@proton/shared/lib/srp';
+
+    // Generate key salt
+    const keySalt = generateKeySalt();
+
+    // Compute key password for authentication
+    const keyPassword = await computeKeyPassword(
+      password,
+      keySalt
+    );
+
+    // Perform SRP authentication
+    const result = await srpAuth({
+      api,
+      credentials: { username, password },
+      config: auth({ Username: username }, persistent),
+    });
+    ```
+  </Tab>
+  
+  <Tab title="2FA">
+    ```typescript
+    import { auth2FA } from '@proton/shared/lib/api/auth';
+
+    // TOTP code
+    const request = auth2FA({ TwoFactorCode: '123456' });
+    await api(request);
+
+    // FIDO2/WebAuthn
+    const request = auth2FA({ 
+      FIDO2: authenticationCredentials 
+    });
+    await api(request);
+    ```
+  </Tab>
+  
+  <Tab title="Session Management">
+    ```typescript
+    import { revoke } from '@proton/shared/lib/api/auth';
+    import { getLocalIDFromPathname } from '@proton/shared/lib/authentication/pathnameHelper';
+
+    // Logout
+    await api(revoke());
+
+    // Get current session ID from URL
+    const localID = getLocalIDFromPathname(window.location.pathname);
+    ```
+  </Tab>
+</Tabs>
+
+### URL Helpers
+
+```typescript
+import {
+  getHost,
+  getHostname,
+  getSecondLevelDomain,
+  stringifySearchParams,
+  parseSearchParams,
+} from '@proton/shared/lib/helpers/url';
+
+const host = getHost('https://mail.proton.me');
+// "mail.proton.me"
+
+const params = stringifySearchParams({ 
+  page: '1', 
+  filter: 'unread' 
+});
+// "page=1&filter=unread"
+
+const parsed = parseSearchParams('?page=1&filter=unread');
+// { page: "1", filter: "unread" }
+```
+
+### Date Utilities
+
+```typescript
+import { fromUnixTime, toUnixTime } from '@proton/shared/lib/date/date';
+import { convertUTCDateTimeToZone } from '@proton/shared/lib/date/timezone';
+
+// Unix timestamp conversion
+const date = fromUnixTime(1234567890);
+const timestamp = toUnixTime(new Date());
+
+// Timezone conversion
+const localDate = convertUTCDateTimeToZone(
+  utcDate,
+  'America/New_York'
+);
+```
+
+### Helper Functions
+
+<AccordionGroup>
+  <Accordion title="String Helpers">
+    ```typescript
+    import {
+      capitalize,
+      truncate,
+      stripLeadingSlash,
+      stripTrailingSlash,
+    } from '@proton/shared/lib/helpers/string';
+
+    capitalize('hello'); // "Hello"
+    truncate('Long text...', 10); // "Long text..."
+    stripLeadingSlash('/path'); // "path"
+    stripTrailingSlash('path/'); // "path"
+    ```
+  </Accordion>
+  
+  <Accordion title="Size Helpers">
+    ```typescript
+    import {
+      bytesSize,
+      sizeUnits,
+      getLongSizeFormat,
+      getShortSizeFormat,
+    } from '@proton/shared/lib/helpers/size';
+
+    bytesSize(1024 * 1024); // 1 MB
+    getLongSizeFormat(1024 * 1024); // "1 MB"
+    getShortSizeFormat(1024); // "1 KB"
+    ```
+  </Accordion>
+  
+  <Accordion title="Browser Detection">
+    ```typescript
+    import {
+      isChrome,
+      isFirefox,
+      isSafari,
+      isEdge,
+      isMobile,
+    } from '@proton/shared/lib/helpers/browser';
+
+    if (isChrome()) {
+      // Chrome-specific code
+    }
+
+    if (isMobile()) {
+      // Mobile-specific code
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Validation">
+    ```typescript
+    import {
+      isValidEmail,
+      validateEmailAddress,
+    } from '@proton/shared/lib/helpers/email';
+    import { isValidDomain } from '@proton/shared/lib/helpers/domain';
+
+    isValidEmail('user@example.com'); // true
+    validateEmailAddress('user@example.com'); // returns detailed validation
+    isValidDomain('example.com'); // true
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Event Manager
+
+Subscribe to real-time API events:
+
+```typescript
+import { EventManager } from '@proton/shared/lib/eventManager/eventManager';
+
+const eventManager = new EventManager({
+  api,
+  eventID: latestEventID,
+});
+
+eventManager.subscribe((event) => {
+  // Handle messages, contacts, labels updates, etc.
+  if (event.Messages) {
+    // Update messages
+  }
+  if (event.Contacts) {
+    // Update contacts
+  }
+});
+
+eventManager.start();
+```
+
+## Interfaces & Types
+
+Comprehensive TypeScript interfaces:
+
+```typescript
+import type {
+  User,
+  UserSettings,
+  Address,
+  Key,
+  Organization,
+  Subscription,
+  Api,
+} from '@proton/shared/lib/interfaces';
+
+// Strongly typed throughout the codebase
+const user: User = await api(getUser());
+const addresses: Address[] = await api(queryAddresses());
+```
+
+## Dependencies
+
+### Core Dependencies
+
+<CodeGroup>
+```json Key Libraries
+{
+  "@proton/crypto": "workspace:^",
+  "@proton/srp": "workspace:^",
+  "date-fns": "^2.30.0",
+  "dompurify": "^3.3.1",
+  "idb": "^8.0.3",
+  "zod": "^3.25.76"
+}
+```
+</CodeGroup>
+
+### Key External Libraries
+
+- **date-fns** - Date manipulation and formatting
+- **dompurify** - HTML sanitization
+- **idb** - IndexedDB wrapper for offline storage
+- **zod** - Runtime type validation
+- **ical.js** - Calendar event parsing
+- **papaparse** - CSV parsing
+- **ua-parser-js** - User agent parsing
+
+## Error Handling
+
+```typescript
+import {
+  HTTP_ERROR_CODES,
+  API_CUSTOM_ERROR_CODES,
+} from '@proton/shared/lib/errors';
+
+try {
+  await api(request);
+} catch (error) {
+  if (error.status === HTTP_ERROR_CODES.UNAUTHORIZED) {
+    // Handle unauthorized
+  }
+  if (error.data?.Code === API_CUSTOM_ERROR_CODES.PASSWORD_WRONG) {
+    // Handle wrong password
+  }
+}
+```
+
+## Testing
+
+```bash
+# Run tests
+yarn workspace @proton/shared test
+
+# Run tests in watch mode
+yarn workspace @proton/shared test:watch
+
+# Type checking
+yarn workspace @proton/shared check-types
+```
+
+## Best Practices
+
+<Warning>
+**Tree-shaking**: Import specific modules rather than the entire package:
+```typescript
+// Good
+import { BRAND_NAME } from '@proton/shared/lib/constants';
+
+// Avoid (imports entire constants file)
+import * as constants from '@proton/shared/lib/constants';
+```
+</Warning>
+
+<Tip>
+**API Clients**: Always use the provided API client functions for type safety and consistency.
+</Tip>
+
+<Note>
+**Constants**: Prefer using named constants from this package rather than hardcoding values.
+</Note>

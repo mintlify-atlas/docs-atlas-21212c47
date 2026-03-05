@@ -1,0 +1,525 @@
+---
+title: '@proton/crypto'
+description: 'Cryptography package interfacing with OpenPGP.js and WebCrypto API'
+---
+
+## Overview
+
+The `@proton/crypto` package interfaces Proton applications with the underlying OpenPGP crypto libraries (pmcrypto and OpenPGP.js) and the browser's native WebCrypto API. It provides a unified `CryptoProxy` for handling cryptographic operations in web workers.
+
+<Warning>
+  **`pmcrypto` is deprecated.** You should always use `@proton/crypto` instead of importing pmcrypto directly.
+</Warning>
+
+## Installation
+
+<CodeGroup>
+```bash npm
+npm install @proton/crypto
+```
+
+```bash yarn
+yarn add @proton/crypto
+```
+
+```bash pnpm
+pnpm add @proton/crypto
+```
+</CodeGroup>
+
+## Key Features
+
+- OpenPGP key management (import, export, generation)
+- Message encryption and decryption
+- Digital signatures and verification
+- Session key management
+- Web Worker integration for non-blocking operations
+- WebCrypto API utilities
+- Server time synchronization
+
+## Architecture
+
+All crypto operations are handled through the `CryptoProxy`, which redirects requests to web workers to prevent UI blocking.
+
+```mermaid
+graph LR
+    A[Main Thread] --> B[CryptoProxy]
+    B --> C[Web Worker Pool]
+    C --> D[OpenPGP.js]
+    C --> E[WebCrypto API]
+```
+
+## Quick Start
+
+### Setting Up CryptoProxy with Workers
+
+```typescript
+import { CryptoProxy } from '@proton/crypto';
+import { CryptoWorkerPool } from '@proton/crypto/lib/worker/workerPool';
+
+async function setupCryptoWorker() {
+  await CryptoWorkerPool.init();
+  CryptoProxy.setEndpoint(
+    CryptoWorkerPool,
+    (endpoint) => endpoint.destroy()
+  );
+}
+
+// Call once at app startup
+await setupCryptoWorker();
+```
+
+## Key Management
+
+### Importing Keys
+
+```typescript
+import { CryptoProxy } from '@proton/crypto';
+import type { PublicKeyReference, PrivateKeyReference } from '@proton/crypto';
+
+// Import public key
+const publicKey: PublicKeyReference = await CryptoProxy.importPublicKey({
+  armoredKey: '-----BEGIN PGP PUBLIC KEY BLOCK-----...',
+});
+
+// Import private key
+const privateKey: PrivateKeyReference = await CryptoProxy.importPrivateKey({
+  armoredKey: '-----BEGIN PGP PRIVATE KEY BLOCK-----...',
+  passphrase: 'key-passphrase',
+});
+
+// Import from binary format
+const binaryKey = await CryptoProxy.importPublicKey({
+  binaryKey: uint8ArrayKey,
+});
+```
+
+<Note>
+  When importing a private key, you must provide the passphrase. If the key is already decrypted (rare), use `passphrase: null`.
+</Note>
+
+### Exporting Keys
+
+```typescript
+// Export public key
+const armoredPublicKey = await CryptoProxy.exportPublicKey({
+  key: privateKey, // Extracts only public key material
+  format: 'armored', // or 'binary'
+});
+
+// Export private key (will be encrypted with passphrase)
+const armoredPrivateKey = await CryptoProxy.exportPrivateKey({
+  key: privateKey,
+  passphrase: 'new-encryption-passphrase',
+  format: 'armored', // or 'binary'
+});
+```
+
+### Generating Keys
+
+```typescript
+// Generate new key pair
+const { privateKey, publicKey } = await CryptoProxy.generateKey({
+  userIDs: [{ name: 'User Name', email: 'user@example.com' }],
+  type: 'ecc', // or 'rsa'
+  curve: 'curve25519', // for ECC
+  // rsaBits: 4096, // for RSA
+  passphrase: 'key-passphrase',
+});
+```
+
+### Clearing Keys from Memory
+
+```typescript
+// Clear a specific key
+await CryptoProxy.clearKey({ key: privateKey });
+
+// Clear all keys from the key store
+await CryptoProxy.clearKeyStore();
+```
+
+## Encryption and Decryption
+
+### Encrypting Messages
+
+```typescript
+// Encrypt and sign a message
+const {
+  message: armoredMessage,
+  signature: armoredSignature,
+  encryptedSignature: armoredEncryptedSignature,
+} = await CryptoProxy.encryptMessage({
+  textData: 'Secret message', // or binaryData for Uint8Array
+  encryptionKeys: recipientPublicKey, // Can be array of keys
+  signingKeys: senderPrivateKey,
+  detached: true, // Create detached signature
+  format: 'armored', // or 'binary'
+});
+
+// Encrypt with password instead of keys
+const { message } = await CryptoProxy.encryptMessage({
+  textData: 'Secret message',
+  passwords: ['encryption-password'],
+  format: 'armored',
+});
+```
+
+### Decrypting Messages
+
+```typescript
+import { VERIFICATION_STATUS } from '@proton/crypto';
+
+// Decrypt and verify
+const {
+  data: decryptedData,
+  verificationStatus,
+  verificationErrors,
+} = await CryptoProxy.decryptMessage({
+  armoredMessage, // or binaryMessage
+  armoredEncryptedSignature, // or armoredSignature/binarySignature/binaryEncryptedSignature
+  decryptionKeys: recipientPrivateKey, // Can be array or use passwords
+  verificationKeys: senderPublicKey,
+});
+
+// Check verification status
+if (verificationStatus === VERIFICATION_STATUS.SIGNED_AND_VALID) {
+  console.log('Message is valid:', decryptedData);
+} else if (verificationStatus === VERIFICATION_STATUS.SIGNED_AND_INVALID) {
+  console.error('Invalid signature:', verificationErrors);
+}
+```
+
+## Session Keys
+
+Session keys improve performance when encrypting the same data for multiple recipients.
+
+### Generating Session Keys
+
+```typescript
+// Generate a session key
+const sessionKey = await CryptoProxy.generateSessionKey({
+  recipientKeys: recipientPublicKey,
+});
+```
+
+### Encrypting with Session Keys
+
+```typescript
+// Encrypt data with session key
+const { message: armoredMessage } = await CryptoProxy.encryptMessage({
+  textData: 'Message content',
+  sessionKey,
+  encryptionKeys: recipientPublicKey, // Encrypts the session key
+  signingKeys: senderPrivateKey,
+});
+```
+
+### Decrypting with Session Keys
+
+```typescript
+// If you have the session key directly
+const { data } = await CryptoProxy.decryptMessage({
+  armoredMessage,
+  sessionKeys: sessionKey,
+  verificationKeys: senderPublicKey,
+});
+```
+
+### Encrypting Session Keys Separately
+
+```typescript
+// Encrypt just the session key
+const armoredEncryptedSessionKey = await CryptoProxy.encryptSessionKey({
+  ...sessionKey,
+  encryptionKeys: recipientPublicKey,
+  format: 'armored',
+});
+
+// Decrypt the session key
+const sessionKey = await CryptoProxy.decryptSessionKey({
+  armoredMessage: armoredEncryptedSessionKey,
+  decryptionKeys: recipientPrivateKey,
+});
+```
+
+## Digital Signatures
+
+### Signing Data
+
+```typescript
+// Sign without encryption
+const { signature: armoredSignature } = await CryptoProxy.signMessage({
+  textData: 'Data to sign', // or binaryData
+  signingKeys: privateKey,
+  detached: true,
+  format: 'armored',
+});
+```
+
+### Verifying Signatures
+
+```typescript
+// Verify detached signature
+const { verificationStatus, verificationErrors } = await CryptoProxy.verifyMessage({
+  textData: 'Original data',
+  armoredSignature, // or binarySignature
+  verificationKeys: publicKey,
+});
+
+if (verificationStatus === VERIFICATION_STATUS.SIGNED_AND_VALID) {
+  console.log('Signature is valid');
+}
+```
+
+## Web Worker Integration
+
+### Using Worker Pool (Recommended)
+
+```typescript
+import { CryptoWorkerPool } from '@proton/crypto/lib/worker/workerPool';
+import { CryptoProxy } from '@proton/crypto';
+
+async function setupCryptoWorker() {
+  await CryptoWorkerPool.init();
+  CryptoProxy.setEndpoint(
+    CryptoWorkerPool,
+    (endpoint) => endpoint.destroy()
+  );
+}
+```
+
+### Custom Worker Endpoint
+
+If you have an existing app-specific worker:
+
+```typescript
+// In your custom worker
+import { expose, transferHandlers } from 'comlink';
+import { CryptoProxy, PrivateKeyReference, PublicKeyReference } from '@proton/crypto';
+import { Api as CryptoApi } from '@proton/crypto/lib/worker/api';
+import { workerTransferHandlers } from '@proton/crypto/lib/worker/transferHandlers';
+
+class CustomWorkerApi extends CryptoApi {
+  constructor() {
+    super();
+    CryptoProxy.setEndpoint(this);
+  }
+
+  async customCryptoOperation(params: any) {
+    // Your custom crypto operations
+  }
+}
+
+// Set up transfer handlers
+workerTransferHandlers.forEach(({ name, handler }) => {
+  transferHandlers.set(name, handler);
+});
+
+await CustomWorkerApi.init();
+expose(CustomWorkerApi);
+```
+
+```typescript
+// In main thread
+import { wrap, transferHandlers } from 'comlink';
+import { mainThreadTransferHandlers } from '@proton/crypto/lib/worker/transferHandlers';
+import { CryptoProxy } from '@proton/crypto';
+
+const RemoteCustomWorker = wrap<typeof CustomWorkerApi>(
+  new Worker(new URL('./customWorker.ts', import.meta.url))
+);
+
+mainThreadTransferHandlers.forEach(({ name, handler }) => {
+  transferHandlers.set(name, handler);
+});
+
+const customWorkerInstance = await new RemoteCustomWorker();
+CryptoProxy.setEndpoint(customWorkerInstance);
+```
+
+### Using CryptoApi Directly in Worker
+
+For workers that need crypto operations without going through another worker:
+
+```typescript
+import { CryptoProxy } from '@proton/crypto';
+import { Api as CryptoApi } from '@proton/crypto/lib/worker/api';
+
+// Inside a worker
+CryptoProxy.setEndpoint(
+  new CryptoApi(),
+  (endpoint) => endpoint.clearKeyStore()
+);
+
+// Now use CryptoProxy as normal
+const key = await CryptoProxy.importPrivateKey({ ... });
+```
+
+<Note>
+  CryptoApi should **not** be imported in the main thread as it includes OpenPGP.js which is large. Use dynamic imports if needed.
+</Note>
+
+## Utility Functions
+
+Utility functions from pmcrypto are available under `@proton/crypto/lib/utils`.
+
+```typescript
+import {
+  uint8ArrayToBinaryString,
+  binaryStringToUint8Array,
+  encodeBase64,
+  decodeBase64,
+  encodeUtf8,
+  decodeUtf8,
+} from '@proton/crypto/lib/utils';
+
+// Convert between formats
+const binary = uint8ArrayToBinaryString(uint8Array);
+const array = binaryStringToUint8Array(binaryString);
+
+// Base64 encoding
+const base64 = encodeBase64(uint8Array);
+const decoded = decodeBase64(base64);
+
+// UTF-8 encoding
+const utf8 = encodeUtf8('Hello, world!');
+const text = decodeUtf8(utf8);
+```
+
+## Server Time
+
+Synchronize with server time for accurate timestamp operations.
+
+```typescript
+import { serverTime } from '@proton/crypto/lib/serverTime';
+
+// Get server time
+const time = serverTime();
+
+// Update server time offset
+serverTime.set(new Date(serverTimeMillis));
+```
+
+## Constants
+
+```typescript
+import {
+  VERIFICATION_STATUS,
+  KEY_FLAG,
+  SIGNATURE_TYPES,
+} from '@proton/crypto/lib/constants';
+
+// Verification statuses
+VERIFICATION_STATUS.NOT_SIGNED
+VERIFICATION_STATUS.SIGNED_AND_VALID
+VERIFICATION_STATUS.SIGNED_AND_INVALID
+VERIFICATION_STATUS.SIGNED_NO_PUB_KEY
+```
+
+## TypeScript Types
+
+```typescript
+import type {
+  PublicKeyReference,
+  PrivateKeyReference,
+  SessionKey,
+  EncryptMessageResult,
+  DecryptMessageResult,
+  VerificationStatus,
+  KeyPair,
+  Data,
+  MaybeArray,
+} from '@proton/crypto';
+```
+
+## WebCrypto API Integration
+
+Access browser's native crypto for certain operations:
+
+```typescript
+import { subtle } from '@proton/crypto/lib/subtle';
+
+// Use Web Crypto API through the package
+const key = await subtle.generateKey(
+  { name: 'AES-GCM', length: 256 },
+  true,
+  ['encrypt', 'decrypt']
+);
+```
+
+## Error Handling
+
+```typescript
+import { CryptoProxy } from '@proton/crypto';
+
+try {
+  await CryptoProxy.decryptMessage({ ... });
+} catch (error) {
+  if (error.message.includes('passphrase')) {
+    console.error('Invalid passphrase');
+  } else if (error.message.includes('verification')) {
+    console.error('Signature verification failed');
+  } else {
+    console.error('Decryption error:', error);
+  }
+}
+```
+
+## Testing
+
+```bash
+# Run tests (requires Chrome and Firefox)
+yarn test
+
+# Run tests in CI
+yarn test:ci
+
+# Use custom Chrome binary
+CHROME_BIN=/path/to/chrome yarn test
+```
+
+Tests run in actual browsers (Chrome, Firefox) using Karma to ensure real-world compatibility.
+
+## Dependencies
+
+<AccordionGroup>
+  <Accordion title="Core Dependencies">
+    - `pmcrypto` (@protontech/pmcrypto) - OpenPGP.js wrapper
+    - `comlink` - Web Worker communication
+  </Accordion>
+</AccordionGroup>
+
+## Performance Considerations
+
+<Warning>
+  Always use web workers for crypto operations. Running crypto operations on the main thread will freeze the UI.
+</Warning>
+
+- Initialize CryptoWorkerPool once at app startup
+- Reuse key references instead of re-importing
+- Use session keys for bulk encryption
+- Clear unused keys from memory with `clearKey()`
+
+## Security Best Practices
+
+<Card title="Security Guidelines" icon="shield-halved">
+  - Never log or expose private keys
+  - Always verify signatures when decrypting
+  - Use strong passphrases for key encryption
+  - Clear sensitive data from memory when done
+  - Validate key fingerprints before importing
+</Card>
+
+## Related Packages
+
+<CardGroup cols={3}>
+  <Card title="@proton/srp" icon="key" href="/packages/srp">
+    SRP authentication
+  </Card>
+  <Card title="@proton/shared" icon="share-nodes" href="/packages/shared">
+    Shared utilities
+  </Card>
+  <Card title="@proton/pass" icon="lock" href="/packages/pass">
+    Password manager using crypto
+  </Card>
+</CardGroup>

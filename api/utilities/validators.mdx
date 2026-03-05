@@ -1,0 +1,520 @@
+---
+title: Validation Utilities
+description: Email validation and data verification utilities for Proton WebClients
+---
+
+## Email Validation
+
+### validateEmailAddress
+
+Validate an email address according to RFC 5322.
+
+```typescript
+function validateEmailAddress(email: string): boolean
+```
+
+<ParamField path="email" type="string" required>
+  Email address to validate
+</ParamField>
+
+<ResponseField name="return" type="boolean">
+  True if email is valid, false otherwise
+</ResponseField>
+
+<CodeGroup>
+```tsx Basic Usage
+import { validateEmailAddress } from '@proton/shared/lib/helpers/email';
+
+validateEmailAddress('user@example.com'); // true
+validateEmailAddress('invalid@'); // false
+validateEmailAddress('@invalid.com'); // false
+validateEmailAddress('user+tag@example.com'); // true
+```
+
+```tsx In Form Validation
+const handleSubmit = (email: string) => {
+  if (!validateEmailAddress(email)) {
+    setError('Please enter a valid email address');
+    return;
+  }
+  // Process valid email
+};
+```
+</CodeGroup>
+
+### Features
+
+- Validates local part (before @)
+- Validates domain part (after @)
+- Supports quoted strings
+- Supports comments in local part
+- Follows RFC 5322 specification
+
+---
+
+### validateLocalPart
+
+Validate only the local part of an email address (before @).
+
+```typescript
+function validateLocalPart(localPart: string): boolean
+```
+
+<ParamField path="localPart" type="string" required>
+  Local part of email to validate
+</ParamField>
+
+```tsx
+import { validateLocalPart } from '@proton/shared/lib/helpers/email';
+
+validateLocalPart('user'); // true
+validateLocalPart('user+tag'); // true
+validateLocalPart('user..name'); // false (consecutive dots)
+validateLocalPart('.user'); // false (starts with dot)
+```
+
+### Validation Rules
+
+- Cannot start or end with a dot
+- Cannot have consecutive dots
+- Supports alphanumeric and special characters: !#$%&'*+/=?^_\`\{|\}~.-
+- Supports quoted strings with escaped characters
+- Supports comments in parentheses
+
+---
+
+### validateDomain
+
+Validate the domain part of an email address (after @).
+
+```typescript
+function validateDomain(domain: string): boolean
+```
+
+<ParamField path="domain" type="string" required>
+  Domain to validate
+</ParamField>
+
+```tsx
+import { validateDomain } from '@proton/shared/lib/helpers/email';
+
+validateDomain('example.com'); // true
+validateDomain('sub.example.com'); // true
+validateDomain('[192.168.1.1]'); // true (IP literal)
+validateDomain('xn--example-xya.com'); // true (IDN)
+validateDomain('invalid'); // false (no TLD)
+```
+
+### Validation Rules
+
+- Maximum 255 characters
+- Requires at least two labels (e.g., example.com)
+- Supports subdomains
+- Supports IP address literals
+- Supports internationalized domain names (IDN)
+- Labels can contain alphanumeric, hyphens, and underscores
+- Cannot start or end with hyphen
+
+---
+
+## Email Parsing
+
+### getEmailParts
+
+Split an email address into local part and domain.
+
+```typescript
+function getEmailParts(
+  email: string
+): [localPart: string, domain: string]
+```
+
+<ParamField path="email" type="string" required>
+  Email address to parse
+</ParamField>
+
+<ResponseField name="return" type="[string, string]">
+  Tuple of [localPart, domain]
+</ResponseField>
+
+<CodeGroup>
+```tsx Basic Usage
+import { getEmailParts } from '@proton/shared/lib/helpers/email';
+
+const [local, domain] = getEmailParts('user@example.com');
+// local: 'user'
+// domain: 'example.com'
+```
+
+```tsx With Plus Addressing
+const [local, domain] = getEmailParts('user+tag@example.com');
+// local: 'user+tag'
+// domain: 'example.com'
+```
+
+```tsx Invalid Email
+const [local, domain] = getEmailParts('invalid');
+// local: 'invalid'
+// domain: ''
+```
+</CodeGroup>
+
+---
+
+### parseMailtoURL
+
+Parse a mailto: URL to extract recipients and headers.
+
+```typescript
+function parseMailtoURL(
+  mailtoURL: string,
+  decode?: boolean
+): { to: string[] }
+```
+
+<ParamField path="mailtoURL" type="string" required>
+  Mailto URL to parse
+</ParamField>
+
+<ParamField path="decode" type="boolean" default="true">
+  Whether to decode URI components
+</ParamField>
+
+<CodeGroup>
+```tsx Simple Mailto
+import { parseMailtoURL } from '@proton/shared/lib/helpers/email';
+
+const { to } = parseMailtoURL('mailto:user@example.com');
+// to: ['user@example.com']
+```
+
+```tsx Multiple Recipients
+const { to } = parseMailtoURL(
+  'mailto:user1@example.com,user2@example.com'
+);
+// to: ['user1@example.com', 'user2@example.com']
+```
+
+```tsx With Query Parameters
+const { to } = parseMailtoURL(
+  'mailto:user@example.com?to=other@example.com'
+);
+// to: ['user@example.com', 'other@example.com']
+```
+
+```tsx URL Encoded
+const { to } = parseMailtoURL(
+  'mailto:user%2Btag@example.com',
+  true // decode
+);
+// to: ['user+tag@example.com']
+```
+</CodeGroup>
+
+---
+
+## Email Normalization
+
+### canonicalizeEmail
+
+Normalize an email address using a specific canonicalization scheme.
+
+```typescript
+function canonicalizeEmail(
+  email: string,
+  scheme?: CANONICALIZE_SCHEME
+): string
+
+enum CANONICALIZE_SCHEME {
+  DEFAULT,  // Lowercase only
+  PLUS,     // Remove plus aliases
+  GMAIL,    // Gmail rules (remove dots, plus aliases)
+  PROTON    // Proton rules (remove dots, hyphens, underscores, plus aliases)
+}
+```
+
+<ParamField path="email" type="string" required>
+  Email address to canonicalize
+</ParamField>
+
+<ParamField path="scheme" type="CANONICALIZE_SCHEME" default="DEFAULT">
+  Canonicalization scheme to use
+</ParamField>
+
+<CodeGroup>
+```tsx Default Scheme
+import { canonicalizeEmail } from '@proton/shared/lib/helpers/email';
+
+canonicalizeEmail('User@Example.COM');
+// 'user@example.com'
+```
+
+```tsx Plus Addressing
+import { CANONICALIZE_SCHEME } from '@proton/shared/lib/helpers/email';
+
+canonicalizeEmail(
+  'user+tag@example.com',
+  CANONICALIZE_SCHEME.PLUS
+);
+// 'user@example.com'
+```
+
+```tsx Gmail Rules
+canonicalizeEmail(
+  'user.name+tag@gmail.com',
+  CANONICALIZE_SCHEME.GMAIL
+);
+// 'username@gmail.com' (dots and plus removed)
+```
+
+```tsx Proton Rules
+canonicalizeEmail(
+  'user.name-alias+tag@proton.me',
+  CANONICALIZE_SCHEME.PROTON
+);
+// 'usernamealias@proton.me' (dots, hyphens, underscores, plus removed)
+```
+</CodeGroup>
+
+---
+
+### canonicalizeEmailByGuess
+
+Automatically detect and apply the appropriate canonicalization scheme.
+
+```typescript
+function canonicalizeEmailByGuess(email: string): string
+```
+
+<ParamField path="email" type="string" required>
+  Email address to canonicalize
+</ParamField>
+
+```tsx
+import { canonicalizeEmailByGuess } from '@proton/shared/lib/helpers/email';
+
+// Proton domains
+canonicalizeEmailByGuess('user.name@proton.me');
+// 'username@proton.me'
+
+// Gmail
+canonicalizeEmailByGuess('user.name@gmail.com');
+// 'username@gmail.com'
+
+// Hotmail (plus addressing only)
+canonicalizeEmailByGuess('user+tag@hotmail.com');
+// 'user@hotmail.com'
+
+// Other domains (lowercase only)
+canonicalizeEmailByGuess('User@Example.COM');
+// 'user@example.com'
+```
+
+### Supported Domains
+
+**Proton scheme:**
+- protonmail.com
+- protonmail.ch
+- pm.me
+- proton.me
+
+**Gmail scheme:**
+- gmail.com
+- googlemail.com
+- google.com
+
+**Plus scheme:**
+- hotmail.com
+- hotmail.co.uk
+- hotmail.fr
+- outlook.com
+- yandex.ru
+- mail.ru
+
+---
+
+### canonicalizeInternalEmail
+
+Canonicalize a Proton email address.
+
+```typescript
+function canonicalizeInternalEmail(email: string): string
+```
+
+```tsx
+import { canonicalizeInternalEmail } from '@proton/shared/lib/helpers/email';
+
+const canonical = canonicalizeInternalEmail(
+  'User.Name+Alias@Proton.Me'
+);
+// 'usernamealias@proton.me'
+```
+
+---
+
+## Email Utilities
+
+### addPlusAlias
+
+Add a plus alias to an email address.
+
+```typescript
+function addPlusAlias(
+  email?: string,
+  plus?: string
+): string
+```
+
+<ParamField path="email" type="string">
+  Base email address
+</ParamField>
+
+<ParamField path="plus" type="string">
+  Plus alias to add
+</ParamField>
+
+```tsx
+import { addPlusAlias } from '@proton/shared/lib/helpers/email';
+
+addPlusAlias('user@example.com', 'shopping');
+// 'user+shopping@example.com'
+
+addPlusAlias('user+existing@example.com', 'new');
+// 'user+existing@example.com' (already has plus)
+```
+
+---
+
+### removePlusAliasLocalPart
+
+Remove plus alias from email local part.
+
+```typescript
+function removePlusAliasLocalPart(localPart?: string): string
+```
+
+```tsx
+import { removePlusAliasLocalPart } from '@proton/shared/lib/helpers/email';
+
+removePlusAliasLocalPart('user+tag');
+// 'user'
+
+removePlusAliasLocalPart('user');
+// 'user'
+```
+
+---
+
+### isNoReplyEmail
+
+Check if an email is a no-reply address.
+
+```typescript
+function isNoReplyEmail(email: string): boolean
+```
+
+```tsx
+import { isNoReplyEmail } from '@proton/shared/lib/helpers/email';
+
+isNoReplyEmail('noreply@example.com'); // true
+isNoReplyEmail('no-reply@example.com'); // true
+isNoReplyEmail('donotreply@example.com'); // true
+isNoReplyEmail('user@example.com'); // false
+```
+
+---
+
+### extractEmailFromUserID
+
+Extract email from a user ID string (e.g., "Name \<email@example.com\>").
+
+```typescript
+function extractEmailFromUserID(userID: string): string | undefined
+```
+
+```tsx
+import { extractEmailFromUserID } from '@proton/shared/lib/helpers/email';
+
+extractEmailFromUserID('John Doe <john@example.com>');
+// 'john@example.com'
+
+extractEmailFromUserID('jane@example.com');
+// undefined (no angle brackets)
+```
+
+---
+
+## Usage Examples
+
+### Form Validation
+
+```tsx
+import { validateEmailAddress } from '@proton/shared/lib/helpers/email';
+import { useState } from 'react';
+
+function EmailForm() {
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = () => {
+    if (!validateEmailAddress(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    // Submit form
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => {
+          setEmail(e.target.value);
+          setError('');
+        }}
+      />
+      {error && <div className="error">{error}</div>}
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+### Email Comparison
+
+```tsx
+import { canonicalizeEmailByGuess } from '@proton/shared/lib/helpers/email';
+
+function areEmailsEqual(email1: string, email2: string): boolean {
+  const canonical1 = canonicalizeEmailByGuess(email1);
+  const canonical2 = canonicalizeEmailByGuess(email2);
+  return canonical1 === canonical2;
+}
+
+// Same inbox
+areEmailsEqual(
+  'user+tag@gmail.com',
+  'user@gmail.com'
+); // true
+
+// Same inbox (dots ignored in Gmail)
+areEmailsEqual(
+  'user.name@gmail.com',
+  'username@gmail.com'
+); // true
+```
+
+### Domain Extraction
+
+```tsx
+import { getEmailParts } from '@proton/shared/lib/helpers/email';
+
+function getDomain(email: string): string {
+  const [, domain] = getEmailParts(email);
+  return domain;
+}
+
+const domain = getDomain('user@example.com');
+// 'example.com'
+```

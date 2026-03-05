@@ -1,0 +1,469 @@
+---
+title: Editor Components
+description: Rich text editor components for content editing
+---
+
+# Editor Components
+
+Proton provides a comprehensive rich text editor component for composing formatted content, emails, and documents.
+
+## Editor
+
+The main editor component with toolbar and formatting capabilities.
+
+**Location**: `components/editor/Editor.tsx`
+
+### Basic Usage
+
+```tsx
+import { useState, useRef } from 'react';
+import Editor from '@proton/components/components/editor/Editor';
+import type { EditorActions } from '@proton/components/components/editor/interface';
+import { useModalTwo } from '@proton/components/components/modalTwo/useModalTwo';
+
+const MyEditor = () => {
+  const [content, setContent] = useState('');
+  const editorRef = useRef<EditorActions>(null);
+  
+  const modalLink = useModalTwo();
+  const modalImage = useModalTwo();
+  const modalDefaultFont = useModalTwo();
+  const openEmojiPickerRef = useRef<() => void>(null);
+
+  const handleReady = (actions: EditorActions) => {
+    editorRef.current = actions;
+  };
+
+  return (
+    <Editor
+      onChange={setContent}
+      onReady={handleReady}
+      modalLink={modalLink}
+      modalImage={modalImage}
+      modalDefaultFont={modalDefaultFont}
+      openEmojiPickerRef={openEmojiPickerRef}
+      toolbarConfig={{}}
+      setToolbarConfig={() => {}}
+    />
+  );
+};
+```
+
+### Props
+
+<ParamField path="onChange" type="(value: string) => void" required>
+  Callback when content changes
+</ParamField>
+
+<ParamField path="onReady" type="(actions: EditorActions) => void" required>
+  Callback when editor is ready, provides editor actions API
+</ParamField>
+
+<ParamField path="modalLink" type="any" required>
+  Modal state for link insertion
+</ParamField>
+
+<ParamField path="modalImage" type="any" required>
+  Modal state for image insertion
+</ParamField>
+
+<ParamField path="modalDefaultFont" type="any" required>
+  Modal state for default font settings
+</ParamField>
+
+<ParamField path="openEmojiPickerRef" type="RefObject<() => void>" required>
+  Ref to trigger emoji picker
+</ParamField>
+
+<ParamField path="toolbarConfig" type="ToolbarConfig">
+  Toolbar configuration object
+</ParamField>
+
+<ParamField path="setToolbarConfig" type="SetEditorToolbarConfig" required>
+  Function to update toolbar config
+</ParamField>
+
+<ParamField path="metadata" type="Partial<EditorMetadata>">
+  Editor metadata (plain text mode, etc.)
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes
+</ParamField>
+
+<ParamField path="editorClassname" type="string">
+  CSS classes for editor container
+</ParamField>
+
+<ParamField path="editorToolbarClassname" type="string">
+  CSS classes for toolbar
+</ParamField>
+
+<ParamField path="disabled" type="boolean">
+  Disable editor. Default: `false`
+</ParamField>
+
+<ParamField path="simple" type="boolean">
+  Use simplified editor. Default: `false`
+</ParamField>
+
+<ParamField path="onFocus" type="() => void">
+  Focus event handler
+</ParamField>
+
+<ParamField path="onMouseUp" type="() => void">
+  Mouse up event handler
+</ParamField>
+
+<ParamField path="onKeyUp" type="() => void">
+  Key up event handler
+</ParamField>
+
+<ParamField path="onAddAttachments" type="(files: File[]) => void">
+  Handler for file attachments
+</ParamField>
+
+<ParamField path="showBlockquoteToggle" type="boolean">
+  Show blockquote toggle button
+</ParamField>
+
+<ParamField path="onBlockquoteToggleClick" type="() => void">
+  Blockquote toggle handler
+</ParamField>
+
+<ParamField path="mailSettings" type="MailSettings">
+  Mail settings for default font
+</ParamField>
+
+<ParamField path="userSettings" type="UserSettings">
+  User settings (for emoji picker locale)
+</ParamField>
+
+<ParamField path="isPlainText" type="boolean">
+  Use plain text mode
+</ParamField>
+
+<ParamField path="displayToolbar" type="boolean">
+  Show/hide toolbar. Default: `true`
+</ParamField>
+
+<ParamField path="toolbarCustomRender" type="(toolbar: ReactNode, display: boolean) => ReactNode">
+  Custom toolbar renderer
+</ParamField>
+
+<ParamField path="hasDropzone" type="boolean">
+  Enable file drop zone. Default: `true`
+</ParamField>
+
+<ParamField path="isSmallViewportForToolbar" type="boolean">
+  Force small toolbar breakpoint
+</ParamField>
+
+<ParamField path="title" type="string">
+  Editor title attribute
+</ParamField>
+
+### Examples
+
+<Tabs>
+  <Tab title="Basic Editor">
+    ```tsx
+    const BasicEditor = () => {
+      const [content, setContent] = useState('');
+      const editorRef = useRef<EditorActions>(null);
+      
+      const modalLink = useModalTwo();
+      const modalImage = useModalTwo();
+      const modalDefaultFont = useModalTwo();
+      const openEmojiPickerRef = useRef<() => void>(null);
+      const [toolbarConfig, setToolbarConfig] = useState({});
+
+      return (
+        <Editor
+          onChange={setContent}
+          onReady={(actions) => { editorRef.current = actions; }}
+          modalLink={modalLink}
+          modalImage={modalImage}
+          modalDefaultFont={modalDefaultFont}
+          openEmojiPickerRef={openEmojiPickerRef}
+          toolbarConfig={toolbarConfig}
+          setToolbarConfig={setToolbarConfig}
+        />
+      );
+    };
+    ```
+  </Tab>
+  
+  <Tab title="Simple Editor">
+    ```tsx
+    const SimpleEditor = () => {
+      const [content, setContent] = useState('');
+      
+      return (
+        <Editor
+          simple
+          onChange={setContent}
+          onReady={() => {}}
+          modalLink={useModalTwo()}
+          modalImage={useModalTwo()}
+          modalDefaultFont={useModalTwo()}
+          openEmojiPickerRef={useRef(null)}
+          toolbarConfig={{}}
+          setToolbarConfig={() => {}}
+        />
+      );
+    };
+    ```
+  </Tab>
+  
+  <Tab title="Plain Text Editor">
+    ```tsx
+    const PlainTextEditor = () => {
+      const [content, setContent] = useState('');
+      
+      return (
+        <Editor
+          metadata={{ isPlainText: true }}
+          onChange={setContent}
+          onReady={() => {}}
+          modalLink={useModalTwo()}
+          modalImage={useModalTwo()}
+          modalDefaultFont={useModalTwo()}
+          openEmojiPickerRef={useRef(null)}
+          toolbarConfig={{}}
+          setToolbarConfig={() => {}}
+        />
+      );
+    };
+    ```
+  </Tab>
+  
+  <Tab title="With Attachments">
+    ```tsx
+    const EditorWithAttachments = () => {
+      const [content, setContent] = useState('');
+      const [attachments, setAttachments] = useState<File[]>([]);
+
+      const handleAddAttachments = (files: File[]) => {
+        setAttachments([...attachments, ...files]);
+      };
+
+      return (
+        <div>
+          <Editor
+            onChange={setContent}
+            onReady={() => {}}
+            onAddAttachments={handleAddAttachments}
+            hasDropzone
+            modalLink={useModalTwo()}
+            modalImage={useModalTwo()}
+            modalDefaultFont={useModalTwo()}
+            openEmojiPickerRef={useRef(null)}
+            toolbarConfig={{}}
+            setToolbarConfig={() => {}}
+          />
+          
+          {attachments.length > 0 && (
+            <div className="mt-4">
+              <h4>Attachments</h4>
+              {attachments.map((file, i) => (
+                <div key={i}>{file.name}</div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    };
+    ```
+  </Tab>
+</Tabs>
+
+## EditorActions
+
+The editor provides an actions API through the `onReady` callback:
+
+```tsx
+interface EditorActions {
+  // Get editor content
+  getContent: () => string;
+  
+  // Set editor content
+  setContent: (content: string) => void;
+  
+  // Insert content at cursor
+  insertContent: (content: string) => void;
+  
+  // Focus editor
+  focus: () => void;
+  
+  // Check if editor is empty
+  isEmpty: () => boolean;
+  
+  // Clear editor content
+  clear: () => void;
+}
+```
+
+### Using Editor Actions
+
+```tsx
+const EditorWithActions = () => {
+  const [content, setContent] = useState('');
+  const editorRef = useRef<EditorActions>(null);
+
+  const handleInsertSignature = () => {
+    editorRef.current?.insertContent('<p>Best regards,<br>John Doe</p>');
+  };
+
+  const handleClear = () => {
+    editorRef.current?.clear();
+  };
+
+  const handleGetContent = () => {
+    const currentContent = editorRef.current?.getContent();
+    console.log('Current content:', currentContent);
+  };
+
+  return (
+    <div>
+      <div className="flex gap-2 mb-4">
+        <Button onClick={handleInsertSignature}>Insert Signature</Button>
+        <Button onClick={handleClear}>Clear</Button>
+        <Button onClick={handleGetContent}>Get Content</Button>
+      </div>
+      
+      <Editor
+        onChange={setContent}
+        onReady={(actions) => { editorRef.current = actions; }}
+        // ... other required props
+      />
+    </div>
+  );
+};
+```
+
+## Toolbar Configuration
+
+Customize the toolbar with `toolbarConfig`:
+
+```tsx
+const CustomToolbarEditor = () => {
+  const [toolbarConfig, setToolbarConfig] = useState({
+    bold: true,
+    italic: true,
+    underline: true,
+    strikethrough: false,
+    unorderedList: true,
+    orderedList: true,
+    link: true,
+    image: false,
+    alignment: true,
+    fontSize: true,
+    fontFace: true,
+    textColor: true,
+    backgroundColor: false,
+  });
+
+  return (
+    <Editor
+      toolbarConfig={toolbarConfig}
+      setToolbarConfig={setToolbarConfig}
+      // ... other props
+    />
+  );
+};
+```
+
+## Best Practices
+
+### Content Sanitization
+
+```tsx
+import DOMPurify from 'dompurify';
+
+const SafeEditor = () => {
+  const [content, setContent] = useState('');
+
+  const handleChange = (newContent: string) => {
+    // Sanitize content before storing
+    const sanitized = DOMPurify.sanitize(newContent);
+    setContent(sanitized);
+  };
+
+  return <Editor onChange={handleChange} /* ... */ />;
+};
+```
+
+### Auto-save
+
+```tsx
+const AutoSaveEditor = () => {
+  const [content, setContent] = useState('');
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (content) {
+        saveContent(content);
+        setLastSaved(new Date());
+      }
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [content]);
+
+  return (
+    <div>
+      <Editor onChange={setContent} /* ... */ />
+      {lastSaved && (
+        <p className="text-sm color-weak">
+          Last saved: {lastSaved.toLocaleTimeString()}
+        </p>
+      )}
+    </div>
+  );
+};
+```
+
+### Keyboard Shortcuts
+
+```tsx
+const EditorWithShortcuts = () => {
+  const editorRef = useRef<EditorActions>(null);
+
+  useHotkeys(
+    document,
+    [
+      ['Mod+B', () => console.log('Bold')],
+      ['Mod+I', () => console.log('Italic')],
+      ['Mod+K', () => console.log('Insert link')],
+    ],
+    { enableOnFormTags: ['INPUT', 'TEXTAREA'] }
+  );
+
+  return <Editor onReady={(actions) => { editorRef.current = actions; }} /* ... */ />;
+};
+```
+
+## Accessibility
+
+```tsx
+<Editor
+  title="Email content editor"
+  aria-label="Compose email body"
+  // ... other props
+/>
+```
+
+The editor includes:
+- ARIA labels for toolbar buttons
+- Keyboard navigation
+- Screen reader support
+- Focus management
+
+## Source Code
+
+View source:
+- Editor: `packages/components/components/editor/Editor.tsx:1`
+- RoosterEditor: `packages/components/components/editor/rooster/RoosterEditor.tsx`
+- PlainTextEditor: `packages/components/components/editor/plainTextEditor/PlainTextEditor.tsx`

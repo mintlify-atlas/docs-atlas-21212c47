@@ -1,0 +1,522 @@
+---
+title: Running Tests
+description: Testing guide for Proton WebClients
+---
+
+## Overview
+
+Proton WebClients uses Jest as the primary testing framework for applications and packages. Some packages also use Vitest, Karma, or Playwright for specific testing needs.
+
+## Test Frameworks
+
+<CardGroup cols={3}>
+  <Card title="Jest" icon="vial">
+    Primary testing framework for most applications and packages
+  </Card>
+  
+  <Card title="Vitest" icon="bolt">
+    Used by select packages (e.g., @proton/wallet, @proton/meet)
+  </Card>
+  
+  <Card title="Karma" icon="flask">
+    Legacy test runner used by @proton/shared
+  </Card>
+</CardGroup>
+
+## Running Tests
+
+### Single Application Tests
+
+<Tabs>
+  <Tab title="Mail">
+    ```bash
+    yarn workspace proton-mail test
+    ```
+    
+    With coverage:
+    ```bash
+    yarn workspace proton-mail test:coverage
+    ```
+    
+    Watch mode:
+    ```bash
+    yarn workspace proton-mail test:watch
+    ```
+  </Tab>
+  
+  <Tab title="Drive">
+    ```bash
+    yarn workspace proton-drive test
+    ```
+    
+    CI mode:
+    ```bash
+    yarn workspace proton-drive test:ci
+    ```
+    
+    Watch mode:
+    ```bash
+    yarn workspace proton-drive test:watch
+    ```
+  </Tab>
+  
+  <Tab title="Calendar">
+    ```bash
+    # UTC timezone required for calendar tests
+    yarn workspace proton-calendar test
+    ```
+    
+    The script automatically sets `TZ=UTC`:
+    ```bash
+    cross-env TZ=UTC jest
+    ```
+  </Tab>
+  
+  <Tab title="Pass">
+    ```bash
+    yarn workspace proton-pass test
+    ```
+    
+    CI mode:
+    ```bash
+    yarn workspace proton-pass test:ci
+    ```
+    
+    Watch mode:
+    ```bash
+    yarn workspace proton-pass test:watch
+    ```
+  </Tab>
+</Tabs>
+
+### Package Tests
+
+<CodeGroup>
+```bash Components
+yarn workspace @proton/components test
+```
+
+```bash Shared (Karma)
+yarn workspace @proton/shared test
+```
+
+```bash Wallet (Vitest)
+yarn workspace @proton/wallet test
+```
+
+```bash Utils
+yarn workspace @proton/utils test
+```
+</CodeGroup>
+
+### Run All Tests
+
+Run tests across all workspaces:
+
+```bash
+yarn workspaces foreach run test
+```
+
+<Warning>
+This may take significant time and resources. Consider using CI mode with parallel execution.
+</Warning>
+
+## Test Scripts Reference
+
+### Standard Jest Scripts
+
+Most applications follow these script conventions:
+
+| Script | Description | Command |
+|--------|-------------|----------|
+| `test` | Run all tests | `jest` |
+| `test:ci` | CI test run with coverage | `jest --ci --coverage --runInBand` |
+| `test:watch` | Watch mode | `jest --watch --coverage=false` |
+| `test:coverage` | Generate coverage report | `jest --collectCoverage` |
+
+### Application-Specific Test Scripts
+
+<AccordionGroup>
+  <Accordion title="Mail">
+    ```json package.json
+    {
+      "scripts": {
+        "test": "jest --logHeapUsage --forceExit",
+        "test:ci": "jest --coverage --runInBand --ci --forceExit",
+        "test:coverage": "jest --collectCoverage",
+        "test:watch": "jest --watch --coverage=false"
+      }
+    }
+    ```
+    
+    <Note>
+    Mail tests use `--forceExit` to ensure process termination and `--logHeapUsage` for memory monitoring.
+    </Note>
+  </Accordion>
+  
+  <Accordion title="Drive">
+    ```json package.json
+    {
+      "scripts": {
+        "test": "jest",
+        "test:ci": "jest --coverage=false --runInBand --ci",
+        "test:watch": "jest --watch --coverage=false"
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Calendar">
+    ```json package.json
+    {
+      "scripts": {
+        "test": "cross-env TZ=UTC jest",
+        "test:ci": "yarn run test --ci --coverage --runInBand",
+        "test:watch": "yarn run test --coverage=false --watch"
+      }
+    }
+    ```
+    
+    <Warning>
+    Calendar tests require UTC timezone to ensure consistent date/time behavior.
+    </Warning>
+  </Accordion>
+  
+  <Accordion title="Components">
+    ```json package.json
+    {
+      "scripts": {
+        "test": "jest",
+        "test:ci": "jest --coverage --runInBand --ci --logHeapUsage",
+        "test:watch": "jest --watch"
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Shared (Karma)">
+    ```json package.json
+    {
+      "scripts": {
+        "test": "NODE_ENV=test karma start test/karma.conf.js",
+        "test:ci": "yarn test",
+        "test:watch": "npm test -- --auto-watch --no-single-run"
+      }
+    }
+    ```
+    
+    <Info>
+    The @proton/shared package uses Karma for historical reasons. New tests should prefer Jest.
+    </Info>
+  </Accordion>
+</AccordionGroup>
+
+## Jest Configuration
+
+### Standard Jest Configuration
+
+Example from `applications/mail/jest.config.js`:
+
+<CodeGroup>
+```javascript jest.config.js
+module.exports = {
+  setupFilesAfterEnv: ['./jest.setup.js'],
+  moduleDirectories: ['<rootDir>/node_modules', 'node_modules'],
+  collectCoverage: true,
+  collectCoverageFrom: [
+    'src/**/*.{js,jsx,ts,tsx}',
+    '!<rootDir>/src/app/locales.ts',
+    '!<rootDir>/src/app/*.{js,jsx,ts,tsx}',
+  ],
+  testEnvironment: '@proton/jest-env',
+  transformIgnorePatterns: [
+    'node_modules/(?!(@proton/shared|@proton/components|pmcrypto|openpgp)/)',
+  ],
+  transform: {
+    '^.+\\.(m?js|tsx?)$': '<rootDir>/jest.transform.js',
+  },
+  moduleNameMapper: {
+    '\\.(css|scss|less)$': '@proton/components/__mocks__/styleMock.js',
+    '\\.(jpg|jpeg|png|gif|svg|ttf|woff|woff2)$': '@proton/components/__mocks__/fileMock.js',
+  },
+  coverageReporters: ['text-summary', 'json'],
+  reporters: ['default', ['jest-junit', { 
+    suiteNameTemplate: '{filepath}', 
+    outputName: 'test-report.xml' 
+  }]],
+};
+```
+</CodeGroup>
+
+### Key Configuration Elements
+
+<ParamField path="testEnvironment" type="string" default="@proton/jest-env">
+  Custom Jest environment package providing browser-like globals
+</ParamField>
+
+<ParamField path="transformIgnorePatterns" type="array">
+  Excludes node_modules except specified packages that need transformation
+</ParamField>
+
+<ParamField path="moduleNameMapper" type="object">
+  Maps static assets to mocks for testing
+</ParamField>
+
+<ParamField path="coverageReporters" type="array">
+  Specifies coverage report formats (text-summary, json, html, etc.)
+</ParamField>
+
+## Test Environment
+
+### @proton/jest-env
+
+Custom Jest environment package used across applications:
+
+```javascript
+testEnvironment: '@proton/jest-env'
+```
+
+Provides:
+- Browser-like globals (window, document, etc.)
+- DOM manipulation capabilities
+- JSDOM environment setup
+
+### Testing Libraries
+
+Common testing dependencies:
+
+<CardGroup cols={2}>
+  <Card title="@testing-library/react" icon="react">
+    React component testing utilities
+  </Card>
+  
+  <Card title="@testing-library/jest-dom" icon="check">
+    Custom Jest matchers for DOM assertions
+  </Card>
+  
+  <Card title="@testing-library/user-event" icon="hand-pointer">
+    User interaction simulation
+  </Card>
+  
+  <Card title="@proton/testing" icon="toolbox">
+    Proton-specific testing utilities
+  </Card>
+</CardGroup>
+
+## Coverage Reports
+
+### Generating Coverage
+
+<Tabs>
+  <Tab title="Single Application">
+    ```bash
+    yarn workspace proton-mail test:coverage
+    ```
+    
+    Coverage output:
+    - Console summary
+    - `coverage/` directory with detailed reports
+    - `coverage/lcov-report/index.html` for browser viewing
+  </Tab>
+  
+  <Tab title="CI Mode">
+    ```bash
+    yarn workspace proton-mail test:ci
+    ```
+    
+    Generates:
+    - Coverage reports in `coverage/`
+    - JUnit XML report: `test-report.xml`
+  </Tab>
+</Tabs>
+
+### Coverage Configuration
+
+Configure coverage collection:
+
+```javascript jest.config.js
+{
+  collectCoverage: true,
+  collectCoverageFrom: [
+    'src/**/*.{js,jsx,ts,tsx}',
+    '!**/*.test.{js,jsx,ts,tsx}',
+    '!**/node_modules/**',
+  ],
+  coverageThresholds: {
+    global: {
+      branches: 50,
+      functions: 50,
+      lines: 50,
+      statements: 50,
+    },
+  },
+}
+```
+
+## CI Testing
+
+### Turbo Configuration
+
+Tests run through Turbo with dependency orchestration:
+
+```json turbo.json
+{
+  "tasks": {
+    "test:ci": {
+      "dependsOn": ["transit"]
+    },
+    "test:coverage": {
+      "outputs": ["coverage/**"]
+    }
+  }
+}
+```
+
+### Running Tests in CI
+
+```bash
+# Run CI tests for all workspaces
+yarn workspaces foreach run test:ci
+
+# Run with Turbo for caching and orchestration
+turbo run test:ci
+```
+
+<Info>
+Turbo caches test results. Only changed workspaces re-run tests.
+</Info>
+
+## Special Test Configurations
+
+### Playwright (Storybook)
+
+```bash
+yarn workspace @proton/storybook test
+```
+
+Configuration: `applications/storybook/playwright.config.ts`
+
+### Vitest Examples
+
+<CodeGroup>
+```bash Wallet
+yarn workspace @proton/wallet test
+```
+
+```bash Meet
+yarn workspace @proton/meet test
+```
+</CodeGroup>
+
+Configuration files: `vitest.config.ts` in respective packages
+
+## Debugging Tests
+
+### Run Specific Test File
+
+```bash
+yarn workspace proton-mail test path/to/test-file.test.ts
+```
+
+### Debug in VS Code
+
+Add to `.vscode/launch.json`:
+
+```json
+{
+  "type": "node",
+  "request": "launch",
+  "name": "Jest Debug",
+  "program": "${workspaceFolder}/node_modules/.bin/jest",
+  "args": ["--runInBand", "${file}"],
+  "console": "integratedTerminal",
+  "internalConsoleOptions": "neverOpen"
+}
+```
+
+### Verbose Output
+
+```bash
+yarn workspace proton-mail test --verbose
+```
+
+## Best Practices
+
+<Steps>
+  <Step title="Run Tests Locally">
+    Always run tests before committing:
+    ```bash
+    yarn workspace <app-name> test
+    ```
+  </Step>
+  
+  <Step title="Watch Mode During Development">
+    Use watch mode for faster feedback:
+    ```bash
+    yarn workspace <app-name> test:watch
+    ```
+  </Step>
+  
+  <Step title="Check Coverage">
+    Maintain reasonable coverage levels:
+    ```bash
+    yarn workspace <app-name> test:coverage
+    ```
+  </Step>
+  
+  <Step title="Fix Failing Tests">
+    Never commit with failing tests. Debug and fix before pushing.
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Tests timeout">
+    Increase Jest timeout:
+    ```javascript
+    jest.setTimeout(10000); // 10 seconds
+    ```
+    
+    Or for specific test:
+    ```javascript
+    test('long running test', async () => {
+      // test code
+    }, 10000);
+    ```
+  </Accordion>
+  
+  <Accordion title="Memory issues">
+    Use `--runInBand` to run tests serially:
+    ```bash
+    yarn workspace proton-mail test --runInBand
+    ```
+    
+    Or increase Node memory:
+    ```bash
+    export NODE_OPTIONS="--max-old-space-size=4096"
+    ```
+  </Accordion>
+  
+  <Accordion title="Transform errors">
+    Check `transformIgnorePatterns` in Jest config. Add problematic packages:
+    ```javascript
+    transformIgnorePatterns: [
+      'node_modules/(?!(problematic-package|@proton/shared)/)',
+    ]
+    ```
+  </Accordion>
+  
+  <Accordion title="Module resolution errors">
+    Verify `moduleNameMapper` includes necessary mappings:
+    ```javascript
+    moduleNameMapper: {
+      '^@/(.*)$': '<rootDir>/src/$1',
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+Some tests may depend on specific environment variables or external services. Check test setup files for requirements.
+</Warning>
