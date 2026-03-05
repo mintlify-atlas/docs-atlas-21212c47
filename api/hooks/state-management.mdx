@@ -420,3 +420,260 @@ function MyComponent() {
   return <div>...</div>;
 }
 ```
+
+---
+
+## useSearchParams
+
+Read and write URL search parameters with React Router integration.
+
+### Signature
+
+```typescript
+function useSearchParams(
+  init?: ParsedSearchParams
+): [ParsedSearchParams, SetSearchParams]
+
+type ParsedSearchParams = Record<string, string | string[] | undefined>
+type SetSearchParams = (
+  nextInit: ParsedSearchParams | ((prev: ParsedSearchParams) => ParsedSearchParams)
+) => void
+```
+
+<ParamField path="init" type="ParsedSearchParams">
+  Initial search parameters (applied on mount)
+</ParamField>
+
+### Usage
+
+<CodeGroup>
+```tsx Reading Parameters
+import useSearchParams from '@proton/hooks/useSearchParams';
+
+function MyComponent() {
+  const [searchParams] = useSearchParams();
+
+  const userId = searchParams.userId;
+  const filters = searchParams.filters; // can be string[]
+
+  return <div>User ID: {userId}</div>;
+}
+```
+
+```tsx Setting Parameters
+const [searchParams, setSearchParams] = useSearchParams();
+
+// Set directly
+setSearchParams({ userId: '123', tab: 'settings' });
+
+// Update functionally
+setSearchParams((prev) => ({
+  ...prev,
+  tab: 'profile'
+}));
+```
+
+```tsx Initial Parameters
+// Set parameters on mount
+useSearchParams({ view: 'grid', sort: 'date' });
+```
+</CodeGroup>
+
+---
+
+## useDateCountdown
+
+Countdown timer to a target date with automatic updates.
+
+### Signature
+
+```typescript
+function useDateCountdown(
+  expiry: Date,
+  options?: DateCountdownOptions
+): DateCountdown
+
+interface DateCountdown {
+  diff: number;
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  expired: boolean;
+}
+
+interface DateCountdownOptions {
+  interval?: number;
+}
+```
+
+<ParamField path="expiry" type="Date" required>
+  Target date to count down to
+</ParamField>
+
+<ParamField path="options.interval" type="number" default="1000">
+  Update interval in milliseconds
+</ParamField>
+
+### Usage
+
+```tsx
+import useDateCountdown from '@proton/hooks/useDateCountdown';
+
+function CountdownTimer() {
+  const targetDate = new Date('2024-12-31T23:59:59');
+  const countdown = useDateCountdown(targetDate);
+
+  if (countdown.expired) {
+    return <div>Time's up!</div>;
+  }
+
+  return (
+    <div>
+      {countdown.days}d {countdown.hours}h {countdown.minutes}m {countdown.seconds}s
+    </div>
+  );
+}
+```
+
+---
+
+## useAsyncError
+
+Throw errors asynchronously to be caught by Error Boundaries.
+
+### Signature
+
+```typescript
+function useAsyncError(): (error: Error | null) => void
+```
+
+### Usage
+
+```tsx
+import useAsyncError from '@proton/hooks/useAsyncError';
+
+function MyComponent() {
+  const throwError = useAsyncError();
+
+  const fetchData = async () => {
+    try {
+      await api.fetch();
+    } catch (error) {
+      // This will trigger the nearest Error Boundary
+      throwError(error as Error);
+    }
+  };
+
+  return <button onClick={fetchData}>Fetch Data</button>;
+}
+```
+
+<Note>
+  This hook allows you to throw errors from async operations so they can be caught by React Error Boundaries.
+</Note>
+
+---
+
+## useStableLoading
+
+Prevent loading state flickering with debounced transitions.
+
+### Signature
+
+```typescript
+function useStableLoading(
+  loadingCondition: boolean[] | boolean | (() => boolean),
+  options?: StableLoadingOptions
+): boolean
+
+interface StableLoadingOptions {
+  delay?: number;
+  initialState?: boolean;
+}
+```
+
+<ParamField path="loadingCondition" type="boolean[] | boolean | (() => boolean)" required>
+  Loading condition(s) to stabilize
+</ParamField>
+
+<ParamField path="options.delay" type="number" default="300">
+  Delay in milliseconds before clearing loading state
+</ParamField>
+
+<ParamField path="options.initialState" type="boolean" default="true">
+  Initial loading state
+</ParamField>
+
+### Usage
+
+<CodeGroup>
+```tsx Single Loading State
+import useStableLoading from '@proton/hooks/useStableLoading';
+
+function MyComponent() {
+  const [loading] = useLoading();
+  const stableLoading = useStableLoading(loading);
+
+  // stableLoading stays true for 300ms after loading becomes false
+  return <Spinner show={stableLoading} />;
+}
+```
+
+```tsx Multiple Loading States
+const [loading1] = useLoading();
+const [loading2] = useLoading();
+
+// True if any are loading, with debounced transition to false
+const stableLoading = useStableLoading([loading1, loading2]);
+```
+
+```tsx Function Form
+const stableLoading = useStableLoading(
+  () => loadingState1 || loadingState2,
+  { delay: 500 }
+);
+```
+</CodeGroup>
+
+<Tip>
+  Use this hook to prevent loading spinners from flickering when operations complete quickly.
+</Tip>
+
+---
+
+## useSynchronizingState
+
+State that automatically synchronizes with a prop value.
+
+### Signature
+
+```typescript
+function useSynchronizingState<V>(value: V): readonly [V, (v: V) => void]
+```
+
+<ParamField path="value" type="V" required>
+  Value to synchronize with
+</ParamField>
+
+### Usage
+
+```tsx
+import useSynchronizingState from '@proton/hooks/useSynchronizingState';
+
+function EditableField({ initialValue }: { initialValue: string }) {
+  // State syncs with initialValue when it changes
+  const [value, setValue] = useSynchronizingState(initialValue);
+
+  return (
+    <input 
+      value={value} 
+      onChange={(e) => setValue(e.target.value)} 
+    />
+  );
+}
+```
+
+<Note>
+  Unlike useState, this hook will update the state whenever the prop value changes (by pointer identity).
+</Note>
