@@ -1,0 +1,180 @@
+{
+  "projectType": "frontend",
+  "projectName": "Proton WebClients",
+  "projectDescription": "Monorepo hosting the Proton web clients including Mail, Calendar, Drive, Pass, VPN, and Wallet applications with shared component libraries and utilities.",
+  "theme": "almond",
+  "primaryColor": "#554d85",
+  "lightColor": "#aca4c4",
+  "darkColor": null,
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "project-structure"
+            ]
+          },
+          {
+            "group": "Applications",
+            "pages": [
+              "applications/overview",
+              "applications/proton-mail",
+              "applications/proton-calendar",
+              "applications/proton-drive",
+              "applications/proton-pass",
+              "applications/proton-vpn",
+              "applications/proton-wallet"
+            ]
+          },
+          {
+            "group": "Development",
+            "pages": [
+              "development/workspace-management",
+              "development/building-apps",
+              "development/running-tests",
+              "development/internationalization"
+            ]
+          },
+          {
+            "group": "Contributing",
+            "pages": [
+              "contributing/guidelines",
+              "contributing/code-style",
+              "contributing/pull-requests"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Components",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "components/introduction",
+              "components/getting-started"
+            ]
+          },
+          {
+            "group": "Core Components",
+            "pages": [
+              "components/buttons",
+              "components/inputs",
+              "components/modals",
+              "components/dropdowns",
+              "components/tables",
+              "components/forms"
+            ]
+          },
+          {
+            "group": "Layout",
+            "pages": [
+              "components/layout/header",
+              "components/layout/sidebar",
+              "components/layout/container"
+            ]
+          },
+          {
+            "group": "Specialized",
+            "pages": [
+              "components/specialized/calendar",
+              "components/specialized/mail",
+              "components/specialized/editor"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Packages",
+        "groups": [
+          {
+            "group": "Core Packages",
+            "pages": [
+              "packages/overview",
+              "packages/shared",
+              "packages/components",
+              "packages/hooks",
+              "packages/atoms"
+            ]
+          },
+          {
+            "group": "Application Packages",
+            "pages": [
+              "packages/mail",
+              "packages/calendar",
+              "packages/drive",
+              "packages/pass"
+            ]
+          },
+          {
+            "group": "Utilities",
+            "pages": [
+              "packages/crypto",
+              "packages/icons",
+              "packages/i18n",
+              "packages/metrics"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Hooks",
+            "pages": [
+              "api/hooks/overview",
+              "api/hooks/state-management",
+              "api/hooks/data-fetching"
+            ]
+          },
+          {
+            "group": "Utilities",
+            "pages": [
+              "api/utilities/helpers",
+              "api/utilities/validators",
+              "api/utilities/formatters"
+            ]
+          },
+          {
+            "group": "Types",
+            "pages": [
+              "api/types/common",
+              "api/types/components",
+              "api/types/models"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Multiple Proton web applications (Mail, Calendar, Drive, Pass, VPN, Wallet)",
+    "Comprehensive React component library with 100+ components",
+    "Shared packages for state management, hooks, and utilities",
+    "End-to-end encrypted email, calendar, and storage solutions",
+    "Internationalization support with multiple languages",
+    "Redux-based state management with shared stores",
+    "PGP/OpenPGP encryption integration",
+    "Modern React 18 and TypeScript codebase"
+  ],
+  "publicApiSurface": [
+    "@proton/components - UI component library",
+    "@proton/shared - Shared utilities and helpers",
+    "@proton/hooks - React hooks collection",
+    "@proton/atoms - Design system atoms",
+    "@proton/icons - Icon library",
+    "@proton/mail - Mail-specific components and logic",
+    "@proton/calendar - Calendar components and utilities",
+    "@proton/drive - Drive-specific functionality",
+    "@proton/pass - Password manager components",
+    "@proton/crypto - Cryptography utilities",
+    "@proton/redux-shared-store - Redux store utilities",
+    "@proton/i18n - Internationalization tools"
+  ]
+}
